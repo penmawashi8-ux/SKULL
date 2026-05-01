@@ -1,9 +1,24 @@
-function App() {
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { HomeScreen } from './screens/HomeScreen'
+import { ModeSelectScreen } from './screens/ModeSelectScreen'
+import { CpuSetupScreen } from './screens/CpuSetupScreen'
+import { CreateRoomScreen } from './screens/CreateRoomScreen'
+import { JoinRoomScreen } from './screens/JoinRoomScreen'
+import { LobbyScreen } from './screens/LobbyScreen'
+import { GameScreen } from './screens/GameScreen'
+
+export default function App() {
   return (
-    <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
-      <h1 className="text-4xl font-bold">Skull Game</h1>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<HomeScreen />} />
+        <Route path="/menu" element={<ModeSelectScreen />} />
+        <Route path="/cpu" element={<CpuSetupScreen />} />
+        <Route path="/online/create" element={<CreateRoomScreen />} />
+        <Route path="/online/join" element={<JoinRoomScreen />} />
+        <Route path="/room/:roomCode" element={<LobbyScreen />} />
+        <Route path="/game/:roomCode" element={<GameScreen />} />
+      </Routes>
+    </BrowserRouter>
   )
 }
-
-export default App

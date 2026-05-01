@@ -1,0 +1,129 @@
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { motion } from 'framer-motion'
+import { useGameStore } from '../store/gameStore'
+
+export function JoinRoomScreen() {
+  const navigate  = useNavigate()
+  const { joinRoom, isLoading, error } = useGameStore()
+
+  const [name, setName]     = useState('')
+  const [code, setCode]     = useState('')
+
+  function handleCodeChange(raw: string) {
+    // Auto uppercase, max 6 chars, letters/digits only
+    setCode(raw.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6))
+  }
+
+  async function handleJoin() {
+    if (!name.trim() || code.length !== 6) return
+    await joinRoom(code, name.trim())
+    if (!useGameStore.getState().error) {
+      navigate(`/room/${code}`)
+    }
+  }
+
+  const isReady = name.trim().length > 0 && code.length === 6
+
+  return (
+    <div
+      className="min-h-screen flex flex-col"
+      style={{ background: 'radial-gradient(ellipse at 50% 0%, #1a0a2e 0%, #030712 70%)' }}
+    >
+      {/* Header */}
+      <div className="flex items-center gap-3 px-4 pt-6 pb-4">
+        <button
+          onClick={() => navigate('/menu')}
+          className="text-white/50 hover:text-white transition-colors text-sm"
+          style={{ fontFamily: 'Crimson Text, serif' }}
+        >
+          ← 戻る
+        </button>
+        <h1 className="text-xl font-bold text-white/90" style={{ fontFamily: 'Cinzel, serif' }}>
+          ルームに参加
+        </h1>
+      </div>
+
+      <div className="flex-1 flex flex-col px-6 pt-6 pb-12 gap-6">
+        {/* Name */}
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
+          <label
+            className="block text-white/60 text-sm mb-2"
+            style={{ fontFamily: 'Crimson Text, serif' }}
+          >
+            あなたの名前
+          </label>
+          <input
+            type="text"
+            value={name}
+            onChange={e => setName(e.target.value)}
+            maxLength={12}
+            placeholder="プレイヤー名"
+            className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/20 focus:outline-none focus:border-purple-500/60 text-lg"
+            style={{ fontFamily: 'Crimson Text, serif' }}
+          />
+        </motion.div>
+
+        {/* Room code */}
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+          <label
+            className="block text-white/60 text-sm mb-2"
+            style={{ fontFamily: 'Crimson Text, serif' }}
+          >
+            ルームコード（6桁）
+          </label>
+          <input
+            type="text"
+            value={code}
+            onChange={e => handleCodeChange(e.target.value)}
+            placeholder="ABC123"
+            inputMode="text"
+            autoCapitalize="characters"
+            className="w-full px-4 py-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/20 focus:outline-none focus:border-purple-500/60 text-center text-3xl tracking-[0.3em] font-bold"
+            style={{ fontFamily: 'Cinzel, serif' }}
+          />
+          {/* Progress dots */}
+          <div className="flex justify-center gap-2 mt-3">
+            {Array.from({ length: 6 }, (_, i) => (
+              <div
+                key={i}
+                className={`w-2 h-2 rounded-full transition-all duration-200 ${
+                  i < code.length ? 'bg-purple-400 scale-125' : 'bg-white/10'
+                }`}
+              />
+            ))}
+          </div>
+        </motion.div>
+
+        {error && (
+          <motion.p
+            className="text-red-400 text-sm text-center bg-red-950/30 border border-red-500/20 rounded-xl py-3 px-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            style={{ fontFamily: 'Crimson Text, serif' }}
+          >
+            {error}
+          </motion.p>
+        )}
+
+        <motion.button
+          onClick={handleJoin}
+          disabled={isLoading || !isReady}
+          className="w-full py-4 rounded-2xl text-white text-xl font-bold disabled:opacity-40 mt-2"
+          style={{
+            fontFamily: 'Cinzel, serif',
+            background: 'linear-gradient(135deg, #6d28d9, #4c1d95)',
+            boxShadow: isReady ? '0 0 24px rgba(109,40,217,0.4)' : 'none',
+          }}
+          whileHover={isReady ? { scale: 1.02 } : {}}
+          whileTap={isReady ? { scale: 0.97 } : {}}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+        >
+          {isLoading ? '参加中...' : '参加する'}
+        </motion.button>
+      </div>
+    </div>
+  )
+}

@@ -15,7 +15,11 @@ const PHASE_LABEL: Record<string, string> = {
   flip:  'めくりフェーズ',
 }
 
-export function GameBoard() {
+interface Props {
+  onGameEnd?: () => void
+}
+
+export function GameBoard({ onGameEnd }: Props) {
   const {
     room, players, gameState, myDiscs, publicDiscs,
     sessionId, isLoading, placeDisc, placeBid, fold, flipDisc,
@@ -297,7 +301,10 @@ export function GameBoard() {
         skullOwner={modal.skullOwner}
         lostDisc={modal.lostDisc}
         onClose={() => {
-          if (modal.type === 'win' || modal.type === 'lose') resetGame()
+          if (modal.type === 'win' || modal.type === 'lose') {
+            resetGame()
+            onGameEnd?.()
+          }
           setModal({ show: false, type: null })
         }}
       />
