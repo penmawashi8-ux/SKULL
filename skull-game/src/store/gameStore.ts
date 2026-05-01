@@ -1,19 +1,31 @@
 import { create } from 'zustand'
 import type { RealtimeChannel } from '@supabase/supabase-js'
 import { supabase, getSessionId } from '../lib/supabase'
-import { generateRoomCode, getInitialPlayerState } from '../lib/gameEngine'
+import { generateRoomCode, getInitialPlayerState, getWinner } from '../lib/gameEngine'
 import { cpuDecidePlace, cpuDecideBidOrFold, cpuDecideFlipTarget } from '../lib/cpuAI'
 import type { Room, Player, GameState, PlacedDisc, DiscType, PlayerColor } from '../types/game'
 
 const PLAYER_COLORS: PlayerColor[] = ['red', 'blue', 'green', 'yellow', 'purple', 'pink']
 
-function getNextActivePlayer(players: Player[], currentPlayerId: string): Player | null {
+function getNextActivePlayer(
+  players: Player[],
+  currentPlayerId: string,
+  skipIds: string[] = [],
+): Player | null {
   const active = [...players]
-    .filter(p => !p.is_eliminated)
+    .filter(p => !p.is_eliminated && !skipIds.includes(p.id))
     .sort((a, b) => a.seat_order - b.seat_order)
   if (active.length === 0) return null
-  const idx = active.findIndex(p => p.id === currentPlayerId)
-  return active[(idx + 1) % active.length]
+  const all = [...players]
+    .filter(p => !p.is_eliminated)
+    .sort((a, b) => a.seat_order - b.seat_order)
+  const idx = all.findIndex(p => p.id === currentPlayerId)
+  // Walk forward until we find someone not in skipIds
+  for (let i = 1; i <= all.length; i++) {
+    const candidate = all[(idx + i) % all.length]
+    if (!skipIds.includes(candidate.id)) return candidate
+  }
+  return null
 }
 
 function ts(): string {
@@ -21,22 +33,22 @@ function ts(): string {
 }
 
 export interface StoreState {
-  // ── Public state ───────────────────────────────────────────────────────────
   room: Room | null
   players: Player[]
   gameState: GameState | null
-  myDiscs: PlacedDisc[]       // own discs with real disc_type
-  publicDiscs: PlacedDisc[]   // all discs; unflipped others have masked disc_type
+  myDiscs: PlacedDisc[]
+  publicDiscs: PlacedDisc[]
   sessionId: string
   isLoading: boolean
   error: string | null
   isCpuGame: boolean
   cpuDifficulty: 'easy' | 'normal' | 'hard'
-  // ── Internal ───────────────────────────────────────────────────────────────
+  isReconnecting: boolean
   _subscription: RealtimeChannel | null
   _myPlayerId: string | null
-  _cpuDiscs: PlacedDisc[]     // CPU discs with real disc_type (never shown to human)
-  // ── Actions ────────────────────────────────────────────────────────────────
+  _cpuDiscs: PlacedDisc[]
+  _foldedPlayerIds: string[]  // client-side fold tracking
+
   createRoom: (playerName: string, maxPlayers: number) => Promise<string>
   joinRoom: (roomCode: string, playerName: string) => Promise<void>
   startGame: () => Promise<void>
@@ -52,23 +64,104 @@ export interface StoreState {
 
 export const useGameStore = create<StoreState>()((set, get) => {
 
-  // ── CPU turn processor ─────────────────────────────────────────────────────
-  // Recursively runs CPU turns until it's the human's turn (or game pauses).
+  // ── helpers ──────────────────────────────────────────────────────────────────
+
+  function allPlacedAtLeastOnce(players: Player[], discs: PlacedDisc[], round: number): boolean {
+    const active = players.filter(p => !p.is_eliminated)
+    return active.every(p => discs.some(d => d.player_id === p.id && d.round_number === round))
+  }
+
+  function allHandsEmpty(players: Player[]): boolean {
+    return players.filter(p => !p.is_eliminated).every(p => p.flower_count + p.skull_count === 0)
+  }
+
+  // Remove one random card from a player's hand. Returns updated player.
+  function loseRandomCard(player: Player): Player {
+    const total = player.flower_count + player.skull_count
+    if (total === 0) return player
+    const loseSkull = player.skull_count > 0 && Math.random() < player.skull_count / total
+    return {
+      ...player,
+      flower_count: loseSkull ? player.flower_count : Math.max(0, player.flower_count - 1),
+      skull_count:  loseSkull ? Math.max(0, player.skull_count - 1) : player.skull_count,
+    }
+  }
+
+  // ── startNextRound (CPU game) ─────────────────────────────────────────────
+  function startNextRound(
+    startingPlayerId: string,
+    playersIn: Player[],
+    roomIn: Room,
+    gameStateIn: GameState,
+  ) {
+    const newRound = gameStateIn.round_number + 1
+    const newGs: GameState = {
+      ...gameStateIn,
+      round_number: newRound,
+      phase: 'place',
+      current_player_id: startingPlayerId,
+      highest_bid: 0,
+      highest_bidder_id: null,
+      pass_count: 0,
+      flip_count: 0,
+      updated_at: ts(),
+    }
+    // Reset hand counts for active (non-eliminated) players
+    const resetPlayers = playersIn.map(p =>
+      p.is_eliminated ? p : {
+        ...p,
+        flower_count: Math.min(3, p.flower_count + 3),
+        skull_count:  Math.min(1, p.skull_count  + 1),
+      }
+    )
+    set({
+      gameState: newGs,
+      players: resetPlayers,
+      publicDiscs: [],
+      myDiscs: [],
+      _cpuDiscs: [],
+      _foldedPlayerIds: [],
+      room: { ...roomIn, current_round: newRound },
+    })
+  }
+
+  // ── processCpuTurns ───────────────────────────────────────────────────────
   async function processCpuTurns(): Promise<void> {
+    await new Promise(r => setTimeout(r, 50)) // yield to React render
     const s = get()
     if (!s.isCpuGame || !s.gameState) return
 
     const currentPlayer = s.players.find(p => p.id === s.gameState!.current_player_id)
     if (!currentPlayer?.is_cpu) return
 
-    const { cpuDifficulty, players, gameState, myDiscs, publicDiscs, _cpuDiscs, room } = s
+    const { cpuDifficulty, players, gameState, myDiscs, publicDiscs, _cpuDiscs, room, _foldedPlayerIds } = s
     const round = gameState.round_number
     const allReal = [...myDiscs, ..._cpuDiscs]
 
     // ── place phase ──────────────────────────────────────────────────────────
     if (gameState.phase === 'place') {
-      const canPlace = currentPlayer.flower_count + currentPlayer.skull_count > 0
-      if (!canPlace) {
+      const hasHand = currentPlayer.flower_count + currentPlayer.skull_count > 0
+      const placed = allPlacedAtLeastOnce(players, publicDiscs, round)
+
+      // If no hand left, skip to next player
+      if (!hasHand) {
+        // Check if all hands empty → force bid phase
+        if (allHandsEmpty(players)) {
+          const firstActive = [...players]
+            .filter(p => !p.is_eliminated)
+            .sort((a, b) => a.seat_order - b.seat_order)[0]
+          set(prev => ({
+            gameState: {
+              ...prev.gameState!,
+              phase: 'bid',
+              current_player_id: firstActive?.id ?? null,
+              updated_at: ts(),
+            },
+            _foldedPlayerIds: [],
+          }))
+          await processCpuTurns()
+          return
+        }
         const next = getNextActivePlayer(players, currentPlayer.id)
         set(prev => ({
           gameState: { ...prev.gameState!, current_player_id: next?.id ?? null, updated_at: ts() },
@@ -77,9 +170,39 @@ export const useGameStore = create<StoreState>()((set, get) => {
         return
       }
 
+      // CPU decides: if allPlaced, may choose to bid instead of placing
+      let shouldBid = false
+      if (placed && hasHand) {
+        // Decide stochastically based on difficulty
+        const bidChance = cpuDifficulty === 'hard' ? 0.5 : cpuDifficulty === 'normal' ? 0.35 : 0.2
+        shouldBid = Math.random() < bidChance
+      }
+
+      if (shouldBid) {
+        // CPU starts bidding
+        const totalDiscs = publicDiscs.filter(d => d.round_number === round).length
+        const minBid = gameState.highest_bid + 1
+        if (minBid <= totalDiscs) {
+          const next = getNextActivePlayer(players, currentPlayer.id, _foldedPlayerIds)
+          set(prev => ({
+            gameState: {
+              ...prev.gameState!,
+              phase: 'bid',
+              highest_bid: minBid,
+              highest_bidder_id: currentPlayer.id,
+              current_player_id: next?.id ?? null,
+              updated_at: ts(),
+            },
+            _foldedPlayerIds: [],
+          }))
+          await processCpuTurns()
+          return
+        }
+      }
+
       const discType = await cpuDecidePlace(currentPlayer, gameState, cpuDifficulty)
       const position = publicDiscs.filter(
-        d => d.player_id === currentPlayer.id && d.round_number === round
+        d => d.player_id === currentPlayer.id && d.round_number === round,
       ).length + 1
 
       const realDisc: PlacedDisc = {
@@ -93,7 +216,6 @@ export const useGameStore = create<StoreState>()((set, get) => {
         flipped_by: null,
         created_at: ts(),
       }
-      // Mask disc_type in the public view
       const maskedDisc: PlacedDisc = { ...realDisc, disc_type: 'flower' }
 
       const updatedPlayers = players.map(p =>
@@ -101,10 +223,31 @@ export const useGameStore = create<StoreState>()((set, get) => {
           ...p,
           flower_count: discType === 'flower' ? p.flower_count - 1 : p.flower_count,
           skull_count:  discType === 'skull'  ? p.skull_count  - 1 : p.skull_count,
-        }
+        },
       )
-      const next = getNextActivePlayer(updatedPlayers, currentPlayer.id)
 
+      // Check if all hands now empty → force bid
+      if (allHandsEmpty(updatedPlayers)) {
+        const firstActive = [...updatedPlayers]
+          .filter(p => !p.is_eliminated)
+          .sort((a, b) => a.seat_order - b.seat_order)[0]
+        set(prev => ({
+          players: updatedPlayers,
+          publicDiscs: [...prev.publicDiscs, maskedDisc],
+          _cpuDiscs: [...prev._cpuDiscs, realDisc],
+          gameState: {
+            ...prev.gameState!,
+            phase: 'bid',
+            current_player_id: firstActive?.id ?? null,
+            updated_at: ts(),
+          },
+          _foldedPlayerIds: [],
+        }))
+        await processCpuTurns()
+        return
+      }
+
+      const next = getNextActivePlayer(updatedPlayers, currentPlayer.id)
       set(prev => ({
         players: updatedPlayers,
         publicDiscs: [...prev.publicDiscs, maskedDisc],
@@ -118,29 +261,46 @@ export const useGameStore = create<StoreState>()((set, get) => {
     // ── bid phase ────────────────────────────────────────────────────────────
     if (gameState.phase === 'bid') {
       const result = await cpuDecideBidOrFold(
-        currentPlayer, gameState, players, allReal, cpuDifficulty
+        currentPlayer, gameState, players, allReal, cpuDifficulty,
       )
       const activePlayers = players.filter(p => !p.is_eliminated)
+      const newFoldedIds = result.action === 'fold'
+        ? [..._foldedPlayerIds, currentPlayer.id]
+        : _foldedPlayerIds
+
+      // Challenge starts when only one non-folded player remains (the highest bidder)
+      const nonFolded = activePlayers.filter(p => !newFoldedIds.includes(p.id))
+      const isChallenge = nonFolded.length <= 1
 
       if (result.action === 'fold') {
-        const newPassCount = gameState.pass_count + 1
-        const isChallenge = newPassCount >= activePlayers.length - 1
-        const next = isChallenge
-          ? players.find(p => p.id === gameState.highest_bidder_id) ?? null
-          : getNextActivePlayer(players, currentPlayer.id)
-
-        set(prev => ({
-          gameState: {
-            ...prev.gameState!,
-            pass_count: newPassCount,
-            phase: isChallenge ? 'flip' : 'bid',
-            current_player_id: next?.id ?? null,
-            updated_at: ts(),
-          },
-        }))
-        await processCpuTurns()
+        if (isChallenge) {
+          const challenger = players.find(p => p.id === gameState.highest_bidder_id) ?? null
+          set(prev => ({
+            gameState: {
+              ...prev.gameState!,
+              pass_count: prev.gameState!.pass_count + 1,
+              phase: 'flip',
+              current_player_id: challenger?.id ?? null,
+              updated_at: ts(),
+            },
+            _foldedPlayerIds: newFoldedIds,
+          }))
+          await processCpuTurns()
+        } else {
+          const next = getNextActivePlayer(players, currentPlayer.id, newFoldedIds)
+          set(prev => ({
+            gameState: {
+              ...prev.gameState!,
+              pass_count: prev.gameState!.pass_count + 1,
+              current_player_id: next?.id ?? null,
+              updated_at: ts(),
+            },
+            _foldedPlayerIds: newFoldedIds,
+          }))
+          await processCpuTurns()
+        }
       } else {
-        const next = getNextActivePlayer(players, currentPlayer.id)
+        const next = getNextActivePlayer(players, currentPlayer.id, _foldedPlayerIds)
         set(prev => ({
           gameState: {
             ...prev.gameState!,
@@ -168,7 +328,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
         players,
         allReal.filter(d => d.round_number === round),
         alreadyFlipped,
-        cpuDifficulty
+        cpuDifficulty,
       )
       if (!targetId) return
 
@@ -176,29 +336,68 @@ export const useGameStore = create<StoreState>()((set, get) => {
       if (!realDisc) return
 
       const newFlipCount = gameState.flip_count + 1
+
       set(prev => ({
         publicDiscs: prev.publicDiscs.map(d =>
           d.id === targetId
             ? { ...d, disc_type: realDisc.disc_type, is_flipped: true, flipped_by: currentPlayer.id }
-            : d
+            : d,
         ),
         _cpuDiscs: prev._cpuDiscs.map(d =>
-          d.id === targetId ? { ...d, is_flipped: true, flipped_by: currentPlayer.id } : d
+          d.id === targetId ? { ...d, is_flipped: true, flipped_by: currentPlayer.id } : d,
         ),
         myDiscs: prev.myDiscs.map(d =>
-          d.id === targetId ? { ...d, is_flipped: true, flipped_by: currentPlayer.id } : d
+          d.id === targetId ? { ...d, is_flipped: true, flipped_by: currentPlayer.id } : d,
         ),
         gameState: { ...prev.gameState!, flip_count: newFlipCount, updated_at: ts() },
       }))
 
-      // Stop if skull hit or bid fulfilled – UI handles the result display
-      if (realDisc.disc_type === 'skull' || newFlipCount >= gameState.highest_bid) return
+      if (realDisc.disc_type === 'skull') {
+        // CPU challenger hit a skull — lose a random card
+        const freshState = get()
+        const updatedPlayers = freshState.players.map(p => {
+          if (p.id !== currentPlayer.id) return p
+          const after = loseRandomCard(p)
+          return { ...after, is_eliminated: (after.flower_count + after.skull_count) === 0 }
+        })
+        const winner = getWinner(updatedPlayers)
+        set({
+          players: updatedPlayers,
+          gameState: winner
+            ? { ...freshState.gameState!, phase: 'place', updated_at: ts() }
+            : freshState.gameState,
+        })
+        if (!winner) {
+          const starterId = updatedPlayers.find(p => p.id === realDisc.player_id)?.is_eliminated
+            ? getNextActivePlayer(updatedPlayers, realDisc.player_id)?.id ?? currentPlayer.id
+            : realDisc.player_id
+          startNextRound(starterId, updatedPlayers, freshState.room!, freshState.gameState!)
+          await processCpuTurns()
+        }
+        return
+      }
+
+      if (newFlipCount >= gameState.highest_bid) {
+        // CPU challenge succeeded
+        const freshState = get()
+        const updatedPlayers = freshState.players.map(p =>
+          p.id !== currentPlayer.id ? p : { ...p, win_count: p.win_count + 1 },
+        )
+        const winner = getWinner(updatedPlayers)
+        set({ players: updatedPlayers })
+        if (!winner) {
+          startNextRound(currentPlayer.id, updatedPlayers, freshState.room!, freshState.gameState!)
+          await processCpuTurns()
+        }
+        return
+      }
+
       await processCpuTurns()
     }
   }
 
   return {
-    // ── Initial state ──────────────────────────────────────────────────────
+    // ── Initial state ─────────────────────────────────────────────────────────
     room: null,
     players: [],
     gameState: null,
@@ -209,11 +408,13 @@ export const useGameStore = create<StoreState>()((set, get) => {
     error: null,
     isCpuGame: false,
     cpuDifficulty: 'normal',
+    isReconnecting: false,
     _subscription: null,
     _myPlayerId: null,
     _cpuDiscs: [],
+    _foldedPlayerIds: [],
 
-    // ── createRoom ─────────────────────────────────────────────────────────
+    // ── createRoom ────────────────────────────────────────────────────────────
     createRoom: async (playerName, maxPlayers) => {
       set({ isLoading: true, error: null })
       try {
@@ -243,7 +444,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
       }
     },
 
-    // ── joinRoom ───────────────────────────────────────────────────────────
+    // ── joinRoom ──────────────────────────────────────────────────────────────
     joinRoom: async (roomCode, playerName) => {
       set({ isLoading: true, error: null })
       try {
@@ -258,6 +459,13 @@ export const useGameStore = create<StoreState>()((set, get) => {
           .from('players').select().eq('room_id', room.id)
         if (existErr) throw existErr
         if (existing.length >= room.max_players) throw new Error('ルームが満員です')
+
+        // Rejoin if session already has a player in this room
+        const rejoining = existing.find(p => p.session_id === sessionId)
+        if (rejoining) {
+          set({ room, players: existing, _myPlayerId: rejoining.id, isLoading: false })
+          return
+        }
 
         const seatOrder = existing.length + 1
         const color = PLAYER_COLORS[(seatOrder - 1) % PLAYER_COLORS.length]
@@ -277,7 +485,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
       }
     },
 
-    // ── startGame ──────────────────────────────────────────────────────────
+    // ── startGame ─────────────────────────────────────────────────────────────
     startGame: async () => {
       set({ isLoading: true, error: null })
       try {
@@ -307,15 +515,15 @@ export const useGameStore = create<StoreState>()((set, get) => {
       }
     },
 
-    // ── placeDisc ──────────────────────────────────────────────────────────
+    // ── placeDisc ─────────────────────────────────────────────────────────────
     placeDisc: async (discType) => {
-      const { room, gameState, players, sessionId, isCpuGame, myDiscs, publicDiscs } = get()
+      const { room, gameState, players, sessionId, isCpuGame, myDiscs, publicDiscs, _foldedPlayerIds } = get()
       const myPlayer = players.find(p => p.session_id === sessionId)
       if (!myPlayer || !gameState || !room) return
 
       const round = gameState.round_number
       const position = publicDiscs.filter(
-        d => d.player_id === myPlayer.id && d.round_number === round
+        d => d.player_id === myPlayer.id && d.round_number === round,
       ).length + 1
 
       if (isCpuGame) {
@@ -335,12 +543,35 @@ export const useGameStore = create<StoreState>()((set, get) => {
             ...p,
             flower_count: discType === 'flower' ? p.flower_count - 1 : p.flower_count,
             skull_count:  discType === 'skull'  ? p.skull_count  - 1 : p.skull_count,
-          }
+          },
         )
+        const newPublicDiscs = [...publicDiscs, newDisc]
+
+        // Force bid if all hands empty
+        if (allHandsEmpty(updatedPlayers)) {
+          const firstActive = [...updatedPlayers]
+            .filter(p => !p.is_eliminated)
+            .sort((a, b) => a.seat_order - b.seat_order)[0]
+          set({
+            myDiscs: [...myDiscs, newDisc],
+            publicDiscs: newPublicDiscs,
+            players: updatedPlayers,
+            gameState: {
+              ...gameState,
+              phase: 'bid',
+              current_player_id: firstActive?.id ?? null,
+              updated_at: ts(),
+            },
+            _foldedPlayerIds: [],
+          })
+          await processCpuTurns()
+          return
+        }
+
         const next = getNextActivePlayer(updatedPlayers, myPlayer.id)
         set({
           myDiscs: [...myDiscs, newDisc],
-          publicDiscs: [...publicDiscs, newDisc], // own disc: real type visible
+          publicDiscs: newPublicDiscs,
           players: updatedPlayers,
           gameState: { ...gameState, current_player_id: next?.id ?? null, updated_at: ts() },
         })
@@ -348,6 +579,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
         return
       }
 
+      // Online
       set({ isLoading: true })
       try {
         await supabase.from('placed_discs').insert({
@@ -359,23 +591,41 @@ export const useGameStore = create<StoreState>()((set, get) => {
           skull_count:  discType === 'skull'  ? myPlayer.skull_count  - 1 : myPlayer.skull_count,
         }).eq('id', myPlayer.id)
 
-        const next = getNextActivePlayer(players, myPlayer.id)
-        await supabase.from('game_states').update({
-          current_player_id: next?.id ?? null, updated_at: ts(),
-        }).eq('id', gameState.id)
-        set({ isLoading: false })
+        const updatedPlayers = players.map(p =>
+          p.id !== myPlayer.id ? p : {
+            ...p,
+            flower_count: discType === 'flower' ? p.flower_count - 1 : p.flower_count,
+            skull_count:  discType === 'skull'  ? p.skull_count  - 1 : p.skull_count,
+          },
+        )
+        if (allHandsEmpty(updatedPlayers)) {
+          const firstActive = [...updatedPlayers]
+            .filter(p => !p.is_eliminated)
+            .sort((a, b) => a.seat_order - b.seat_order)[0]
+          await supabase.from('game_states').update({
+            phase: 'bid',
+            current_player_id: firstActive?.id ?? null,
+            updated_at: ts(),
+          }).eq('id', gameState.id)
+        } else {
+          const next = getNextActivePlayer(updatedPlayers, myPlayer.id)
+          await supabase.from('game_states').update({
+            current_player_id: next?.id ?? null, updated_at: ts(),
+          }).eq('id', gameState.id)
+        }
+        set({ isLoading: false, _foldedPlayerIds })
       } catch (e) {
         set({ error: String(e), isLoading: false })
       }
     },
 
-    // ── placeBid ───────────────────────────────────────────────────────────
+    // ── placeBid ──────────────────────────────────────────────────────────────
     placeBid: async (amount) => {
-      const { room, gameState, players, sessionId, isCpuGame } = get()
+      const { room, gameState, players, sessionId, isCpuGame, _foldedPlayerIds } = get()
       const myPlayer = players.find(p => p.session_id === sessionId)
       if (!myPlayer || !gameState || !room) return
 
-      const next = getNextActivePlayer(players, myPlayer.id)
+      const next = getNextActivePlayer(players, myPlayer.id, _foldedPlayerIds)
       const updates = {
         phase: 'bid' as const,
         highest_bid: amount,
@@ -385,7 +635,10 @@ export const useGameStore = create<StoreState>()((set, get) => {
       }
 
       if (isCpuGame) {
-        set(s => ({ gameState: { ...s.gameState!, ...updates } }))
+        set(s => ({
+          gameState: { ...s.gameState!, ...updates },
+          _foldedPlayerIds: [],
+        }))
         await processCpuTurns()
         return
       }
@@ -394,49 +647,74 @@ export const useGameStore = create<StoreState>()((set, get) => {
       try {
         const { error } = await supabase.from('game_states').update(updates).eq('id', gameState.id)
         if (error) throw error
-        set({ isLoading: false })
+        set({ isLoading: false, _foldedPlayerIds: [] })
       } catch (e) {
         set({ error: String(e), isLoading: false })
       }
     },
 
-    // ── fold ───────────────────────────────────────────────────────────────
+    // ── fold ──────────────────────────────────────────────────────────────────
     fold: async () => {
-      const { room, gameState, players, sessionId, isCpuGame } = get()
+      const { room, gameState, players, sessionId, isCpuGame, _foldedPlayerIds } = get()
       const myPlayer = players.find(p => p.session_id === sessionId)
       if (!myPlayer || !gameState || !room) return
 
+      const newFoldedIds = [..._foldedPlayerIds, myPlayer.id]
       const activePlayers = players.filter(p => !p.is_eliminated)
-      const newPassCount = gameState.pass_count + 1
-      const isChallenge = newPassCount >= activePlayers.length - 1
-      const next = isChallenge
-        ? players.find(p => p.id === gameState.highest_bidder_id) ?? null
-        : getNextActivePlayer(players, myPlayer.id)
-
-      const updates = {
-        pass_count: newPassCount,
-        phase: (isChallenge ? 'flip' : gameState.phase) as 'bid' | 'flip',
-        current_player_id: next?.id ?? null,
-        updated_at: ts(),
-      }
+      const nonFolded = activePlayers.filter(p => !newFoldedIds.includes(p.id))
+      const isChallenge = nonFolded.length <= 1
 
       if (isCpuGame) {
-        set(s => ({ gameState: { ...s.gameState!, ...updates } }))
-        await processCpuTurns()
+        if (isChallenge) {
+          const challenger = players.find(p => p.id === gameState.highest_bidder_id) ?? null
+          set(s => ({
+            gameState: {
+              ...s.gameState!,
+              pass_count: s.gameState!.pass_count + 1,
+              phase: 'flip',
+              current_player_id: challenger?.id ?? null,
+              updated_at: ts(),
+            },
+            _foldedPlayerIds: newFoldedIds,
+          }))
+          await processCpuTurns()
+        } else {
+          const next = getNextActivePlayer(players, myPlayer.id, newFoldedIds)
+          set(s => ({
+            gameState: {
+              ...s.gameState!,
+              pass_count: s.gameState!.pass_count + 1,
+              current_player_id: next?.id ?? null,
+              updated_at: ts(),
+            },
+            _foldedPlayerIds: newFoldedIds,
+          }))
+          await processCpuTurns()
+        }
         return
       }
 
       set({ isLoading: true })
       try {
+        const next = isChallenge
+          ? players.find(p => p.id === gameState.highest_bidder_id) ?? null
+          : getNextActivePlayer(players, myPlayer.id, newFoldedIds)
+
+        const updates = {
+          pass_count: gameState.pass_count + 1,
+          phase: (isChallenge ? 'flip' : gameState.phase) as 'bid' | 'flip',
+          current_player_id: next?.id ?? null,
+          updated_at: ts(),
+        }
         const { error } = await supabase.from('game_states').update(updates).eq('id', gameState.id)
         if (error) throw error
-        set({ isLoading: false })
+        set({ isLoading: false, _foldedPlayerIds: newFoldedIds })
       } catch (e) {
         set({ error: String(e), isLoading: false })
       }
     },
 
-    // ── flipDisc ───────────────────────────────────────────────────────────
+    // ── flipDisc ──────────────────────────────────────────────────────────────
     flipDisc: async (discId) => {
       const { room, gameState, players, sessionId, isCpuGame, myDiscs, _cpuDiscs } = get()
       const myPlayer = players.find(p => p.session_id === sessionId)
@@ -445,7 +723,6 @@ export const useGameStore = create<StoreState>()((set, get) => {
       const newFlipCount = gameState.flip_count + 1
 
       if (isCpuGame) {
-        // Look up the true disc_type from the real-disc stores
         const realDisc = [...myDiscs, ..._cpuDiscs].find(d => d.id === discId)
         const realType = realDisc?.disc_type ?? 'flower'
 
@@ -453,19 +730,22 @@ export const useGameStore = create<StoreState>()((set, get) => {
           publicDiscs: s.publicDiscs.map(d =>
             d.id === discId
               ? { ...d, disc_type: realType, is_flipped: true, flipped_by: myPlayer.id }
-              : d
+              : d,
           ),
           myDiscs: s.myDiscs.map(d =>
-            d.id === discId ? { ...d, is_flipped: true, flipped_by: myPlayer.id } : d
+            d.id === discId ? { ...d, is_flipped: true, flipped_by: myPlayer.id } : d,
           ),
           _cpuDiscs: s._cpuDiscs.map(d =>
-            d.id === discId ? { ...d, is_flipped: true, flipped_by: myPlayer.id } : d
+            d.id === discId ? { ...d, is_flipped: true, flipped_by: myPlayer.id } : d,
           ),
           gameState: { ...s.gameState!, flip_count: newFlipCount, updated_at: ts() },
         }))
-        return // skull hit or success handled by UI
+
+        // UI reads the flipped disc to show skull/success modal; don't process here for human turns
+        return
       }
 
+      // Online
       set({ isLoading: true })
       try {
         await supabase.from('placed_discs').update({
@@ -480,7 +760,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
       }
     },
 
-    // ── startCpuGame ───────────────────────────────────────────────────────
+    // ── startCpuGame ──────────────────────────────────────────────────────────
     startCpuGame: async (playerName, cpuCount, difficulty) => {
       set({ isLoading: true, error: null })
       const sessionId = get().sessionId
@@ -538,6 +818,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
         myDiscs: [],
         publicDiscs: [],
         _cpuDiscs: [],
+        _foldedPlayerIds: [],
         isCpuGame: true,
         cpuDifficulty: difficulty as 'easy' | 'normal' | 'hard',
         _myPlayerId: humanId,
@@ -547,13 +828,14 @@ export const useGameStore = create<StoreState>()((set, get) => {
       await processCpuTurns()
     },
 
-    // ── subscribeToRoom ────────────────────────────────────────────────────
+    // ── subscribeToRoom ───────────────────────────────────────────────────────
     subscribeToRoom: (_roomCode) => {
       const { _subscription, room, _myPlayerId } = get()
       if (_subscription) supabase.removeChannel(_subscription)
       if (!room) return
 
       const roomId = room.id
+      let reconnectTimer: ReturnType<typeof setTimeout> | null = null
 
       const channel = supabase
         .channel(`room:${roomId}`)
@@ -570,7 +852,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
           } else if (payload.eventType === 'UPDATE') {
             set(s => ({
               players: s.players.map(p =>
-                p.id === (payload.new as Player).id ? payload.new as Player : p
+                p.id === (payload.new as Player).id ? payload.new as Player : p,
               ),
             }))
           }
@@ -586,7 +868,6 @@ export const useGameStore = create<StoreState>()((set, get) => {
           if (payload.eventType === 'DELETE') return
           const disc = payload.new as PlacedDisc
           const isOwn = disc.player_id === _myPlayerId
-          // Mask disc_type for other players' unflipped discs
           const publicDisc: PlacedDisc = isOwn || disc.is_flipped
             ? disc
             : { ...disc, disc_type: 'flower' }
@@ -603,12 +884,29 @@ export const useGameStore = create<StoreState>()((set, get) => {
             }))
           }
         })
+        .on('system', {}, evt => {
+          if (evt.extension === 'postgres_changes') {
+            if (evt.status === 'SUBSCRIBED') {
+              if (reconnectTimer) clearTimeout(reconnectTimer)
+              set({ isReconnecting: false })
+            } else if (evt.status === 'CHANNEL_ERROR' || evt.status === 'TIMED_OUT') {
+              set({ isReconnecting: true })
+              reconnectTimer = setTimeout(() => {
+                const s = get()
+                if (s._subscription) {
+                  supabase.removeChannel(s._subscription)
+                  s.subscribeToRoom(_roomCode)
+                }
+              }, 3000)
+            }
+          }
+        })
         .subscribe()
 
       set({ _subscription: channel })
     },
 
-    // ── unsubscribeFromRoom ────────────────────────────────────────────────
+    // ── unsubscribeFromRoom ───────────────────────────────────────────────────
     unsubscribeFromRoom: () => {
       const channel = get()._subscription
       if (channel) {
@@ -617,7 +915,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
       }
     },
 
-    // ── resetGame ─────────────────────────────────────────────────────────
+    // ── resetGame ─────────────────────────────────────────────────────────────
     resetGame: () => {
       const channel = get()._subscription
       if (channel) supabase.removeChannel(channel)
@@ -628,10 +926,12 @@ export const useGameStore = create<StoreState>()((set, get) => {
         myDiscs: [],
         publicDiscs: [],
         _cpuDiscs: [],
+        _foldedPlayerIds: [],
         isLoading: false,
         error: null,
         isCpuGame: false,
         cpuDifficulty: 'normal',
+        isReconnecting: false,
         _subscription: null,
         _myPlayerId: null,
       })
