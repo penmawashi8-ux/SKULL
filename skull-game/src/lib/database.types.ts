@@ -3,7 +3,7 @@ export type GamePhase = 'place' | 'bid' | 'flip'
 export type DiscType = 'flower' | 'skull'
 export type PlayerColor = 'red' | 'blue' | 'green' | 'yellow' | 'purple' | 'pink'
 
-export interface Database {
+export type Database = {
   public: {
     Tables: {
       rooms: {
@@ -27,7 +27,17 @@ export interface Database {
           created_at?: string
           updated_at?: string
         }
-        Update: Partial<Database['public']['Tables']['rooms']['Insert']>
+        Update: {
+          id?: string
+          room_code?: string
+          status?: RoomStatus
+          host_id?: string
+          max_players?: number
+          current_round?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       players: {
         Row: {
@@ -58,7 +68,21 @@ export interface Database {
           is_eliminated?: boolean
           created_at?: string
         }
-        Update: Partial<Database['public']['Tables']['players']['Insert']>
+        Update: {
+          id?: string
+          room_id?: string
+          player_name?: string
+          player_color?: PlayerColor
+          seat_order?: number
+          is_cpu?: boolean
+          session_id?: string
+          flower_count?: number
+          skull_count?: number
+          win_count?: number
+          is_eliminated?: boolean
+          created_at?: string
+        }
+        Relationships: []
       }
       game_states: {
         Row: {
@@ -87,7 +111,20 @@ export interface Database {
           created_at?: string
           updated_at?: string
         }
-        Update: Partial<Database['public']['Tables']['game_states']['Insert']>
+        Update: {
+          id?: string
+          room_id?: string
+          round_number?: number
+          phase?: GamePhase
+          current_player_id?: string | null
+          highest_bid?: number
+          highest_bidder_id?: string | null
+          pass_count?: number
+          flip_count?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       placed_discs: {
         Row: {
@@ -112,8 +149,23 @@ export interface Database {
           flipped_by?: string | null
           created_at?: string
         }
-        Update: Partial<Database['public']['Tables']['placed_discs']['Insert']>
+        Update: {
+          id?: string
+          room_id?: string
+          player_id?: string
+          round_number?: number
+          disc_type?: DiscType
+          position?: number
+          is_flipped?: boolean
+          flipped_by?: string | null
+          created_at?: string
+        }
+        Relationships: []
       }
     }
+    Views: Record<string, never>
+    Functions: Record<string, never>
+    Enums: Record<string, never>
+    CompositeTypes: Record<string, never>
   }
 }
