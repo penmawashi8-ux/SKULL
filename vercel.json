@@ -1,7 +1,7 @@
 {
   "rootDirectory": "skull-game",
   "buildCommand": "npm run build",
-  "outputDirectory": "skull-game/dist",
+  "outputDirectory": "dist",
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
   ]
