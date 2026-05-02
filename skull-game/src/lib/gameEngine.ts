@@ -96,7 +96,11 @@ export function shouldAdvanceToNextRound(
 }
 
 export function getWinner(players: Player[]): Player | null {
-  return players.find((p) => p.win_count >= 2) ?? null
+  const byWins = players.find((p) => p.win_count >= 2)
+  if (byWins) return byWins
+  const active = players.filter((p) => !p.is_eliminated)
+  if (active.length === 1 && players.length > 1) return active[0]
+  return null
 }
 
 export function getTotalDiscsInPlay(

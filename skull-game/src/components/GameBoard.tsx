@@ -5,7 +5,7 @@ import { PlayerCard } from './PlayerCard'
 import { BidController } from './BidController'
 import { ActionLog } from './ActionLog'
 import { ResultModal } from './ResultModal'
-import { canFold, getTotalDiscsInPlay } from '../lib/gameEngine'
+import { canFold, getTotalDiscsInPlay, getWinner } from '../lib/gameEngine'
 import type { LogEntry } from './ActionLog'
 import type { Player, PlacedDisc } from '../types/game'
 
@@ -57,6 +57,18 @@ export function GameBoard({ onGameEnd }: Props) {
   useEffect(() => {
     if (_cpuLog) addLog(_cpuLog.message, _cpuLog.type)
   }, [_cpuLog?.id])
+
+  // Detect CPU win (by 2 rounds or last-player-standing) and show modal
+  useEffect(() => {
+    if (!gameState || modal.show) return
+    const winner = getWinner(players)
+    if (!winner) return
+    if (winner.session_id === sessionId) {
+      setModal({ show: true, type: 'win', challenger: winner })
+    } else {
+      setModal({ show: true, type: 'lose', challenger: winner })
+    }
+  }, [players, modal.show])
 
   const handlePlaceFlower = useCallback(async () => {
     await placeDisc('flower')

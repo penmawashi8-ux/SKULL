@@ -82,18 +82,6 @@ export const useGameStore = create<StoreState>()((set, get) => {
     return players.filter(p => !p.is_eliminated).every(p => p.flower_count + p.skull_count === 0)
   }
 
-  // Remove one random card from a player's hand. Returns updated player.
-  function loseRandomCard(player: Player): Player {
-    const total = player.flower_count + player.skull_count
-    if (total === 0) return player
-    const loseSkull = player.skull_count > 0 && Math.random() < player.skull_count / total
-    return {
-      ...player,
-      flower_count: loseSkull ? player.flower_count : Math.max(0, player.flower_count - 1),
-      skull_count:  loseSkull ? Math.max(0, player.skull_count - 1) : player.skull_count,
-    }
-  }
-
   // ── startNextRound (CPU game) ─────────────────────────────────────────────
   function startNextRound(
     startingPlayerId: string,
@@ -377,19 +365,18 @@ export const useGameStore = create<StoreState>()((set, get) => {
       if (realDisc.disc_type === 'skull') {
         // CPU challenger hit a skull — lose a random card permanently
         const freshState = get()
-        const afterLoss = loseRandomCard(currentPlayer)
-        const lostFlower = afterLoss.flower_count < currentPlayer.flower_count
         const currentPerm = freshState._permCards[currentPlayer.id] ?? { flowers: 3, skulls: 1 }
-        const updatedPermCards = {
-          ...freshState._permCards,
-          [currentPlayer.id]: {
-            flowers: lostFlower ? Math.max(0, currentPerm.flowers - 1) : currentPerm.flowers,
-            skulls:  !lostFlower ? Math.max(0, currentPerm.skulls - 1) : currentPerm.skulls,
-          },
+        const permTotal = currentPerm.flowers + currentPerm.skulls
+        const loseSkull = permTotal > 0 && currentPerm.skulls > 0 && Math.random() < currentPerm.skulls / permTotal
+        const newPerm = {
+          flowers: loseSkull ? currentPerm.flowers : Math.max(0, currentPerm.flowers - 1),
+          skulls:  loseSkull ? Math.max(0, currentPerm.skulls - 1) : currentPerm.skulls,
         }
+        const isEliminated = newPerm.flowers + newPerm.skulls === 0
+        const updatedPermCards = { ...freshState._permCards, [currentPlayer.id]: newPerm }
         const updatedPlayers = freshState.players.map(p => {
           if (p.id !== currentPlayer.id) return p
-          return { ...afterLoss, is_eliminated: (afterLoss.flower_count + afterLoss.skull_count) === 0 }
+          return { ...p, flower_count: newPerm.flowers, skull_count: newPerm.skulls, is_eliminated: isEliminated }
         })
         const winner = getWinner(updatedPlayers)
         set({
@@ -571,19 +558,17 @@ export const useGameStore = create<StoreState>()((set, get) => {
         if (realDisc.disc_type === 'skull') {
           // CPU hit a skull — lose a random card
           const freshS = get()
-          const afterLoss = loseRandomCard(cpuPlayer)
-          const lostFlower = afterLoss.flower_count < cpuPlayer.flower_count
           const currentPerm = freshS._permCards[cpuPlayer.id] ?? { flowers: 3, skulls: 1 }
-          const updatedPerm = {
-            ...freshS._permCards,
-            [cpuPlayer.id]: {
-              flowers: lostFlower ? Math.max(0, currentPerm.flowers - 1) : currentPerm.flowers,
-              skulls:  !lostFlower ? Math.max(0, currentPerm.skulls - 1) : currentPerm.skulls,
-            },
+          const permTotal = currentPerm.flowers + currentPerm.skulls
+          const loseSkull = permTotal > 0 && currentPerm.skulls > 0 && Math.random() < currentPerm.skulls / permTotal
+          const newPerm = {
+            flowers: loseSkull ? currentPerm.flowers : Math.max(0, currentPerm.flowers - 1),
+            skulls:  loseSkull ? Math.max(0, currentPerm.skulls - 1) : currentPerm.skulls,
           }
-          const isEliminated = afterLoss.flower_count + afterLoss.skull_count === 0
-          await supabase.from('players').update({ flower_count: afterLoss.flower_count, skull_count: afterLoss.skull_count, is_eliminated: isEliminated }).eq('id', cpuPlayer.id)
-          const updatedPlayers = freshS.players.map(p => p.id !== cpuPlayer.id ? p : { ...afterLoss, is_eliminated: isEliminated })
+          const isEliminated = newPerm.flowers + newPerm.skulls === 0
+          const updatedPerm = { ...freshS._permCards, [cpuPlayer.id]: newPerm }
+          await supabase.from('players').update({ flower_count: newPerm.flowers, skull_count: newPerm.skulls, is_eliminated: isEliminated }).eq('id', cpuPlayer.id)
+          const updatedPlayers = freshS.players.map(p => p.id !== cpuPlayer.id ? p : { ...p, flower_count: newPerm.flowers, skull_count: newPerm.skulls, is_eliminated: isEliminated })
           set({ players: updatedPlayers, _permCards: updatedPerm })
           const winner = getWinner(updatedPlayers)
           if (!winner) {
@@ -1239,19 +1224,18 @@ export const useGameStore = create<StoreState>()((set, get) => {
       } else {
         // Challenge loss: remove one random card permanently
         const { _permCards } = get()
-        const afterLoss = loseRandomCard(myPlayer)
-        const lostFlower = afterLoss.flower_count < myPlayer.flower_count
         const currentPerm = _permCards[myPlayer.id] ?? { flowers: 3, skulls: 1 }
-        const updatedPermCards = {
-          ..._permCards,
-          [myPlayer.id]: {
-            flowers: lostFlower ? Math.max(0, currentPerm.flowers - 1) : currentPerm.flowers,
-            skulls:  !lostFlower ? Math.max(0, currentPerm.skulls - 1) : currentPerm.skulls,
-          },
+        const permTotal = currentPerm.flowers + currentPerm.skulls
+        const loseSkull = permTotal > 0 && currentPerm.skulls > 0 && Math.random() < currentPerm.skulls / permTotal
+        const newPerm = {
+          flowers: loseSkull ? currentPerm.flowers : Math.max(0, currentPerm.flowers - 1),
+          skulls:  loseSkull ? Math.max(0, currentPerm.skulls - 1) : currentPerm.skulls,
         }
+        const isEliminated = newPerm.flowers + newPerm.skulls === 0
+        const updatedPermCards = { ..._permCards, [myPlayer.id]: newPerm }
         const updatedPlayers = players.map(p => {
           if (p.id !== myPlayer.id) return p
-          return { ...afterLoss, is_eliminated: (afterLoss.flower_count + afterLoss.skull_count) === 0 }
+          return { ...p, flower_count: newPerm.flowers, skull_count: newPerm.skulls, is_eliminated: isEliminated }
         })
         set({ _permCards: updatedPermCards })
 
