@@ -354,6 +354,10 @@ export const useGameStore = create<StoreState>()((set, get) => {
 
       const newFlipCount = gameState.flip_count + 1
 
+      const flipLog = realDisc.disc_type === 'skull'
+        ? { id: crypto.randomUUID(), message: `💀 ${currentPlayer.player_name} がドクロを踏んだ！`, type: 'result' as const }
+        : { id: crypto.randomUUID(), message: `🌸 ${currentPlayer.player_name} がカードをめくった`, type: 'flip' as const }
+
       set(prev => ({
         publicDiscs: prev.publicDiscs.map(d =>
           d.id === targetId
@@ -367,6 +371,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
           d.id === targetId ? { ...d, is_flipped: true, flipped_by: currentPlayer.id } : d,
         ),
         gameState: { ...prev.gameState!, flip_count: newFlipCount, updated_at: ts() },
+        _cpuLog: flipLog,
       }))
 
       if (realDisc.disc_type === 'skull') {
@@ -393,11 +398,13 @@ export const useGameStore = create<StoreState>()((set, get) => {
           gameState: winner
             ? { ...freshState.gameState!, phase: 'place', updated_at: ts() }
             : freshState.gameState,
+          _cpuLog: { id: crypto.randomUUID(), message: `💀 ${currentPlayer.player_name} がドクロを踏んだ！カードを1枚失った`, type: 'result' },
         })
         if (!winner) {
           const starterId = updatedPlayers.find(p => p.id === realDisc.player_id)?.is_eliminated
             ? getNextActivePlayer(updatedPlayers, realDisc.player_id)?.id ?? currentPlayer.id
             : realDisc.player_id
+          await new Promise(r => setTimeout(r, 1500))  // let user read the skull result
           startNextRound(starterId, updatedPlayers, freshState.room!, freshState.gameState!)
           await processCpuTurns()
         }
@@ -411,8 +418,12 @@ export const useGameStore = create<StoreState>()((set, get) => {
           p.id !== currentPlayer.id ? p : { ...p, win_count: p.win_count + 1 },
         )
         const winner = getWinner(updatedPlayers)
-        set({ players: updatedPlayers })
+        set({
+          players: updatedPlayers,
+          _cpuLog: { id: crypto.randomUUID(), message: `🌸 ${currentPlayer.player_name} がチャレンジ成功！`, type: 'result' },
+        })
         if (!winner) {
+          await new Promise(r => setTimeout(r, 1500))  // let user read the success result
           startNextRound(currentPlayer.id, updatedPlayers, freshState.room!, freshState.gameState!)
           await processCpuTurns()
         }
