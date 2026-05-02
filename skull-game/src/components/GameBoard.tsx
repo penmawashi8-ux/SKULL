@@ -155,25 +155,9 @@ export function GameBoard({ onGameEnd }: Props) {
         </div>
       </header>
 
-      {/* ── Opponents ── */}
-      <div className="flex-shrink-0 px-2 pt-2 grid grid-cols-2 gap-1.5">
-        {otherPlayers.map(p => (
-          <PlayerCard
-            key={p.id}
-            player={p}
-            gameState={gameState}
-            discs={publicDiscs.filter(d => d.player_id === p.id && d.round_number === round)}
-            isCurrentTurn={gameState.current_player_id === p.id}
-            isMyTurnToFlip={isMyTurnToFlip && myUnflipped.length === 0}
-            challengerId={challengerId}
-            onFlip={handleFlip}
-            compact
-          />
-        ))}
-      </div>
-
-      {/* ── Guide text (flexible spacer) ── */}
-      <div className="flex-1 flex items-center justify-center px-4 min-h-0">
+      {/* ── Center: guide text + opponents ── */}
+      <div className="flex-1 flex flex-col justify-center px-2 gap-3 min-h-0">
+        {/* Guide text */}
         <AnimatePresence mode="wait">
           <motion.p
             key={getGuideText()}
@@ -185,6 +169,23 @@ export function GameBoard({ onGameEnd }: Props) {
             {getGuideText()}
           </motion.p>
         </AnimatePresence>
+
+        {/* Opponents */}
+        <div className="grid grid-cols-2 gap-1.5">
+          {otherPlayers.map(p => (
+            <PlayerCard
+              key={p.id}
+              player={p}
+              gameState={gameState}
+              discs={publicDiscs.filter(d => d.player_id === p.id && d.round_number === round)}
+              isCurrentTurn={gameState.current_player_id === p.id}
+              isMyTurnToFlip={isMyTurnToFlip && myUnflipped.length === 0}
+              challengerId={challengerId}
+              onFlip={handleFlip}
+              compact
+            />
+          ))}
+        </div>
       </div>
 
       {/* ── My area ── */}

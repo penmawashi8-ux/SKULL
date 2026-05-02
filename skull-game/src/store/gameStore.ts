@@ -48,6 +48,7 @@ export interface StoreState {
   _myPlayerId: string | null
   _cpuDiscs: PlacedDisc[]
   _foldedPlayerIds: string[]  // client-side fold tracking
+  _permCards: Record<string, { flowers: number; skulls: number }>  // permanent card totals
 
   createRoom: (playerName: string, maxPlayers: number) => Promise<string>
   joinRoom: (roomCode: string, playerName: string) => Promise<void>
@@ -107,14 +108,15 @@ export const useGameStore = create<StoreState>()((set, get) => {
       flip_count: 0,
       updated_at: ts(),
     }
-    // Reset hand counts for active (non-eliminated) players
-    const resetPlayers = playersIn.map(p =>
-      p.is_eliminated ? p : {
-        ...p,
-        flower_count: Math.min(3, p.flower_count + 3),
-        skull_count:  Math.min(1, p.skull_count  + 1),
-      }
-    )
+    // Restore hand to permanent totals (respects cards lost to skulls)
+    const { _permCards } = get()
+    const resetPlayers = playersIn.map(p => {
+      if (p.is_eliminated) return p
+      const perm = _permCards[p.id]
+      return perm
+        ? { ...p, flower_count: perm.flowers, skull_count: perm.skulls }
+        : { ...p, flower_count: Math.min(3, p.flower_count + 3), skull_count: Math.min(1, p.skull_count + 1) }
+    })
     set({
       gameState: newGs,
       players: resetPlayers,
@@ -354,16 +356,22 @@ export const useGameStore = create<StoreState>()((set, get) => {
       }))
 
       if (realDisc.disc_type === 'skull') {
-        // CPU challenger hit a skull — lose a random card
+        // CPU challenger hit a skull — lose a random card permanently
         const freshState = get()
         const updatedPlayers = freshState.players.map(p => {
           if (p.id !== currentPlayer.id) return p
           const after = loseRandomCard(p)
           return { ...after, is_eliminated: (after.flower_count + after.skull_count) === 0 }
         })
+        const lostCpu = updatedPlayers.find(p => p.id === currentPlayer.id)!
+        const updatedPermCards = {
+          ...freshState._permCards,
+          [currentPlayer.id]: { flowers: lostCpu.flower_count, skulls: lostCpu.skull_count },
+        }
         const winner = getWinner(updatedPlayers)
         set({
           players: updatedPlayers,
+          _permCards: updatedPermCards,
           gameState: winner
             ? { ...freshState.gameState!, phase: 'place', updated_at: ts() }
             : freshState.gameState,
@@ -414,6 +422,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
     _myPlayerId: null,
     _cpuDiscs: [],
     _foldedPlayerIds: [],
+    _permCards: {},
 
     // ── createRoom ────────────────────────────────────────────────────────────
     createRoom: async (playerName, maxPlayers) => {
@@ -812,6 +821,9 @@ export const useGameStore = create<StoreState>()((set, get) => {
         updated_at: ts(),
       }
 
+      const initPermCards: Record<string, { flowers: number; skulls: number }> = {}
+      for (const p of allPlayers) initPermCards[p.id] = { flowers: 3, skulls: 1 }
+
       set({
         room,
         players: allPlayers,
@@ -820,6 +832,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
         publicDiscs: [],
         _cpuDiscs: [],
         _foldedPlayerIds: [],
+        _permCards: initPermCards,
         isCpuGame: true,
         cpuDifficulty: difficulty as 'easy' | 'normal' | 'hard',
         _myPlayerId: humanId,
@@ -941,12 +954,21 @@ export const useGameStore = create<StoreState>()((set, get) => {
           set({ players: updatedPlayers })
         }
       } else {
-        // Challenge loss: remove one random card from my hand
+        // Challenge loss: remove one random card permanently
+        const { _permCards } = get()
         const updatedPlayers = players.map(p => {
           if (p.id !== myPlayer.id) return p
           const after = loseRandomCard(p)
           return { ...after, is_eliminated: (after.flower_count + after.skull_count) === 0 }
         })
+        // Update permanent card totals
+        const lostPlayer = updatedPlayers.find(p => p.id === myPlayer.id)!
+        const updatedPermCards = {
+          ..._permCards,
+          [myPlayer.id]: { flowers: lostPlayer.flower_count, skulls: lostPlayer.skull_count },
+        }
+        set({ _permCards: updatedPermCards })
+
         const winner = getWinner(updatedPlayers)
         if (winner) {
           set({ players: updatedPlayers })
@@ -1003,6 +1025,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
         publicDiscs: [],
         _cpuDiscs: [],
         _foldedPlayerIds: [],
+        _permCards: {},
         isLoading: false,
         error: null,
         isCpuGame: false,
