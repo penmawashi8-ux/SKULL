@@ -56,6 +56,7 @@ export interface StoreState {
   placeBid: (amount: number) => Promise<void>
   fold: () => Promise<void>
   flipDisc: (discId: string) => Promise<void>
+  advanceAfterChallenge: (result: 'win' | 'loss', skullOwnerId?: string) => Promise<void>
   startCpuGame: (playerName: string, cpuCount: number, difficulty: string) => Promise<void>
   subscribeToRoom: (roomCode: string) => void
   unsubscribeFromRoom: () => void
@@ -904,6 +905,81 @@ export const useGameStore = create<StoreState>()((set, get) => {
         .subscribe()
 
       set({ _subscription: channel })
+    },
+
+    // ── advanceAfterChallenge ─────────────────────────────────────────────────
+    // Called by UI after showing skull/success modal to human player.
+    advanceAfterChallenge: async (result, skullOwnerId) => {
+      const { players, gameState, room, isCpuGame, sessionId } = get()
+      const myPlayer = players.find(p => p.session_id === sessionId)
+      if (!myPlayer || !gameState || !room) return
+
+      if (result === 'win') {
+        const updatedPlayers = players.map(p =>
+          p.id !== myPlayer.id ? p : { ...p, win_count: p.win_count + 1 },
+        )
+        const winner = getWinner(updatedPlayers)
+        if (winner) {
+          set({ players: updatedPlayers })
+          return // GameBoard will redirect via resetGame
+        }
+        if (isCpuGame) {
+          startNextRound(myPlayer.id, updatedPlayers, room, gameState)
+          await processCpuTurns()
+        } else {
+          // Online: update DB
+          await supabase.from('players').update({ win_count: myPlayer.win_count + 1 }).eq('id', myPlayer.id)
+          const newRound = gameState.round_number + 1
+          await supabase.from('game_states').update({
+            round_number: newRound, phase: 'place',
+            current_player_id: myPlayer.id,
+            highest_bid: 0, highest_bidder_id: null,
+            pass_count: 0, flip_count: 0, updated_at: ts(),
+          }).eq('id', gameState.id)
+          await supabase.from('placed_discs')
+            .delete().eq('room_id', room.id).eq('round_number', gameState.round_number)
+          set({ players: updatedPlayers })
+        }
+      } else {
+        // Challenge loss: remove one random card from my hand
+        const updatedPlayers = players.map(p => {
+          if (p.id !== myPlayer.id) return p
+          const after = loseRandomCard(p)
+          return { ...after, is_eliminated: (after.flower_count + after.skull_count) === 0 }
+        })
+        const winner = getWinner(updatedPlayers)
+        if (winner) {
+          set({ players: updatedPlayers })
+          return
+        }
+        // Skull owner starts next round (if still alive), else fallback to next player
+        const skullOwner = players.find(p => p.id === skullOwnerId)
+        const starterId = skullOwner && !updatedPlayers.find(p => p.id === skullOwnerId)?.is_eliminated
+          ? skullOwnerId!
+          : getNextActivePlayer(updatedPlayers, myPlayer.id)?.id ?? myPlayer.id
+
+        if (isCpuGame) {
+          startNextRound(starterId, updatedPlayers, room, gameState)
+          await processCpuTurns()
+        } else {
+          const updatedMe = updatedPlayers.find(p => p.id === myPlayer.id)!
+          await supabase.from('players').update({
+            flower_count: updatedMe.flower_count,
+            skull_count: updatedMe.skull_count,
+            is_eliminated: updatedMe.is_eliminated,
+          }).eq('id', myPlayer.id)
+          const newRound = gameState.round_number + 1
+          await supabase.from('game_states').update({
+            round_number: newRound, phase: 'place',
+            current_player_id: starterId,
+            highest_bid: 0, highest_bidder_id: null,
+            pass_count: 0, flip_count: 0, updated_at: ts(),
+          }).eq('id', gameState.id)
+          await supabase.from('placed_discs')
+            .delete().eq('room_id', room.id).eq('round_number', gameState.round_number)
+          set({ players: updatedPlayers })
+        }
+      }
     },
 
     // ── unsubscribeFromRoom ───────────────────────────────────────────────────

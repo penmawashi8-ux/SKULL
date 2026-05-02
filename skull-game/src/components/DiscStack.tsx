@@ -1,3 +1,4 @@
+import { useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { PlacedDisc, Player } from '../types/game'
 
@@ -20,6 +21,7 @@ const COLOR_MAP: Record<string, string> = {
 }
 
 export function DiscStack({ player, discs, isFlipPhase, isMyTurnToFlip, myOwnStack, onFlip }: Props) {
+  const tappingRef = useRef(false)
   const count = discs.length
   const topDisc = [...discs].sort((a, b) => b.position - a.position)[0]
   const colorClass = COLOR_MAP[player.player_color] ?? COLOR_MAP.purple
@@ -27,7 +29,9 @@ export function DiscStack({ player, discs, isFlipPhase, isMyTurnToFlip, myOwnSta
 
   function handleTap() {
     if (!canTap || !topDisc || topDisc.is_flipped) return
-    // Find the topmost unflipped disc
+    if (tappingRef.current) return
+    tappingRef.current = true
+    setTimeout(() => { tappingRef.current = false }, 800)
     const unflipped = [...discs]
       .filter(d => !d.is_flipped)
       .sort((a, b) => b.position - a.position)
