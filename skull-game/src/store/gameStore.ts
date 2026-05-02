@@ -358,16 +358,20 @@ export const useGameStore = create<StoreState>()((set, get) => {
       if (realDisc.disc_type === 'skull') {
         // CPU challenger hit a skull — lose a random card permanently
         const freshState = get()
-        const updatedPlayers = freshState.players.map(p => {
-          if (p.id !== currentPlayer.id) return p
-          const after = loseRandomCard(p)
-          return { ...after, is_eliminated: (after.flower_count + after.skull_count) === 0 }
-        })
-        const lostCpu = updatedPlayers.find(p => p.id === currentPlayer.id)!
+        const afterLoss = loseRandomCard(currentPlayer)
+        const lostFlower = afterLoss.flower_count < currentPlayer.flower_count
+        const currentPerm = freshState._permCards[currentPlayer.id] ?? { flowers: 3, skulls: 1 }
         const updatedPermCards = {
           ...freshState._permCards,
-          [currentPlayer.id]: { flowers: lostCpu.flower_count, skulls: lostCpu.skull_count },
+          [currentPlayer.id]: {
+            flowers: lostFlower ? Math.max(0, currentPerm.flowers - 1) : currentPerm.flowers,
+            skulls:  !lostFlower ? Math.max(0, currentPerm.skulls - 1) : currentPerm.skulls,
+          },
         }
+        const updatedPlayers = freshState.players.map(p => {
+          if (p.id !== currentPlayer.id) return p
+          return { ...afterLoss, is_eliminated: (afterLoss.flower_count + afterLoss.skull_count) === 0 }
+        })
         const winner = getWinner(updatedPlayers)
         set({
           players: updatedPlayers,
@@ -956,17 +960,20 @@ export const useGameStore = create<StoreState>()((set, get) => {
       } else {
         // Challenge loss: remove one random card permanently
         const { _permCards } = get()
-        const updatedPlayers = players.map(p => {
-          if (p.id !== myPlayer.id) return p
-          const after = loseRandomCard(p)
-          return { ...after, is_eliminated: (after.flower_count + after.skull_count) === 0 }
-        })
-        // Update permanent card totals
-        const lostPlayer = updatedPlayers.find(p => p.id === myPlayer.id)!
+        const afterLoss = loseRandomCard(myPlayer)
+        const lostFlower = afterLoss.flower_count < myPlayer.flower_count
+        const currentPerm = _permCards[myPlayer.id] ?? { flowers: 3, skulls: 1 }
         const updatedPermCards = {
           ..._permCards,
-          [myPlayer.id]: { flowers: lostPlayer.flower_count, skulls: lostPlayer.skull_count },
+          [myPlayer.id]: {
+            flowers: lostFlower ? Math.max(0, currentPerm.flowers - 1) : currentPerm.flowers,
+            skulls:  !lostFlower ? Math.max(0, currentPerm.skulls - 1) : currentPerm.skulls,
+          },
         }
+        const updatedPlayers = players.map(p => {
+          if (p.id !== myPlayer.id) return p
+          return { ...afterLoss, is_eliminated: (afterLoss.flower_count + afterLoss.skull_count) === 0 }
+        })
         set({ _permCards: updatedPermCards })
 
         const winner = getWinner(updatedPlayers)

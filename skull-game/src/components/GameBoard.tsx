@@ -23,7 +23,7 @@ export function GameBoard({ onGameEnd }: Props) {
   const {
     room, players, gameState, myDiscs, publicDiscs,
     sessionId, isLoading, placeDisc, placeBid, fold, flipDisc,
-    advanceAfterChallenge, resetGame,
+    advanceAfterChallenge, resetGame, _foldedPlayerIds, _permCards,
   } = useGameStore()
 
   const isFlippingRef = useRef(false)
@@ -183,6 +183,8 @@ export function GameBoard({ onGameEnd }: Props) {
               challengerId={challengerId}
               onFlip={handleFlip}
               compact
+              hasFolded={_foldedPlayerIds.includes(p.id)}
+              permCards={_permCards[p.id]}
             />
           ))}
         </div>
