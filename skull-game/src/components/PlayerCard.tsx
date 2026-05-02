@@ -47,90 +47,117 @@ export function PlayerCard({
   const highestBid = gameState?.highest_bid ?? 0
   const isHighestBidder = gameState?.highest_bidder_id === player.id
   const phase = gameState?.phase ?? 'place'
-
-  // Total cards this player owns permanently
   const totalCards = permCards
     ? permCards.flowers + permCards.skulls
     : player.flower_count + player.skull_count + playerDiscs.length
 
+  if (compact) {
+    return (
+      <motion.div
+        className={`relative bg-gray-900/80 backdrop-blur rounded-xl border border-white/10 p-2
+          ${isCurrentTurn ? `ring-2 ${ringClass} shadow-lg` : ''}
+          ${player.is_eliminated || hasFolded ? 'opacity-50' : ''}
+        `}
+        animate={isCurrentTurn ? { scale: [1, 1.015, 1] } : { scale: 1 }}
+        transition={{ duration: 1.5, repeat: isCurrentTurn ? Infinity : 0 }}
+      >
+        {isCurrentTurn && (
+          <div className="absolute -top-2 left-1/2 -translate-x-1/2 bg-amber-400 text-black text-xs px-1.5 py-0.5 rounded-full font-bold whitespace-nowrap z-10">
+            ▼ 手番
+          </div>
+        )}
+
+        <div className="flex items-center gap-2">
+          {/* Left: info column */}
+          <div className="flex-1 min-w-0">
+            {/* Name */}
+            <div className="flex items-center gap-1 mb-0.5">
+              <span className={`w-2 h-2 rounded-full flex-shrink-0 ${dotClass}`} />
+              <span className="text-white text-xs font-medium truncate" style={{ fontFamily: 'Crimson Text, serif' }}>
+                {player.player_name}
+              </span>
+            </div>
+
+            {/* Stats row: wins + card count */}
+            <div className="flex items-center gap-1.5 mb-1">
+              <div className="flex gap-0.5">
+                {Array.from({ length: 2 }).map((_, i) => (
+                  <span key={i} className={`text-xs ${i < player.win_count ? 'opacity-100' : 'opacity-20'}`}>🌸</span>
+                ))}
+              </div>
+              <span className="text-white/60 text-xs bg-white/10 px-1.5 py-0.5 rounded-full">
+                🃏{totalCards}
+              </span>
+            </div>
+
+            {/* Status badge */}
+            {hasFolded ? (
+              <span className="text-xs bg-gray-700 text-white/60 px-1.5 py-0.5 rounded-full">パス</span>
+            ) : isHighestBidder && (phase === 'bid' || phase === 'flip') ? (
+              <span className="text-xs bg-amber-800 text-amber-200 px-1.5 py-0.5 rounded-full font-bold">
+                {highestBid}枚宣言
+              </span>
+            ) : isChallenger && phase === 'flip' ? (
+              <span className="text-xs bg-purple-800 text-purple-200 px-1.5 py-0.5 rounded-full">挑戦中</span>
+            ) : null}
+          </div>
+
+          {/* Right: disc stack */}
+          {!player.is_eliminated && (
+            <DiscStack
+              player={player}
+              discs={playerDiscs}
+              isFlipPhase={isFlipPhase}
+              isMyTurnToFlip={isMyTurnToFlip}
+              myOwnStack={myOwnStack}
+              onFlip={onFlip}
+            />
+          )}
+        </div>
+
+        {player.is_eliminated && (
+          <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-black/60">
+            <span className="text-white/60 text-xs">脱落</span>
+          </div>
+        )}
+      </motion.div>
+    )
+  }
+
   return (
     <motion.div
-      className={`relative bg-gray-900/80 backdrop-blur rounded-xl border border-white/10
-        ${compact ? 'p-2' : 'p-3'}
+      className={`relative bg-gray-900/80 backdrop-blur rounded-xl p-3 border border-white/10
         ${isCurrentTurn ? `ring-2 ${ringClass} shadow-lg` : ''}
-        ${player.is_eliminated || hasFolded ? 'opacity-50' : ''}
+        ${player.is_eliminated ? 'opacity-40' : ''}
       `}
       animate={isCurrentTurn ? { scale: [1, 1.02, 1] } : { scale: 1 }}
       transition={{ duration: 1.5, repeat: isCurrentTurn ? Infinity : 0 }}
     >
-      {/* Turn indicator */}
       {isCurrentTurn && (
-        <div className="absolute -top-2 left-1/2 -translate-x-1/2 bg-amber-400 text-black text-xs px-2 py-0.5 rounded-full font-bold whitespace-nowrap">
+        <div className="absolute -top-2 left-1/2 -translate-x-1/2 bg-amber-400 text-black text-xs px-2 py-0.5 rounded-full font-bold">
           ▼ 手番
         </div>
       )}
 
       <div className="flex items-start gap-2">
         <div className="flex-1 min-w-0">
-          {/* Name row */}
-          <div className="flex items-center gap-1 mb-1">
-            <span className={`w-2 h-2 rounded-full flex-shrink-0 ${dotClass}`} />
-            <span
-              className="text-white text-xs font-medium truncate"
-              style={{ fontFamily: 'Crimson Text, serif' }}
-            >
+          <div className="flex items-center gap-1.5 mb-1">
+            <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${dotClass}`} />
+            <span className="text-white text-sm font-medium truncate" style={{ fontFamily: 'Crimson Text, serif' }}>
               {player.player_name}
+              {player.is_cpu && <span className="ml-1 text-white/40 text-xs">CPU</span>}
             </span>
           </div>
-
-          {/* Win tokens */}
-          <div className="flex gap-0.5">
+          <div className="flex gap-0.5 mb-1">
             {Array.from({ length: 2 }).map((_, i) => (
-              <span key={i} className={`text-xs ${i < player.win_count ? 'opacity-100' : 'opacity-20'}`}>
-                🌸
-              </span>
+              <span key={i} className={`text-sm ${i < player.win_count ? 'opacity-100' : 'opacity-20'}`}>🌸</span>
             ))}
           </div>
-
-          {compact && (
-            <div className="mt-1 flex flex-wrap gap-1 items-center">
-              {/* Card count */}
-              <span className="text-white/50 text-xs">
-                🃏{totalCards}
-              </span>
-
-              {/* Fold badge */}
-              {hasFolded && (
-                <span className="bg-gray-700/80 text-white/50 text-xs px-1.5 py-0.5 rounded-full">
-                  パス
-                </span>
-              )}
-
-              {/* Bid badge */}
-              {isHighestBidder && (phase === 'bid' || phase === 'flip') && (
-                <span className="bg-amber-700/80 text-amber-200 text-xs px-1.5 py-0.5 rounded-full font-bold">
-                  {highestBid}枚宣言
-                </span>
-              )}
-
-              {/* Challenger badge */}
-              {isChallenger && phase === 'flip' && (
-                <span className="bg-purple-700/80 text-purple-200 text-xs px-1.5 py-0.5 rounded-full">
-                  挑戦中
-                </span>
-              )}
-            </div>
-          )}
-
-          {!compact && (
-            <div className="flex gap-1 text-xs text-white/50 mt-1">
-              <span>花×{player.flower_count}</span>
-              <span>💀×{player.skull_count}</span>
-            </div>
-          )}
+          <div className="flex gap-1 text-xs text-white/50">
+            <span>花×{player.flower_count}</span>
+            <span>💀×{player.skull_count}</span>
+          </div>
         </div>
-
-        {/* Disc stack */}
         {!player.is_eliminated && (
           <DiscStack
             player={player}
@@ -145,7 +172,7 @@ export function PlayerCard({
 
       {player.is_eliminated && (
         <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-black/60">
-          <span className="text-white/60 text-xs">脱落</span>
+          <span className="text-white/60 text-sm">脱落</span>
         </div>
       )}
     </motion.div>

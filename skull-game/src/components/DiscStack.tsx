@@ -23,19 +23,19 @@ const COLOR_MAP: Record<string, string> = {
 export function DiscStack({ player, discs, isFlipPhase, isMyTurnToFlip, myOwnStack, onFlip }: Props) {
   const tappingRef = useRef(false)
   const count = discs.length
-  const topDisc = [...discs].sort((a, b) => b.position - a.position)[0]
   const colorClass = COLOR_MAP[player.player_color] ?? COLOR_MAP.purple
   const canTap = isFlipPhase && isMyTurnToFlip && count > 0
 
   function handleTap() {
-    if (!canTap || !topDisc || topDisc.is_flipped) return
+    if (!canTap) return
     if (tappingRef.current) return
-    tappingRef.current = true
-    setTimeout(() => { tappingRef.current = false }, 800)
     const unflipped = [...discs]
       .filter(d => !d.is_flipped)
       .sort((a, b) => b.position - a.position)
-    if (unflipped[0]) onFlip?.(unflipped[0].id)
+    if (!unflipped[0]) return
+    tappingRef.current = true
+    setTimeout(() => { tappingRef.current = false }, 800)
+    onFlip?.(unflipped[0].id)
   }
 
   const unflippedCount = discs.filter(d => !d.is_flipped).length
