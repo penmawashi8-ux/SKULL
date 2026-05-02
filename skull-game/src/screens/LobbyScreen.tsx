@@ -17,7 +17,7 @@ export function LobbyScreen() {
   const navigate = useNavigate()
   const {
     room, players, sessionId, isLoading, error,
-    subscribeToRoom, unsubscribeFromRoom, startGame,
+    subscribeToRoom, unsubscribeFromRoom, startGame, addCpuPlayer,
   } = useGameStore()
 
   const [copied, setCopied] = useState(false)
@@ -159,12 +159,20 @@ export function LobbyScreen() {
               className="flex items-center gap-3 border border-dashed border-white/10 rounded-xl px-4 py-3"
             >
               <span className="w-3 h-3 rounded-full border border-white/20" />
-              <span
-                className="text-white/20 text-sm"
-                style={{ fontFamily: 'Crimson Text, serif' }}
-              >
+              <span className="text-white/20 text-sm flex-1" style={{ fontFamily: 'Crimson Text, serif' }}>
                 参加待ち...
               </span>
+              {isHost && i === 0 && (
+                <motion.button
+                  onClick={addCpuPlayer}
+                  disabled={isLoading}
+                  className="text-xs px-2.5 py-1 rounded-lg bg-purple-900/50 border border-purple-500/40 text-purple-300 disabled:opacity-40"
+                  whileTap={{ scale: 0.95 }}
+                  style={{ fontFamily: 'Crimson Text, serif' }}
+                >
+                  CPU追加
+                </motion.button>
+              )}
             </div>
           ))}
         </div>
