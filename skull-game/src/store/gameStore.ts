@@ -130,7 +130,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
 
   // ── processCpuTurns ───────────────────────────────────────────────────────
   async function processCpuTurns(): Promise<void> {
-    await new Promise(r => setTimeout(r, 50)) // yield to React render
+    await new Promise(r => setTimeout(r, 700))
     const s = get()
     if (!s.isCpuGame || !s.gameState) return
 

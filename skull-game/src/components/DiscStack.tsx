@@ -34,7 +34,7 @@ export function DiscStack({ player, discs, isFlipPhase, isMyTurnToFlip, myOwnSta
       .sort((a, b) => b.position - a.position)
     if (!unflipped[0]) return
     tappingRef.current = true
-    setTimeout(() => { tappingRef.current = false }, 800)
+    setTimeout(() => { tappingRef.current = false }, 300)
     onFlip?.(unflipped[0].id)
   }
 

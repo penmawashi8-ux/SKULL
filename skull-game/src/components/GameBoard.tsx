@@ -83,6 +83,7 @@ export function GameBoard({ onGameEnd }: Props) {
     const disc = allDiscs.find(d => d.id === discId)
     const owner = players.find(p => disc && p.id === disc.player_id)
     await flipDisc(discId)
+    isFlippingRef.current = false  // reset immediately so next card can be tapped
 
     // Use fresh store state to get updated disc type
     const { publicDiscs: freshPublic, myDiscs: freshMy } = useGameStore.getState()
@@ -105,8 +106,6 @@ export function GameBoard({ onGameEnd }: Props) {
         addLog(`🎉 チャレンジ成功！`, 'result')
       }
     }
-
-    isFlippingRef.current = false
   }, [myPlayer, gameState, flipDisc, myDiscs, publicDiscs, players, highestBid])
 
   const myRoundDiscs = publicDiscs.filter(d => d.player_id === myPlayer?.id && d.round_number === round)
