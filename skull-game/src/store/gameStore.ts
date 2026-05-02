@@ -464,7 +464,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
         set({ room, players: [player], _myPlayerId: player.id, isLoading: false })
         return roomCode
       } catch (e) {
-        set({ error: String(e), isLoading: false })
+        set({ error: (e as any)?.message ?? String(e), isLoading: false })
         throw e
       }
     },
@@ -505,7 +505,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
 
         set({ room, players: [...existing, player], _myPlayerId: player.id, isLoading: false })
       } catch (e) {
-        set({ error: String(e), isLoading: false })
+        set({ error: (e as any)?.message ?? String(e), isLoading: false })
         throw e
       }
     },
@@ -535,7 +535,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
         await supabase.from('rooms').update({ status: 'playing' }).eq('id', room.id)
         set({ gameState: gs, room: { ...room, status: 'playing' }, isLoading: false })
       } catch (e) {
-        set({ error: String(e), isLoading: false })
+        set({ error: (e as any)?.message ?? String(e), isLoading: false })
         throw e
       }
     },
@@ -640,7 +640,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
         }
         set({ isLoading: false, _foldedPlayerIds })
       } catch (e) {
-        set({ error: String(e), isLoading: false })
+        set({ error: (e as any)?.message ?? String(e), isLoading: false })
       }
     },
 
@@ -674,7 +674,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
         if (error) throw error
         set({ isLoading: false, _foldedPlayerIds: [] })
       } catch (e) {
-        set({ error: String(e), isLoading: false })
+        set({ error: (e as any)?.message ?? String(e), isLoading: false })
       }
     },
 
@@ -735,7 +735,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
         if (error) throw error
         set({ isLoading: false, _foldedPlayerIds: newFoldedIds })
       } catch (e) {
-        set({ error: String(e), isLoading: false })
+        set({ error: (e as any)?.message ?? String(e), isLoading: false })
       }
     },
 
@@ -781,7 +781,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
         }).eq('id', gameState.id)
         set({ isLoading: false })
       } catch (e) {
-        set({ error: String(e), isLoading: false })
+        set({ error: (e as any)?.message ?? String(e), isLoading: false })
       }
     },
 
