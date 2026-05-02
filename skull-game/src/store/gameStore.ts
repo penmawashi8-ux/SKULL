@@ -904,7 +904,8 @@ export const useGameStore = create<StoreState>()((set, get) => {
       if (isCpuGame) {
         set(s => ({
           gameState: { ...s.gameState!, ...updates },
-          _foldedPlayerIds: [],
+          // Only clear folds when starting bid from place phase; preserve them on raises
+          _foldedPlayerIds: gameState.phase === 'place' ? [] : _foldedPlayerIds,
         }))
         await processCpuTurns()
         return
@@ -914,7 +915,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
       try {
         const { error } = await supabase.from('game_states').update(updates).eq('id', gameState.id)
         if (error) throw error
-        set({ isLoading: false, _foldedPlayerIds: [] })
+        set({ isLoading: false, _foldedPlayerIds: gameState.phase === 'place' ? [] : _foldedPlayerIds })
       } catch (e) {
         set({ error: (e as any)?.message ?? String(e), isLoading: false })
       }
