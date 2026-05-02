@@ -87,7 +87,8 @@ export function GameBoard({ onGameEnd }: Props) {
     const disc = allDiscs.find(d => d.id === discId)
     const owner = players.find(p => disc && p.id === disc.player_id)
     await flipDisc(discId)
-    isFlippingRef.current = false  // reset immediately so next card can be tapped
+    // Do NOT reset isFlippingRef here — check result first to prevent
+    // extra taps sneaking in before the skull/success modal renders
 
     // Use fresh store state to get updated disc type
     const { publicDiscs: freshPublic, myDiscs: freshMy } = useGameStore.getState()
@@ -98,6 +99,7 @@ export function GameBoard({ onGameEnd }: Props) {
     if (realType === 'skull') {
       addLog(`💀 ${myPlayer.player_name} が ${owner?.player_name} のドクロを踏んだ！`, 'result')
       setModal({ show: true, type: 'skull', challenger: myPlayer, skullOwner: owner, lostDisc: freshDisc })
+      // isFlippingRef stays true until onClose resets it
     } else {
       addLog(`🌸 ${myPlayer.player_name} が花をめくった`, 'flip')
       if (freshFlipCount >= highestBid) {
@@ -108,6 +110,9 @@ export function GameBoard({ onGameEnd }: Props) {
           setModal({ show: true, type: 'success', challenger: myPlayer })
         }
         addLog(`🎉 チャレンジ成功！`, 'result')
+        // isFlippingRef stays true until onClose resets it
+      } else {
+        isFlippingRef.current = false  // normal flower, game continues — allow next tap
       }
     }
   }, [myPlayer, gameState, flipDisc, myDiscs, publicDiscs, players, highestBid])
@@ -288,6 +293,7 @@ export function GameBoard({ onGameEnd }: Props) {
         onClose={async () => {
           const type = modal.type
           const skullOwnerId = modal.skullOwner?.id
+          isFlippingRef.current = false  // unlock flipping for next round
           setModal({ show: false, type: null })
           if (type === 'win' || type === 'lose') {
             resetGame()
