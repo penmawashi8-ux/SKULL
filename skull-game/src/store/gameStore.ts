@@ -1205,7 +1205,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
 
     // ── advanceAfterChallenge ─────────────────────────────────────────────────
     // Called by UI after showing skull/success modal to human player.
-    advanceAfterChallenge: async (result, skullOwnerId) => {
+    advanceAfterChallenge: async (result, _skullOwnerId) => {
       const { players, gameState, room, isCpuGame, sessionId } = get()
       const myPlayer = players.find(p => p.session_id === sessionId)
       if (!myPlayer || !gameState || !room) return
