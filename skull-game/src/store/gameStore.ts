@@ -401,9 +401,11 @@ export const useGameStore = create<StoreState>()((set, get) => {
           _cpuLog: { id: crypto.randomUUID(), message: `💀 ${currentPlayer.player_name} がドクロを踏んだ！カードを1枚失った`, type: 'result' },
         })
         if (!winner) {
-          const starterId = updatedPlayers.find(p => p.id === realDisc.player_id)?.is_eliminated
-            ? getNextActivePlayer(updatedPlayers, realDisc.player_id)?.id ?? currentPlayer.id
-            : realDisc.player_id
+          // Challenger (who failed) starts next round
+          const failedChallenger = updatedPlayers.find(p => p.id === currentPlayer.id)
+          const starterId = failedChallenger?.is_eliminated
+            ? getNextActivePlayer(updatedPlayers, currentPlayer.id)?.id ?? currentPlayer.id
+            : currentPlayer.id
           await new Promise(r => setTimeout(r, 1500))  // let user read the skull result
           startNextRound(starterId, updatedPlayers, freshState.room!, freshState.gameState!)
           await processCpuTurns()
@@ -585,8 +587,11 @@ export const useGameStore = create<StoreState>()((set, get) => {
           set({ players: updatedPlayers, _permCards: updatedPerm })
           const winner = getWinner(updatedPlayers)
           if (!winner) {
-            const skullOwner = players.find(p => p.id === realDisc.player_id)
-            const starterId = skullOwner?.is_eliminated ? getNextActivePlayer(updatedPlayers, realDisc.player_id)?.id ?? cpuPlayer.id : realDisc.player_id
+            // Challenger (who failed) starts next round
+            const failedChallenger = updatedPlayers.find(p => p.id === cpuPlayer.id)
+            const starterId = failedChallenger?.is_eliminated
+              ? getNextActivePlayer(updatedPlayers, cpuPlayer.id)?.id ?? cpuPlayer.id
+              : cpuPlayer.id
             const newRound = gs2.round_number + 1
             const resetPlayers = updatedPlayers.map(p => {
               if (p.is_eliminated) return p
@@ -1255,17 +1260,16 @@ export const useGameStore = create<StoreState>()((set, get) => {
           set({ players: updatedPlayers })
           return
         }
-        // Skull owner starts next round (if still alive), else fallback to next player
-        const skullOwner = players.find(p => p.id === skullOwnerId)
-        const starterId = skullOwner && !updatedPlayers.find(p => p.id === skullOwnerId)?.is_eliminated
-          ? skullOwnerId!
-          : getNextActivePlayer(updatedPlayers, myPlayer.id)?.id ?? myPlayer.id
+        // Challenger (who failed) starts next round
+        const updatedMe = updatedPlayers.find(p => p.id === myPlayer.id)!
+        const starterId = updatedMe.is_eliminated
+          ? getNextActivePlayer(updatedPlayers, myPlayer.id)?.id ?? myPlayer.id
+          : myPlayer.id
 
         if (isCpuGame) {
           startNextRound(starterId, updatedPlayers, room, gameState)
           await processCpuTurns()
         } else {
-          const updatedMe = updatedPlayers.find(p => p.id === myPlayer.id)!
           await supabase.from('players').update({
             flower_count: updatedMe.flower_count,
             skull_count: updatedMe.skull_count,
