@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useGameStore } from '../store/gameStore'
 import { PlayerCard } from './PlayerCard'
@@ -23,7 +23,7 @@ export function GameBoard({ onGameEnd }: Props) {
   const {
     room, players, gameState, myDiscs, publicDiscs,
     sessionId, isLoading, placeDisc, placeBid, fold, flipDisc,
-    advanceAfterChallenge, resetGame, _foldedPlayerIds, _permCards,
+    advanceAfterChallenge, resetGame, _foldedPlayerIds, _permCards, _cpuLog,
   } = useGameStore()
 
   const isFlippingRef = useRef(false)
@@ -53,6 +53,10 @@ export function GameBoard({ onGameEnd }: Props) {
       ...prev,
     ].slice(0, 20))
   }
+
+  useEffect(() => {
+    if (_cpuLog) addLog(_cpuLog.message, _cpuLog.type)
+  }, [_cpuLog?.id])
 
   const handlePlaceFlower = useCallback(async () => {
     await placeDisc('flower')

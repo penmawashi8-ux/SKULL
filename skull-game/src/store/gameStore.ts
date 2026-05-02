@@ -49,6 +49,7 @@ export interface StoreState {
   _cpuDiscs: PlacedDisc[]
   _foldedPlayerIds: string[]  // client-side fold tracking
   _permCards: Record<string, { flowers: number; skulls: number }>  // permanent card totals
+  _cpuLog: { id: string; message: string; type: 'place' | 'bid' | 'fold' | 'flip' | 'result' } | null
 
   createRoom: (playerName: string, maxPlayers: number) => Promise<string>
   joinRoom: (roomCode: string, playerName: string) => Promise<void>
@@ -197,6 +198,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
               updated_at: ts(),
             },
             _foldedPlayerIds: [],
+            _cpuLog: { id: crypto.randomUUID(), message: `${currentPlayer.player_name} が ${minBid} 枚と宣言`, type: 'bid' },
           }))
           await processCpuTurns()
           return
@@ -229,6 +231,8 @@ export const useGameStore = create<StoreState>()((set, get) => {
         },
       )
 
+      const cpuPlaceLog = { id: crypto.randomUUID(), message: `${currentPlayer.player_name} がカードを置いた`, type: 'place' as const }
+
       // Check if all hands now empty → force bid
       if (allHandsEmpty(updatedPlayers)) {
         const firstActive = [...updatedPlayers]
@@ -245,6 +249,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
             updated_at: ts(),
           },
           _foldedPlayerIds: [],
+          _cpuLog: cpuPlaceLog,
         }))
         await processCpuTurns()
         return
@@ -256,6 +261,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
         publicDiscs: [...prev.publicDiscs, maskedDisc],
         _cpuDiscs: [...prev._cpuDiscs, realDisc],
         gameState: { ...prev.gameState!, current_player_id: next?.id ?? null, updated_at: ts() },
+        _cpuLog: cpuPlaceLog,
       }))
       await processCpuTurns()
       return
@@ -276,6 +282,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
       const isChallenge = nonFolded.length <= 1
 
       if (result.action === 'fold') {
+        const foldLog = { id: crypto.randomUUID(), message: `${currentPlayer.player_name} がパス`, type: 'fold' as const }
         if (isChallenge) {
           const challenger = players.find(p => p.id === gameState.highest_bidder_id) ?? null
           set(prev => ({
@@ -287,6 +294,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
               updated_at: ts(),
             },
             _foldedPlayerIds: newFoldedIds,
+            _cpuLog: foldLog,
           }))
           await processCpuTurns()
         } else {
@@ -299,6 +307,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
               updated_at: ts(),
             },
             _foldedPlayerIds: newFoldedIds,
+            _cpuLog: foldLog,
           }))
           await processCpuTurns()
         }
@@ -312,6 +321,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
             current_player_id: next?.id ?? null,
             updated_at: ts(),
           },
+          _cpuLog: { id: crypto.randomUUID(), message: `${currentPlayer.player_name} が ${result.amount} 枚と宣言`, type: 'bid' },
         }))
         await processCpuTurns()
       }
@@ -427,6 +437,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
     _cpuDiscs: [],
     _foldedPlayerIds: [],
     _permCards: {},
+    _cpuLog: null,
 
     // ── createRoom ────────────────────────────────────────────────────────────
     createRoom: async (playerName, maxPlayers) => {
