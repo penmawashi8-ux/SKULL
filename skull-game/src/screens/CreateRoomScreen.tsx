@@ -3,11 +3,13 @@ import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useGameStore } from '../store/gameStore'
 
+const RANDOM_NAMES = ['騎士', '魔法使い', '盗賊', '詩人', '商人', '旅人', '冒険者', '忍者', '吟遊詩人', '錬金術師']
+
 export function CreateRoomScreen() {
   const navigate = useNavigate()
   const { createRoom, isLoading, error } = useGameStore()
 
-  const [name, setName]           = useState('')
+  const [name, setName]           = useState(() => RANDOM_NAMES[Math.floor(Math.random() * RANDOM_NAMES.length)])
   const [maxPlayers, setMaxPlayers] = useState(4)
   const [roomCode, setRoomCode]   = useState<string | null>(null)
   const [copied, setCopied]       = useState(false)

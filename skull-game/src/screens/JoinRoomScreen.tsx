@@ -3,11 +3,13 @@ import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useGameStore } from '../store/gameStore'
 
+const RANDOM_NAMES = ['騎士', '魔法使い', '盗賊', '詩人', '商人', '旅人', '冒険者', '忍者', '吟遊詩人', '錬金術師']
+
 export function JoinRoomScreen() {
   const navigate  = useNavigate()
   const { joinRoom, isLoading, error } = useGameStore()
 
-  const [name, setName]     = useState('')
+  const [name, setName]     = useState(() => RANDOM_NAMES[Math.floor(Math.random() * RANDOM_NAMES.length)])
   const [code, setCode]     = useState('')
 
   function handleCodeChange(raw: string) {

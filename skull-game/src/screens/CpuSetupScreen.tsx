@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useGameStore } from '../store/gameStore'
 
+const RANDOM_NAMES = ['騎士', '魔法使い', '盗賊', '詩人', '商人', '旅人', '冒険者', '忍者', '吟遊詩人', '錬金術師']
+
 const DIFFICULTIES = [
   { value: 'easy',   label: 'かんたん', sub: '初心者向け',   color: 'border-emerald-500 text-emerald-400' },
   { value: 'normal', label: 'ふつう',   sub: 'バランス良い', color: 'border-blue-500 text-blue-400'    },
@@ -13,7 +15,7 @@ export function CpuSetupScreen() {
   const navigate = useNavigate()
   const { startCpuGame, isLoading, error } = useGameStore()
 
-  const [name, setName]           = useState('')
+  const [name, setName]           = useState(() => RANDOM_NAMES[Math.floor(Math.random() * RANDOM_NAMES.length)])
   const [cpuCount, setCpuCount]   = useState(2)
   const [difficulty, setDifficulty] = useState('normal')
 
