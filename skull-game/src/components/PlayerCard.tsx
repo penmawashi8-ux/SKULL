@@ -153,6 +153,11 @@ export function PlayerCard({
               <span key={i} className={`text-sm ${i < player.win_count ? 'opacity-100' : 'opacity-20'}`}>⭐</span>
             ))}
           </div>
+          {isHighestBidder && (phase === 'bid' || phase === 'flip') && (
+            <span className="text-xs bg-amber-800 text-amber-200 px-1.5 py-0.5 rounded-full font-bold inline-block mb-1">
+              {highestBid}枚宣言
+            </span>
+          )}
           <div className="flex gap-1 text-xs text-white/50">
             <span>花×{player.flower_count}</span>
             <span>💀×{player.skull_count}</span>

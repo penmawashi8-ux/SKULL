@@ -105,21 +105,16 @@ export function GameBoard({ onGameEnd }: Props) {
     if (isFlippingRef.current) return  // prevent double-tap
     isFlippingRef.current = true
 
-    const allDiscs = [...myDiscs, ...publicDiscs]
-    const disc = allDiscs.find(d => d.id === discId)
+    const disc = [...myDiscs, ...publicDiscs].find(d => d.id === discId)
     const owner = players.find(p => disc && p.id === disc.player_id)
-    await flipDisc(discId)
-    // Do NOT reset isFlippingRef here — check result first to prevent
-    // extra taps sneaking in before the skull/success modal renders
 
-    // Use fresh store state to get updated disc type
-    const { publicDiscs: freshPublic, myDiscs: freshMy } = useGameStore.getState()
-    const freshDisc = [...freshMy, ...freshPublic].find(d => d.id === discId)
-    const realType = freshDisc?.disc_type
-    const freshFlipCount = useGameStore.getState().gameState?.flip_count ?? 0
+    const realType = await flipDisc(discId)
+    const freshState = useGameStore.getState()
+    const freshFlipCount = freshState.gameState?.flip_count ?? 0
 
     if (realType === 'skull') {
       addLog(`💀 ${myPlayer.player_name} が ${owner?.player_name} のドクロを踏んだ！`, 'result')
+      const freshDisc = [...freshState.myDiscs, ...freshState.publicDiscs].find(d => d.id === discId)
       await new Promise(r => setTimeout(r, 500))
       setModal({ show: true, type: 'skull', challenger: myPlayer, skullOwner: owner, lostDisc: freshDisc })
       // isFlippingRef stays true until onClose resets it
@@ -128,7 +123,7 @@ export function GameBoard({ onGameEnd }: Props) {
       if (freshFlipCount >= highestBid) {
         addLog(`🎉 チャレンジ成功！`, 'result')
         await new Promise(r => setTimeout(r, 700))
-        const freshPlayer = useGameStore.getState().players.find(p => p.id === myPlayer.id)
+        const freshPlayer = freshState.players.find(p => p.id === myPlayer.id)
         if (freshPlayer && freshPlayer.win_count + 1 >= 2) {
           setModal({ show: true, type: 'win', challenger: myPlayer })
         } else {

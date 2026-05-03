@@ -57,7 +57,7 @@ export interface StoreState {
   placeDisc: (discType: DiscType) => Promise<void>
   placeBid: (amount: number) => Promise<void>
   fold: () => Promise<void>
-  flipDisc: (discId: string) => Promise<void>
+  flipDisc: (discId: string) => Promise<DiscType>
   advanceAfterChallenge: (result: 'win' | 'loss', skullOwnerId?: string) => Promise<void>
   addCpuPlayer: () => Promise<void>
   startCpuGame: (playerName: string, cpuCount: number, difficulty: string) => Promise<void>
@@ -985,10 +985,10 @@ export const useGameStore = create<StoreState>()((set, get) => {
     },
 
     // ── flipDisc ──────────────────────────────────────────────────────────────
-    flipDisc: async (discId) => {
+    flipDisc: async (discId): Promise<DiscType> => {
       const { room, gameState, players, sessionId, isCpuGame, myDiscs, _cpuDiscs } = get()
       const myPlayer = players.find(p => p.session_id === sessionId)
-      if (!myPlayer || !gameState || !room) return
+      if (!myPlayer || !gameState || !room) return 'flower'
 
       const newFlipCount = gameState.flip_count + 1
 
@@ -1011,22 +1011,26 @@ export const useGameStore = create<StoreState>()((set, get) => {
           gameState: { ...s.gameState!, flip_count: newFlipCount, updated_at: ts() },
         }))
 
-        // UI reads the flipped disc to show skull/success modal; don't process here for human turns
-        return
+        return realType
       }
 
       // Online
       set({ isLoading: true })
       try {
-        await supabase.from('placed_discs').update({
-          is_flipped: true, flipped_by: myPlayer.id,
-        }).eq('id', discId)
+        const { data: updatedDisc, error } = await supabase.from('placed_discs')
+          .update({ is_flipped: true, flipped_by: myPlayer.id })
+          .eq('id', discId)
+          .select('disc_type')
+          .single()
+        if (error) throw error
         await supabase.from('game_states').update({
           flip_count: newFlipCount, updated_at: ts(),
         }).eq('id', gameState.id)
         set({ isLoading: false })
+        return (updatedDisc?.disc_type as DiscType) ?? 'flower'
       } catch (e) {
         set({ error: (e as any)?.message ?? String(e), isLoading: false })
+        return 'flower'
       }
     },
 
