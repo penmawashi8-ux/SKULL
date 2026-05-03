@@ -82,7 +82,7 @@ export function PlayerCard({
             <div className="flex items-center gap-1.5 mb-1">
               <div className="flex gap-0.5">
                 {Array.from({ length: 2 }).map((_, i) => (
-                  <span key={i} className={`text-xs ${i < player.win_count ? 'opacity-100' : 'opacity-20'}`}>🌸</span>
+                  <span key={i} className={`text-xs ${i < player.win_count ? 'opacity-100' : 'opacity-20'}`}>⭐</span>
                 ))}
               </div>
               <span className="text-white/60 text-xs bg-white/10 px-1.5 py-0.5 rounded-full">
@@ -150,7 +150,7 @@ export function PlayerCard({
           </div>
           <div className="flex gap-0.5 mb-1">
             {Array.from({ length: 2 }).map((_, i) => (
-              <span key={i} className={`text-sm ${i < player.win_count ? 'opacity-100' : 'opacity-20'}`}>🌸</span>
+              <span key={i} className={`text-sm ${i < player.win_count ? 'opacity-100' : 'opacity-20'}`}>⭐</span>
             ))}
           </div>
           <div className="flex gap-1 text-xs text-white/50">
