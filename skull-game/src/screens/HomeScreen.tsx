@@ -77,7 +77,7 @@ export function HomeScreen() {
             className="text-purple-300/70 text-lg mt-2"
             style={{ fontFamily: 'Crimson Text, serif' }}
           >
-            ～ 嘘と駆け引きのカードゲーム ～
+            ～ 嘘と駆け引きのカードゲーム ～ v2
           </p>
         </div>
 
