@@ -54,8 +54,8 @@ export function PlayerCard({
   if (compact) {
     return (
       <motion.div
-        className={`relative bg-gray-900/80 backdrop-blur rounded-xl border border-white/10 p-2
-          ${isCurrentTurn ? `ring-2 ${ringClass} shadow-lg` : ''}
+        className={`relative bg-gray-900/80 backdrop-blur rounded-xl border border-white/10
+          ${isCurrentTurn ? `ring-2 ${ringClass} shadow-lg p-2 pt-4` : 'p-2'}
           ${player.is_eliminated || hasFolded ? 'opacity-50' : ''}
         `}
         animate={isCurrentTurn ? { scale: [1, 1.015, 1] } : { scale: 1 }}
@@ -126,8 +126,8 @@ export function PlayerCard({
 
   return (
     <motion.div
-      className={`relative bg-gray-900/80 backdrop-blur rounded-xl p-3 border border-white/10
-        ${isCurrentTurn ? `ring-2 ${ringClass} shadow-lg` : ''}
+      className={`relative bg-gray-900/80 backdrop-blur rounded-xl border border-white/10
+        ${isCurrentTurn ? `ring-2 ${ringClass} shadow-lg p-3 pt-5` : 'p-3'}
         ${player.is_eliminated ? 'opacity-40' : ''}
       `}
       animate={isCurrentTurn ? { scale: [1, 1.02, 1] } : { scale: 1 }}
