@@ -32,7 +32,7 @@ export function ActionLog({ entries }: Props) {
   }, [entries[0]?.id])
 
   return (
-    <div className="pointer-events-none fixed top-2 left-0 right-0 z-40 flex justify-center px-4">
+    <div className="pointer-events-none fixed left-0 right-0 z-40 flex justify-center px-4" style={{ top: 'calc(env(safe-area-inset-top) + 8px)' }}>
       <AnimatePresence>
         {shown && (
           <motion.div

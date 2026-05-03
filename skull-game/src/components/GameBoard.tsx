@@ -36,6 +36,7 @@ export function GameBoard({ onGameEnd }: Props) {
     skullOwner?: Player
     lostDisc?: PlacedDisc
   }>({ show: false, type: null })
+  const [showExitConfirm, setShowExitConfirm] = useState(false)
 
   const myPlayer = players.find(p => p.session_id === sessionId)
   const otherPlayers = players.filter(p => p.session_id !== sessionId)
@@ -152,7 +153,7 @@ export function GameBoard({ onGameEnd }: Props) {
 
   return (
     <div
-      className="h-svh flex flex-col overflow-hidden bg-gray-950 text-white"
+      className="h-full flex flex-col overflow-hidden bg-gray-950 text-white"
       style={{ fontFamily: 'Crimson Text, serif' }}
     >
       <ActionLog entries={log} />
@@ -160,6 +161,13 @@ export function GameBoard({ onGameEnd }: Props) {
       {/* ── Header ── */}
       <header className="flex-shrink-0 bg-gray-900/90 backdrop-blur border-b border-white/10 px-3 py-2 flex items-center justify-between">
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowExitConfirm(true)}
+            className="text-white/40 hover:text-white/70 transition-colors text-xs px-1.5 py-1 rounded"
+            style={{ fontFamily: 'Crimson Text, serif' }}
+          >
+            ✕
+          </button>
           <span className="text-white/40 text-xs">R{round}</span>
           <span className="text-amber-400 text-sm font-semibold" style={{ fontFamily: 'Cinzel, serif' }}>
             {PHASE_LABEL[phase]}
@@ -297,6 +305,50 @@ export function GameBoard({ onGameEnd }: Props) {
           )}
         </AnimatePresence>
       </div>
+
+      {/* ── Exit confirmation dialog ── */}
+      <AnimatePresence>
+        {showExitConfirm && (
+          <motion.div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="bg-gray-900 border border-white/10 rounded-2xl p-6 w-full max-w-xs text-center shadow-2xl"
+              initial={{ scale: 0.85, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.85, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 24 }}
+            >
+              <div className="text-4xl mb-3">🚪</div>
+              <h2 className="text-lg font-bold text-white mb-2" style={{ fontFamily: 'Cinzel, serif' }}>
+                ゲームを終了しますか？
+              </h2>
+              <p className="text-white/50 text-sm mb-5" style={{ fontFamily: 'Crimson Text, serif' }}>
+                進行中のゲームが終了します
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowExitConfirm(false)}
+                  className="flex-1 py-3 rounded-xl border border-white/20 text-white/70 text-sm"
+                  style={{ fontFamily: 'Crimson Text, serif' }}
+                >
+                  キャンセル
+                </button>
+                <button
+                  onClick={() => { resetGame(); onGameEnd?.() }}
+                  className="flex-1 py-3 rounded-xl bg-red-900/60 border border-red-500/40 text-red-300 text-sm font-bold"
+                  style={{ fontFamily: 'Cinzel, serif' }}
+                >
+                  終了する
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <ResultModal
         show={modal.show}
