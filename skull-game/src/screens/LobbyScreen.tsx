@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useGameStore } from '../store/gameStore'
@@ -23,6 +23,8 @@ export function LobbyScreen() {
   const [copied, setCopied] = useState(false)
   const [isAddingCpu, setIsAddingCpu] = useState(false)
   const [isStarting, setIsStarting] = useState(false)
+  const addingCpuRef = useRef(false)
+  const startingRef = useRef(false)
 
   const isHost   = room?.host_id === sessionId
   const canStart = players.filter(p => !p.is_eliminated).length >= 3
@@ -39,17 +41,20 @@ export function LobbyScreen() {
   }, [room?.id])
 
   async function handleAddCpu() {
-    if (isAddingCpu || isLoading) return
+    if (addingCpuRef.current) return
+    addingCpuRef.current = true
     setIsAddingCpu(true)
     try {
       await addCpuPlayer()
     } finally {
+      addingCpuRef.current = false
       setIsAddingCpu(false)
     }
   }
 
   async function handleStart() {
-    if (isStarting || isLoading) return
+    if (startingRef.current) return
+    startingRef.current = true
     setIsStarting(true)
     try {
       await startGame()
@@ -57,6 +62,7 @@ export function LobbyScreen() {
         navigate(`/game/${roomCode}`)
       }
     } finally {
+      startingRef.current = false
       setIsStarting(false)
     }
   }
