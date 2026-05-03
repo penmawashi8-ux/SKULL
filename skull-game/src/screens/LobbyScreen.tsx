@@ -55,7 +55,7 @@ export function LobbyScreen() {
 
   return (
     <div
-      className="min-h-screen flex flex-col"
+      className="h-svh flex flex-col"
       style={{ background: 'radial-gradient(ellipse at 50% 0%, #1a0a2e 0%, #030712 70%)' }}
     >
       {/* Header */}
@@ -107,7 +107,7 @@ export function LobbyScreen() {
       </div>
 
       {/* Players list */}
-      <div className="flex-1 px-6">
+      <div className="flex-1 overflow-y-auto px-6">
         <div className="flex items-center justify-between mb-3">
           <p className="text-white/50 text-sm" style={{ fontFamily: 'Crimson Text, serif' }}>
             参加者
@@ -191,7 +191,10 @@ export function LobbyScreen() {
       </div>
 
       {/* Footer: start button (host only) */}
-      <div className="px-6 pb-10 pt-4">
+      <div
+        className="flex-shrink-0 px-6 pt-3 pb-6"
+        style={{ paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom))' }}
+      >
         {error && (
           <p className="text-red-400 text-sm text-center mb-3" style={{ fontFamily: 'Crimson Text, serif' }}>
             {error}

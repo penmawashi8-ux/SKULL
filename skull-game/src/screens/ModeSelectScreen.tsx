@@ -72,7 +72,7 @@ export function ModeSelectScreen() {
 
   return (
     <div
-      className="min-h-screen flex flex-col"
+      className="h-svh flex flex-col"
       style={{ background: 'radial-gradient(ellipse at 50% 0%, #1a0a2e 0%, #030712 70%)' }}
     >
       {/* Header */}
