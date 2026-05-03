@@ -310,13 +310,16 @@ export const useGameStore = create<StoreState>()((set, get) => {
           await _runCpuLoop()
         }
       } else {
-        const next = getNextActivePlayer(players, currentPlayer.id, _foldedPlayerIds)
+        const totalPlaced = publicDiscs.filter(d => d.round_number === round).length
+        const isMaxBid = result.amount! >= totalPlaced
+        const next = isMaxBid ? currentPlayer : getNextActivePlayer(players, currentPlayer.id, _foldedPlayerIds)
         set(prev => ({
           gameState: {
             ...prev.gameState!,
             highest_bid: result.amount!,
             highest_bidder_id: currentPlayer.id,
-            current_player_id: next?.id ?? null,
+            current_player_id: isMaxBid ? currentPlayer.id : (next?.id ?? null),
+            phase: isMaxBid ? 'flip' : 'bid',
             updated_at: ts(),
           },
           _cpuLog: { id: crypto.randomUUID(), message: `${currentPlayer.player_name} が ${result.amount} 枚と宣言`, type: 'bid' },
@@ -545,10 +548,15 @@ export const useGameStore = create<StoreState>()((set, get) => {
           }
         } else {
           set({ _cpuLog: { id: crypto.randomUUID(), message: `${cpuPlayer.player_name} が ${result.amount} 枚と宣言`, type: 'bid' } })
-          const next = getNextActivePlayer(players, cpuPlayer.id, _foldedPlayerIds)
+          const round2 = gs2.round_number
+          const totalPlaced2 = publicDiscs.filter(d => d.round_number === round2).length
+          const isMaxBid2 = result.amount! >= totalPlaced2
+          const next = isMaxBid2 ? cpuPlayer : getNextActivePlayer(players, cpuPlayer.id, _foldedPlayerIds)
           await supabase.from('game_states').update({
             highest_bid: result.amount!, highest_bidder_id: cpuPlayer.id,
-            current_player_id: next?.id ?? null, updated_at: ts(),
+            current_player_id: isMaxBid2 ? cpuPlayer.id : (next?.id ?? null),
+            phase: isMaxBid2 ? 'flip' : 'bid',
+            updated_at: ts(),
           }).eq('id', gs2.id)
         }
         return
@@ -910,16 +918,26 @@ export const useGameStore = create<StoreState>()((set, get) => {
 
     // ── placeBid ──────────────────────────────────────────────────────────────
     placeBid: async (amount) => {
-      const { room, gameState, players, sessionId, isCpuGame, _foldedPlayerIds } = get()
+      const { room, gameState, players, sessionId, isCpuGame, _foldedPlayerIds, publicDiscs } = get()
       const myPlayer = players.find(p => p.session_id === sessionId)
       if (!myPlayer || !gameState || !room) return
 
-      const next = getNextActivePlayer(players, myPlayer.id, _foldedPlayerIds)
-      const updates = {
+      const round = gameState.round_number
+      const totalPlaced = publicDiscs.filter(d => d.round_number === round).length
+      const isMaxBid = amount >= totalPlaced
+
+      // Max bid: all others are forced to pass, flip phase starts immediately
+      const updates = isMaxBid ? {
+        phase: 'flip' as const,
+        highest_bid: amount,
+        highest_bidder_id: myPlayer.id,
+        current_player_id: myPlayer.id,
+        updated_at: ts(),
+      } : {
         phase: 'bid' as const,
         highest_bid: amount,
         highest_bidder_id: myPlayer.id,
-        current_player_id: next?.id ?? null,
+        current_player_id: getNextActivePlayer(players, myPlayer.id, _foldedPlayerIds)?.id ?? null,
         updated_at: ts(),
       }
 

@@ -54,20 +54,20 @@ export function PlayerCard({
   if (compact) {
     return (
       <motion.div
-        className={`relative bg-gray-900/80 backdrop-blur rounded-xl border border-white/10
-          ${isCurrentTurn ? `ring-2 ${ringClass} shadow-lg p-2 pt-4` : 'p-2'}
+        className={`relative bg-gray-900/80 backdrop-blur rounded-xl border border-white/10 overflow-hidden
+          ${isCurrentTurn ? `ring-2 ${ringClass} shadow-lg` : ''}
           ${player.is_eliminated || hasFolded ? 'opacity-50' : ''}
         `}
         animate={isCurrentTurn ? { scale: [1, 1.015, 1] } : { scale: 1 }}
         transition={{ duration: 1.5, repeat: isCurrentTurn ? Infinity : 0 }}
       >
         {isCurrentTurn && (
-          <div className="absolute -top-2 left-1/2 -translate-x-1/2 bg-amber-400 text-black text-xs px-1.5 py-0.5 rounded-full font-bold whitespace-nowrap z-10">
+          <div className="bg-amber-400 text-black text-xs text-center py-0.5 font-bold">
             ▼ 手番
           </div>
         )}
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 p-2">
           {/* Left: info column */}
           <div className="flex-1 min-w-0">
             {/* Name */}
@@ -126,20 +126,20 @@ export function PlayerCard({
 
   return (
     <motion.div
-      className={`relative bg-gray-900/80 backdrop-blur rounded-xl border border-white/10
-        ${isCurrentTurn ? `ring-2 ${ringClass} shadow-lg p-3 pt-5` : 'p-3'}
+      className={`relative bg-gray-900/80 backdrop-blur rounded-xl border border-white/10 overflow-hidden
+        ${isCurrentTurn ? `ring-2 ${ringClass} shadow-lg` : ''}
         ${player.is_eliminated ? 'opacity-40' : ''}
       `}
       animate={isCurrentTurn ? { scale: [1, 1.02, 1] } : { scale: 1 }}
       transition={{ duration: 1.5, repeat: isCurrentTurn ? Infinity : 0 }}
     >
       {isCurrentTurn && (
-        <div className="absolute -top-2 left-1/2 -translate-x-1/2 bg-amber-400 text-black text-xs px-2 py-0.5 rounded-full font-bold">
+        <div className="bg-amber-400 text-black text-xs text-center py-0.5 font-bold">
           ▼ 手番
         </div>
       )}
 
-      <div className="flex items-start gap-2">
+      <div className="flex items-start gap-2 p-3">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 mb-1">
             <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${dotClass}`} />
