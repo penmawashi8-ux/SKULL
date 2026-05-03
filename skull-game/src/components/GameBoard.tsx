@@ -23,7 +23,7 @@ export function GameBoard({ onGameEnd }: Props) {
   const {
     room, players, gameState, myDiscs, publicDiscs,
     sessionId, isLoading, placeDisc, placeBid, fold, flipDisc,
-    advanceAfterChallenge, resetGame, _foldedPlayerIds, _permCards, _cpuLog,
+    advanceAfterChallenge, resetGame, resumeCpuTurns, _foldedPlayerIds, _permCards, _cpuLog,
   } = useGameStore()
 
   const isFlippingRef = useRef(false)
@@ -58,6 +58,15 @@ export function GameBoard({ onGameEnd }: Props) {
   useEffect(() => {
     if (_cpuLog) addLog(_cpuLog.message, _cpuLog.type)
   }, [_cpuLog?.id])
+
+  // Re-trigger CPU turns when page comes back from background
+  useEffect(() => {
+    function handleVisibility() {
+      if (!document.hidden) resumeCpuTurns()
+    }
+    document.addEventListener('visibilitychange', handleVisibility)
+    return () => document.removeEventListener('visibilitychange', handleVisibility)
+  }, [resumeCpuTurns])
 
   // Detect CPU win (by 2 rounds or last-player-standing) and show modal
   useEffect(() => {
@@ -285,7 +294,7 @@ export function GameBoard({ onGameEnd }: Props) {
                 </div>
               )}
 
-              {(phase === 'bid' || (phase === 'place' && totalDiscs > 0)) && (
+              {(phase === 'bid' || (phase === 'place' && myRoundDiscs.length > 0)) && (
                 <BidController
                   currentHighest={highestBid}
                   totalDiscs={totalDiscs}

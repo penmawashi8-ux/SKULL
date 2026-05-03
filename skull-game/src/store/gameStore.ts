@@ -64,6 +64,7 @@ export interface StoreState {
   subscribeToRoom: (roomCode: string) => void
   unsubscribeFromRoom: () => void
   resetGame: () => void
+  resumeCpuTurns: () => Promise<void>
 }
 
 // Mutex to prevent concurrent online CPU turn processing
@@ -1280,6 +1281,15 @@ export const useGameStore = create<StoreState>()((set, get) => {
         supabase.removeChannel(channel)
         set({ _subscription: null })
       }
+    },
+
+    // ── resumeCpuTurns ────────────────────────────────────────────────────────
+    // Re-trigger CPU processing after page comes back from background.
+    resumeCpuTurns: async () => {
+      const s = get()
+      if (!s.isCpuGame || !s.gameState) return
+      const current = s.players.find(p => p.id === s.gameState!.current_player_id)
+      if (current?.is_cpu) await processCpuTurns()
     },
 
     // ── resetGame ─────────────────────────────────────────────────────────────
