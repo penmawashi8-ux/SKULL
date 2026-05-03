@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useGameStore } from '../store/gameStore'
+import { playButtonPress } from '../lib/sounds'
 
 const COLOR_DOT: Record<string, string> = {
   red:    'bg-red-500',
@@ -44,6 +45,7 @@ export function LobbyScreen() {
     if (addingCpuRef.current) return
     addingCpuRef.current = true
     setIsAddingCpu(true)
+    playButtonPress()
     try {
       await addCpuPlayer()
     } finally {
@@ -56,6 +58,7 @@ export function LobbyScreen() {
     if (startingRef.current) return
     startingRef.current = true
     setIsStarting(true)
+    playButtonPress()
     try {
       await startGame()
       if (!useGameStore.getState().error) {

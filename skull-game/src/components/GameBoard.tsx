@@ -6,6 +6,7 @@ import { BidController } from './BidController'
 import { ActionLog } from './ActionLog'
 import { ResultModal } from './ResultModal'
 import { canFold, getTotalDiscsInPlay, getWinner } from '../lib/gameEngine'
+import { playButtonPress, playFlowerFlip, playSkullFlip } from '../lib/sounds'
 import type { LogEntry } from './ActionLog'
 import type { Player, PlacedDisc } from '../types/game'
 
@@ -85,6 +86,7 @@ export function GameBoard({ onGameEnd }: Props) {
     if (actionLockRef.current) return
     actionLockRef.current = true
     setIsActing(true)
+    playButtonPress()
     try {
       await placeDisc('flower')
       addLog(`${myPlayer?.player_name} が花を置いた`, 'place')
@@ -98,6 +100,7 @@ export function GameBoard({ onGameEnd }: Props) {
     if (actionLockRef.current) return
     actionLockRef.current = true
     setIsActing(true)
+    playButtonPress()
     try {
       await placeDisc('skull')
       addLog(`${myPlayer?.player_name} がカードを置いた`, 'place')
@@ -111,6 +114,7 @@ export function GameBoard({ onGameEnd }: Props) {
     if (actionLockRef.current) return
     actionLockRef.current = true
     setIsActing(true)
+    playButtonPress()
     try {
       await placeBid(amount)
       addLog(`${myPlayer?.player_name} が ${amount} 枚と宣言`, 'bid')
@@ -124,6 +128,7 @@ export function GameBoard({ onGameEnd }: Props) {
     if (actionLockRef.current) return
     actionLockRef.current = true
     setIsActing(true)
+    playButtonPress()
     try {
       await fold()
       addLog(`${myPlayer?.player_name} がパス`, 'fold')
@@ -147,12 +152,14 @@ export function GameBoard({ onGameEnd }: Props) {
     const freshFlipCount = freshState.gameState?.flip_count ?? 0
 
     if (realType === 'skull') {
+      playSkullFlip()
       addLog(`💀 ${myPlayer.player_name} が ${owner?.player_name} のドクロを踏んだ！`, 'result')
       const freshDisc = [...freshState.myDiscs, ...freshState.publicDiscs].find(d => d.id === discId)
       await new Promise(r => setTimeout(r, 500))
       setModal({ show: true, type: 'skull', challenger: myPlayer, skullOwner: owner, lostDisc: freshDisc })
       // lock + isActing stay set until onClose
     } else {
+      playFlowerFlip()
       addLog(`🌸 ${myPlayer.player_name} が花をめくった`, 'flip')
       if (freshFlipCount >= highestBid) {
         addLog(`🎉 チャレンジ成功！`, 'result')
