@@ -170,7 +170,7 @@ export function CpuSetupScreen() {
         {/* Start button */}
         <motion.button
           onClick={handleStart}
-          disabled={isLoading || !name.trim()}
+          disabled={isLoading}
           className="w-full py-4 rounded-2xl text-white text-xl font-bold disabled:opacity-40"
           style={{
             fontFamily: 'Cinzel, serif',
