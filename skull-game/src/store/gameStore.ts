@@ -71,6 +71,8 @@ export interface StoreState {
 let _onlineCpuProcessing = false
 // Mutex to prevent concurrent local CPU turn processing
 let _cpuRunning = false
+// Mutex to prevent concurrent addCpuPlayer calls (module-level for synchronous block)
+let _addingCpu = false
 
 export const useGameStore = create<StoreState>()((set, get) => {
 
@@ -771,10 +773,11 @@ export const useGameStore = create<StoreState>()((set, get) => {
 
     // ── addCpuPlayer ──────────────────────────────────────────────────────────
     addCpuPlayer: async () => {
-      const { room, players, sessionId, isLoading } = get()
-      if (!room || room.host_id !== sessionId) return
-      if (isLoading) return  // prevent rapid-tap race condition
-      if (players.length >= room.max_players) return
+      if (_addingCpu) return  // synchronous module-level guard
+      _addingCpu = true
+      const { room, players, sessionId } = get()
+      if (!room || room.host_id !== sessionId) { _addingCpu = false; return }
+      if (players.length >= room.max_players) { _addingCpu = false; return }
       set({ isLoading: true, error: null })
       try {
         const cpuCount = players.filter(p => p.is_cpu).length
@@ -796,6 +799,8 @@ export const useGameStore = create<StoreState>()((set, get) => {
         set({ isLoading: false })
       } catch (e) {
         set({ error: (e as any)?.message ?? String(e), isLoading: false })
+      } finally {
+        _addingCpu = false
       }
     },
 
