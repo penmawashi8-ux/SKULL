@@ -56,7 +56,7 @@ export function DiscStack({ player, discs, isFlipPhase, isMyTurnToFlip, myOwnSta
           <div className={`absolute top-1 left-1 w-12 h-16 rounded-lg bg-gradient-to-br ${colorClass} border opacity-60`} />
         )}
 
-        {unflippedCount > 0 ? (
+        {unflippedCount > 0 && (
           <motion.div
             className={`relative w-12 h-16 rounded-lg bg-gradient-to-br ${colorClass} border-2 flex items-center justify-center shadow-lg`}
             whileTap={canTap ? { scale: 0.95 } : {}}
@@ -71,10 +71,6 @@ export function DiscStack({ player, discs, isFlipPhase, isMyTurnToFlip, myOwnSta
               <div className="absolute inset-0 rounded-lg bg-white/10 animate-pulse" />
             )}
           </motion.div>
-        ) : (
-          <div className="w-12 h-16 rounded-lg border-2 border-dashed border-white/20 flex items-center justify-center">
-            <span className="text-white/20 text-xs">空</span>
-          </div>
         )}
 
         {/* Unflipped count badge */}
