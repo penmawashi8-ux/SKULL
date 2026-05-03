@@ -49,6 +49,10 @@ export function GameBoard({ onGameEnd }: Props) {
   const challengerId = gameState?.highest_bidder_id ?? null
   const isChallenger = myPlayer?.id === challengerId
   const totalDiscs = getTotalDiscsInPlay(players, publicDiscs, round)
+  const allPlaced = players.filter(p => !p.is_eliminated).every(p =>
+    publicDiscs.some(d => d.player_id === p.id && d.round_number === round)
+  )
+  const iHaveFolded = !!myPlayer && _foldedPlayerIds.includes(myPlayer.id)
 
   function addLog(message: string, type: LogEntry['type']) {
     setLog(prev => [
@@ -150,6 +154,7 @@ export function GameBoard({ onGameEnd }: Props) {
     const realType = await flipDisc(discId)
     const freshState = useGameStore.getState()
     const freshFlipCount = freshState.gameState?.flip_count ?? 0
+    const freshHighestBid = freshState.gameState?.highest_bid ?? highestBid
 
     if (realType === 'skull') {
       playSkullFlip()
@@ -161,7 +166,7 @@ export function GameBoard({ onGameEnd }: Props) {
     } else {
       playFlowerFlip()
       addLog(`🌸 ${myPlayer.player_name} が花をめくった`, 'flip')
-      if (freshFlipCount >= highestBid) {
+      if (freshFlipCount >= freshHighestBid) {
         addLog(`🎉 チャレンジ成功！`, 'result')
         await new Promise(r => setTimeout(r, 700))
         const freshPlayer = freshState.players.find(p => p.id === myPlayer.id)
@@ -331,7 +336,8 @@ export function GameBoard({ onGameEnd }: Props) {
                 </div>
               )}
 
-              {(phase === 'bid' || (phase === 'place' && myRoundDiscs.length > 0)) && (
+              {(phase === 'bid' || (phase === 'place' && myRoundDiscs.length > 0 && allPlaced))
+                && !iHaveFolded && (
                 <BidController
                   currentHighest={highestBid}
                   totalDiscs={totalDiscs}
