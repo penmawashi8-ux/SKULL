@@ -7,11 +7,13 @@ import { JoinRoomScreen } from './screens/JoinRoomScreen'
 import { LobbyScreen } from './screens/LobbyScreen'
 import { GameScreen } from './screens/GameScreen'
 import { ReconnectBanner } from './components/ReconnectBanner'
+import { UpdatePrompt } from './components/UpdatePrompt'
 
 export default function App() {
   return (
     <BrowserRouter>
       <ReconnectBanner />
+      <UpdatePrompt />
       <Routes>
         <Route path="/" element={<HomeScreen />} />
         <Route path="/menu" element={<ModeSelectScreen />} />
