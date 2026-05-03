@@ -28,11 +28,11 @@ export function CpuSetupScreen() {
 
   return (
     <div
-      className="min-h-screen flex flex-col"
+      className="h-svh flex flex-col"
       style={{ background: 'radial-gradient(ellipse at 50% 0%, #0a1a2e 0%, #030712 70%)' }}
     >
       {/* Header */}
-      <div className="flex items-center gap-3 px-4 pt-6 pb-4">
+      <div className="flex-shrink-0 flex items-center gap-3 px-4 pt-6 pb-4">
         <button
           onClick={() => navigate('/menu')}
           className="text-white/50 hover:text-white transition-colors text-sm"
@@ -45,7 +45,8 @@ export function CpuSetupScreen() {
         </h1>
       </div>
 
-      <div className="flex-1 flex flex-col px-6 pt-4 pb-12 gap-8">
+      {/* Scrollable settings */}
+      <div className="flex-1 overflow-y-auto px-6 pt-2 pb-4 flex flex-col gap-6">
         {/* Player name */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
@@ -166,8 +167,13 @@ export function CpuSetupScreen() {
             {error}
           </p>
         )}
+      </div>
 
-        {/* Start button */}
+      {/* Start button — always visible at bottom */}
+      <div
+        className="flex-shrink-0 px-6 pt-3 pb-6"
+        style={{ paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom))' }}
+      >
         <motion.button
           onClick={handleStart}
           disabled={isLoading}

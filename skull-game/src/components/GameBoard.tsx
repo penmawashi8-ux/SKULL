@@ -110,18 +110,20 @@ export function GameBoard({ onGameEnd }: Props) {
 
     if (realType === 'skull') {
       addLog(`💀 ${myPlayer.player_name} が ${owner?.player_name} のドクロを踏んだ！`, 'result')
+      await new Promise(r => setTimeout(r, 500))
       setModal({ show: true, type: 'skull', challenger: myPlayer, skullOwner: owner, lostDisc: freshDisc })
       // isFlippingRef stays true until onClose resets it
     } else {
       addLog(`🌸 ${myPlayer.player_name} が花をめくった`, 'flip')
       if (freshFlipCount >= highestBid) {
+        addLog(`🎉 チャレンジ成功！`, 'result')
+        await new Promise(r => setTimeout(r, 700))
         const freshPlayer = useGameStore.getState().players.find(p => p.id === myPlayer.id)
         if (freshPlayer && freshPlayer.win_count + 1 >= 2) {
           setModal({ show: true, type: 'win', challenger: myPlayer })
         } else {
           setModal({ show: true, type: 'success', challenger: myPlayer })
         }
-        addLog(`🎉 チャレンジ成功！`, 'result')
         // isFlippingRef stays true until onClose resets it
       } else {
         isFlippingRef.current = false  // normal flower, game continues — allow next tap

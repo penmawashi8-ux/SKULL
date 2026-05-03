@@ -133,13 +133,27 @@ export function ResultModal({ show, type, challenger, skullOwner, lostDisc, onCl
             {/* GAME LOSE */}
             {type === 'lose' && (
               <>
-                <div className="text-6xl mb-3">🪦</div>
-                <h2 className="text-2xl font-bold text-gray-400 mb-2" style={{ fontFamily: 'Cinzel, serif' }}>
-                  ゲームオーバー
-                </h2>
-                <p className="text-white/70 mb-4" style={{ fontFamily: 'Crimson Text, serif' }}>
-                  全てのカードを失ってしまった
-                </p>
+                {(challenger?.win_count ?? 0) >= 2 ? (
+                  <>
+                    <div className="text-6xl mb-3">💔</div>
+                    <h2 className="text-2xl font-bold text-gray-400 mb-2" style={{ fontFamily: 'Cinzel, serif' }}>
+                      敗北
+                    </h2>
+                    <p className="text-white/70 mb-4" style={{ fontFamily: 'Crimson Text, serif' }}>
+                      {challenger?.player_name} が2回のチャレンジに成功した
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <div className="text-6xl mb-3">🪦</div>
+                    <h2 className="text-2xl font-bold text-gray-400 mb-2" style={{ fontFamily: 'Cinzel, serif' }}>
+                      ゲームオーバー
+                    </h2>
+                    <p className="text-white/70 mb-4" style={{ fontFamily: 'Crimson Text, serif' }}>
+                      全てのカードを失ってしまった
+                    </p>
+                  </>
+                )}
                 <button
                   onClick={onClose}
                   className="w-full py-3 border border-white/20 rounded-xl text-white/70"

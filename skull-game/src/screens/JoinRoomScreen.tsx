@@ -30,11 +30,11 @@ export function JoinRoomScreen() {
 
   return (
     <div
-      className="min-h-screen flex flex-col"
+      className="h-svh flex flex-col"
       style={{ background: 'radial-gradient(ellipse at 50% 0%, #1a0a2e 0%, #030712 70%)' }}
     >
       {/* Header */}
-      <div className="flex items-center gap-3 px-4 pt-6 pb-4">
+      <div className="flex-shrink-0 flex items-center gap-3 px-4 pt-6 pb-4">
         <button
           onClick={() => navigate('/menu')}
           className="text-white/50 hover:text-white transition-colors text-sm"
@@ -47,7 +47,8 @@ export function JoinRoomScreen() {
         </h1>
       </div>
 
-      <div className="flex-1 flex flex-col px-6 pt-6 pb-12 gap-6">
+      {/* Scrollable content */}
+      <div className="flex-1 overflow-y-auto px-6 pt-6 pb-4 flex flex-col gap-6">
         {/* Name */}
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
           <label
@@ -108,11 +109,17 @@ export function JoinRoomScreen() {
             {error}
           </motion.p>
         )}
+      </div>
 
+      {/* Join button — always visible at bottom */}
+      <div
+        className="flex-shrink-0 px-6 pt-3 pb-6"
+        style={{ paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom))' }}
+      >
         <motion.button
           onClick={handleJoin}
           disabled={isLoading || !isReady}
-          className="w-full py-4 rounded-2xl text-white text-xl font-bold disabled:opacity-40 mt-2"
+          className="w-full py-4 rounded-2xl text-white text-xl font-bold disabled:opacity-40"
           style={{
             fontFamily: 'Cinzel, serif',
             background: 'linear-gradient(135deg, #6d28d9, #4c1d95)',

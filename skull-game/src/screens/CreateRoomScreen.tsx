@@ -30,11 +30,11 @@ export function CreateRoomScreen() {
 
   return (
     <div
-      className="min-h-screen flex flex-col"
+      className="h-svh flex flex-col"
       style={{ background: 'radial-gradient(ellipse at 50% 0%, #1a0a2e 0%, #030712 70%)' }}
     >
       {/* Header */}
-      <div className="flex items-center gap-3 px-4 pt-6 pb-4">
+      <div className="flex-shrink-0 flex items-center gap-3 px-4 pt-6 pb-4">
         <button
           onClick={() => navigate('/menu')}
           className="text-white/50 hover:text-white transition-colors text-sm"
@@ -47,7 +47,7 @@ export function CreateRoomScreen() {
         </h1>
       </div>
 
-      <div className="flex-1 flex flex-col px-6 pt-4 pb-12 gap-6">
+      <div className="flex-1 overflow-y-auto flex flex-col px-6 pt-4 pb-8 gap-6">
         <AnimatePresence mode="wait">
           {!roomCode ? (
             /* ── Form ──────────────────────────────────────────────── */
