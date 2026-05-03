@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useGameStore } from '../store/gameStore'
@@ -12,6 +12,7 @@ export function JoinRoomScreen() {
   const [defaultName]       = useState(() => RANDOM_NAMES[Math.floor(Math.random() * RANDOM_NAMES.length)])
   const [name, setName]     = useState('')
   const [code, setCode]     = useState('')
+  const submittingRef = useRef(false)
 
   function handleCodeChange(raw: string) {
     // Auto uppercase, max 6 chars, letters/digits only
@@ -19,10 +20,15 @@ export function JoinRoomScreen() {
   }
 
   async function handleJoin() {
-    if (code.length !== 6) return
-    await joinRoom(code, name.trim() || defaultName)
-    if (!useGameStore.getState().error) {
-      navigate(`/room/${code}`)
+    if (code.length !== 6 || submittingRef.current || isLoading) return
+    submittingRef.current = true
+    try {
+      await joinRoom(code, name.trim() || defaultName)
+      if (!useGameStore.getState().error) {
+        navigate(`/room/${code}`)
+      }
+    } finally {
+      submittingRef.current = false
     }
   }
 

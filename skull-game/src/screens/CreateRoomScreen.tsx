@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useGameStore } from '../store/gameStore'
@@ -14,10 +14,17 @@ export function CreateRoomScreen() {
   const [maxPlayers, setMaxPlayers] = useState(4)
   const [roomCode, setRoomCode]   = useState<string | null>(null)
   const [copied, setCopied]       = useState(false)
+  const submittingRef = useRef(false)
 
   async function handleCreate() {
-    const code = await createRoom(name.trim() || defaultName, maxPlayers)
-    setRoomCode(code)
+    if (submittingRef.current || isLoading) return
+    submittingRef.current = true
+    try {
+      const code = await createRoom(name.trim() || defaultName, maxPlayers)
+      setRoomCode(code)
+    } finally {
+      submittingRef.current = false
+    }
   }
 
   function handleCopy() {

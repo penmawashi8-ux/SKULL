@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useGameStore } from '../store/gameStore'
@@ -19,11 +19,18 @@ export function CpuSetupScreen() {
   const [name, setName]           = useState('')
   const [cpuCount, setCpuCount]   = useState(2)
   const [difficulty, setDifficulty] = useState('normal')
+  const submittingRef = useRef(false)
 
   async function handleStart() {
-    await startCpuGame(name.trim() || defaultName, cpuCount, difficulty)
-    const room = useGameStore.getState().room
-    if (room) navigate(`/game/${room.room_code}`)
+    if (submittingRef.current || isLoading) return
+    submittingRef.current = true
+    try {
+      await startCpuGame(name.trim() || defaultName, cpuCount, difficulty)
+      const room = useGameStore.getState().room
+      if (room) navigate(`/game/${room.room_code}`)
+    } finally {
+      submittingRef.current = false
+    }
   }
 
   return (

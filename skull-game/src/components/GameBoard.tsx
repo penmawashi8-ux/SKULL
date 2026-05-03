@@ -26,7 +26,7 @@ export function GameBoard({ onGameEnd }: Props) {
     advanceAfterChallenge, resetGame, resumeCpuTurns, _foldedPlayerIds, _permCards, _cpuLog,
   } = useGameStore()
 
-  const isFlippingRef = useRef(false)
+  const actionLockRef = useRef(false)
 
   const [log, setLog] = useState<LogEntry[]>([])
   const [modal, setModal] = useState<{
@@ -81,29 +81,53 @@ export function GameBoard({ onGameEnd }: Props) {
   }, [players, modal.show])
 
   const handlePlaceFlower = useCallback(async () => {
-    await placeDisc('flower')
-    addLog(`${myPlayer?.player_name} が花を置いた`, 'place')
+    if (actionLockRef.current) return
+    actionLockRef.current = true
+    try {
+      await placeDisc('flower')
+      addLog(`${myPlayer?.player_name} が花を置いた`, 'place')
+    } finally {
+      actionLockRef.current = false
+    }
   }, [placeDisc, myPlayer])
 
   const handlePlaceSkull = useCallback(async () => {
-    await placeDisc('skull')
-    addLog(`${myPlayer?.player_name} がカードを置いた`, 'place')
+    if (actionLockRef.current) return
+    actionLockRef.current = true
+    try {
+      await placeDisc('skull')
+      addLog(`${myPlayer?.player_name} がカードを置いた`, 'place')
+    } finally {
+      actionLockRef.current = false
+    }
   }, [placeDisc, myPlayer])
 
   const handleBid = useCallback(async (amount: number) => {
-    await placeBid(amount)
-    addLog(`${myPlayer?.player_name} が ${amount} 枚と宣言`, 'bid')
+    if (actionLockRef.current) return
+    actionLockRef.current = true
+    try {
+      await placeBid(amount)
+      addLog(`${myPlayer?.player_name} が ${amount} 枚と宣言`, 'bid')
+    } finally {
+      actionLockRef.current = false
+    }
   }, [placeBid, myPlayer])
 
   const handleFold = useCallback(async () => {
-    await fold()
-    addLog(`${myPlayer?.player_name} がパス`, 'fold')
+    if (actionLockRef.current) return
+    actionLockRef.current = true
+    try {
+      await fold()
+      addLog(`${myPlayer?.player_name} がパス`, 'fold')
+    } finally {
+      actionLockRef.current = false
+    }
   }, [fold, myPlayer])
 
   const handleFlip = useCallback(async (discId: string) => {
     if (!myPlayer || !gameState) return
-    if (isFlippingRef.current) return  // prevent double-tap
-    isFlippingRef.current = true
+    if (actionLockRef.current) return
+    actionLockRef.current = true
 
     const disc = [...myDiscs, ...publicDiscs].find(d => d.id === discId)
     const owner = players.find(p => disc && p.id === disc.player_id)
@@ -117,7 +141,7 @@ export function GameBoard({ onGameEnd }: Props) {
       const freshDisc = [...freshState.myDiscs, ...freshState.publicDiscs].find(d => d.id === discId)
       await new Promise(r => setTimeout(r, 500))
       setModal({ show: true, type: 'skull', challenger: myPlayer, skullOwner: owner, lostDisc: freshDisc })
-      // isFlippingRef stays true until onClose resets it
+      // lock stays set until onClose
     } else {
       addLog(`🌸 ${myPlayer.player_name} が花をめくった`, 'flip')
       if (freshFlipCount >= highestBid) {
@@ -129,9 +153,9 @@ export function GameBoard({ onGameEnd }: Props) {
         } else {
           setModal({ show: true, type: 'success', challenger: myPlayer })
         }
-        // isFlippingRef stays true until onClose resets it
+        // lock stays set until onClose
       } else {
-        isFlippingRef.current = false  // normal flower, game continues — allow next tap
+        actionLockRef.current = false  // normal flower, next tap allowed
       }
     }
   }, [myPlayer, gameState, flipDisc, myDiscs, publicDiscs, players, highestBid])
@@ -363,7 +387,7 @@ export function GameBoard({ onGameEnd }: Props) {
         onClose={async () => {
           const type = modal.type
           const skullOwnerId = modal.skullOwner?.id
-          isFlippingRef.current = false  // unlock flipping for next round
+          actionLockRef.current = false  // unlock for next round
           setModal({ show: false, type: null })
           if (type === 'win' || type === 'lose') {
             resetGame()
