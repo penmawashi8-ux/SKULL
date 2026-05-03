@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useGameStore } from '../store/gameStore'
@@ -21,6 +21,8 @@ export function LobbyScreen() {
   } = useGameStore()
 
   const [copied, setCopied] = useState(false)
+  const addingCpuRef = useRef(false)
+  const startingRef = useRef(false)
 
   const isHost   = room?.host_id === sessionId
   const canStart = players.filter(p => !p.is_eliminated).length >= 3
@@ -36,10 +38,26 @@ export function LobbyScreen() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [room?.id])
 
+  async function handleAddCpu() {
+    if (addingCpuRef.current || isLoading) return
+    addingCpuRef.current = true
+    try {
+      await addCpuPlayer()
+    } finally {
+      addingCpuRef.current = false
+    }
+  }
+
   async function handleStart() {
-    await startGame()
-    if (!useGameStore.getState().error) {
-      navigate(`/game/${roomCode}`)
+    if (startingRef.current || isLoading) return
+    startingRef.current = true
+    try {
+      await startGame()
+      if (!useGameStore.getState().error) {
+        navigate(`/game/${roomCode}`)
+      }
+    } finally {
+      startingRef.current = false
     }
   }
 
@@ -164,7 +182,7 @@ export function LobbyScreen() {
               </span>
               {isHost && i === 0 && (
                 <motion.button
-                  onClick={addCpuPlayer}
+                  onClick={handleAddCpu}
                   disabled={isLoading}
                   className="text-xs px-2.5 py-1 rounded-lg bg-purple-900/50 border border-purple-500/40 text-purple-300 disabled:opacity-40"
                   whileTap={{ scale: 0.95 }}
