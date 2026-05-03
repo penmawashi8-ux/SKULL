@@ -69,6 +69,8 @@ export interface StoreState {
 
 // Mutex to prevent concurrent online CPU turn processing
 let _onlineCpuProcessing = false
+// Mutex to prevent concurrent local CPU turn processing
+let _cpuRunning = false
 
 export const useGameStore = create<StoreState>()((set, get) => {
 
@@ -123,7 +125,8 @@ export const useGameStore = create<StoreState>()((set, get) => {
   }
 
   // ── processCpuTurns ───────────────────────────────────────────────────────
-  async function processCpuTurns(): Promise<void> {
+  // _runCpuLoop: inner recursive implementation (no mutex check)
+  async function _runCpuLoop(): Promise<void> {
     await new Promise(r => setTimeout(r, 700))
     const s = get()
     if (!s.isCpuGame || !s.gameState) return
@@ -156,14 +159,14 @@ export const useGameStore = create<StoreState>()((set, get) => {
             },
             _foldedPlayerIds: [],
           }))
-          await processCpuTurns()
+          await _runCpuLoop()
           return
         }
         const next = getNextActivePlayer(players, currentPlayer.id)
         set(prev => ({
           gameState: { ...prev.gameState!, current_player_id: next?.id ?? null, updated_at: ts() },
         }))
-        await processCpuTurns()
+        await _runCpuLoop()
         return
       }
 
@@ -193,7 +196,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
             _foldedPlayerIds: [],
             _cpuLog: { id: crypto.randomUUID(), message: `${currentPlayer.player_name} が ${minBid} 枚と宣言`, type: 'bid' },
           }))
-          await processCpuTurns()
+          await _runCpuLoop()
           return
         }
       }
@@ -244,7 +247,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
           _foldedPlayerIds: [],
           _cpuLog: cpuPlaceLog,
         }))
-        await processCpuTurns()
+        await _runCpuLoop()
         return
       }
 
@@ -256,7 +259,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
         gameState: { ...prev.gameState!, current_player_id: next?.id ?? null, updated_at: ts() },
         _cpuLog: cpuPlaceLog,
       }))
-      await processCpuTurns()
+      await _runCpuLoop()
       return
     }
 
@@ -289,7 +292,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
             _foldedPlayerIds: newFoldedIds,
             _cpuLog: foldLog,
           }))
-          await processCpuTurns()
+          await _runCpuLoop()
         } else {
           const next = getNextActivePlayer(players, currentPlayer.id, newFoldedIds)
           set(prev => ({
@@ -302,7 +305,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
             _foldedPlayerIds: newFoldedIds,
             _cpuLog: foldLog,
           }))
-          await processCpuTurns()
+          await _runCpuLoop()
         }
       } else {
         const next = getNextActivePlayer(players, currentPlayer.id, _foldedPlayerIds)
@@ -316,7 +319,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
           },
           _cpuLog: { id: crypto.randomUUID(), message: `${currentPlayer.player_name} が ${result.amount} 枚と宣言`, type: 'bid' },
         }))
-        await processCpuTurns()
+        await _runCpuLoop()
       }
       return
     }
@@ -396,7 +399,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
             : currentPlayer.id
           await new Promise(r => setTimeout(r, 1500))  // let user read the skull result
           startNextRound(starterId, updatedPlayers, freshState.room!, freshState.gameState!)
-          await processCpuTurns()
+          await _runCpuLoop()
         }
         return
       }
@@ -415,12 +418,23 @@ export const useGameStore = create<StoreState>()((set, get) => {
         if (!winner) {
           await new Promise(r => setTimeout(r, 1500))  // let user read the success result
           startNextRound(currentPlayer.id, updatedPlayers, freshState.room!, freshState.gameState!)
-          await processCpuTurns()
+          await _runCpuLoop()
         }
         return
       }
 
-      await processCpuTurns()
+      await _runCpuLoop()
+    }
+  }
+
+  // processCpuTurns: guarded entry point — drops concurrent calls via _cpuRunning mutex
+  async function processCpuTurns(): Promise<void> {
+    if (_cpuRunning) return
+    _cpuRunning = true
+    try {
+      await _runCpuLoop()
+    } finally {
+      _cpuRunning = false
     }
   }
 
