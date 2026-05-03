@@ -9,7 +9,8 @@ export function JoinRoomScreen() {
   const navigate  = useNavigate()
   const { joinRoom, isLoading, error } = useGameStore()
 
-  const [name, setName]     = useState(() => RANDOM_NAMES[Math.floor(Math.random() * RANDOM_NAMES.length)])
+  const [defaultName]       = useState(() => RANDOM_NAMES[Math.floor(Math.random() * RANDOM_NAMES.length)])
+  const [name, setName]     = useState('')
   const [code, setCode]     = useState('')
 
   function handleCodeChange(raw: string) {
@@ -18,14 +19,14 @@ export function JoinRoomScreen() {
   }
 
   async function handleJoin() {
-    if (!name.trim() || code.length !== 6) return
-    await joinRoom(code, name.trim())
+    if (code.length !== 6) return
+    await joinRoom(code, name.trim() || defaultName)
     if (!useGameStore.getState().error) {
       navigate(`/room/${code}`)
     }
   }
 
-  const isReady = name.trim().length > 0 && code.length === 6
+  const isReady = code.length === 6
 
   return (
     <div
@@ -60,7 +61,7 @@ export function JoinRoomScreen() {
             value={name}
             onChange={e => setName(e.target.value)}
             maxLength={12}
-            placeholder="プレイヤー名"
+            placeholder={defaultName}
             className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/20 focus:outline-none focus:border-purple-500/60 text-lg"
             style={{ fontFamily: 'Crimson Text, serif' }}
           />

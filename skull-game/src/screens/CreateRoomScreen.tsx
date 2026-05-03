@@ -9,14 +9,14 @@ export function CreateRoomScreen() {
   const navigate = useNavigate()
   const { createRoom, isLoading, error } = useGameStore()
 
-  const [name, setName]           = useState(() => RANDOM_NAMES[Math.floor(Math.random() * RANDOM_NAMES.length)])
+  const [defaultName]              = useState(() => RANDOM_NAMES[Math.floor(Math.random() * RANDOM_NAMES.length)])
+  const [name, setName]           = useState('')
   const [maxPlayers, setMaxPlayers] = useState(4)
   const [roomCode, setRoomCode]   = useState<string | null>(null)
   const [copied, setCopied]       = useState(false)
 
   async function handleCreate() {
-    if (!name.trim()) return
-    const code = await createRoom(name.trim(), maxPlayers)
+    const code = await createRoom(name.trim() || defaultName, maxPlayers)
     setRoomCode(code)
   }
 
@@ -71,7 +71,7 @@ export function CreateRoomScreen() {
                   value={name}
                   onChange={e => setName(e.target.value)}
                   maxLength={12}
-                  placeholder="プレイヤー名"
+                  placeholder={defaultName}
                   className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/20 focus:outline-none focus:border-purple-500/60 text-lg"
                   style={{ fontFamily: 'Crimson Text, serif' }}
                 />

@@ -15,13 +15,13 @@ export function CpuSetupScreen() {
   const navigate = useNavigate()
   const { startCpuGame, isLoading, error } = useGameStore()
 
-  const [name, setName]           = useState(() => RANDOM_NAMES[Math.floor(Math.random() * RANDOM_NAMES.length)])
+  const [defaultName]              = useState(() => RANDOM_NAMES[Math.floor(Math.random() * RANDOM_NAMES.length)])
+  const [name, setName]           = useState('')
   const [cpuCount, setCpuCount]   = useState(2)
   const [difficulty, setDifficulty] = useState('normal')
 
   async function handleStart() {
-    if (!name.trim()) return
-    await startCpuGame(name.trim(), cpuCount, difficulty)
+    await startCpuGame(name.trim() || defaultName, cpuCount, difficulty)
     const room = useGameStore.getState().room
     if (room) navigate(`/game/${room.room_code}`)
   }
@@ -63,7 +63,7 @@ export function CpuSetupScreen() {
             value={name}
             onChange={e => setName(e.target.value)}
             maxLength={12}
-            placeholder="プレイヤー名"
+            placeholder={defaultName}
             className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/20 focus:outline-none focus:border-purple-500/60 text-lg"
             style={{ fontFamily: 'Crimson Text, serif' }}
           />
