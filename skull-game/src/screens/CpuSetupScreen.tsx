@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useGameStore } from '../store/gameStore'
@@ -19,17 +19,17 @@ export function CpuSetupScreen() {
   const [name, setName]           = useState('')
   const [cpuCount, setCpuCount]   = useState(2)
   const [difficulty, setDifficulty] = useState('normal')
-  const submittingRef = useRef(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   async function handleStart() {
-    if (submittingRef.current || isLoading) return
-    submittingRef.current = true
+    if (isSubmitting || isLoading) return
+    setIsSubmitting(true)
     try {
       await startCpuGame(name.trim() || defaultName, cpuCount, difficulty)
       const room = useGameStore.getState().room
       if (room) navigate(`/game/${room.room_code}`)
     } finally {
-      submittingRef.current = false
+      setIsSubmitting(false)
     }
   }
 
@@ -183,7 +183,7 @@ export function CpuSetupScreen() {
       >
         <motion.button
           onClick={handleStart}
-          disabled={isLoading}
+          disabled={isLoading || isSubmitting}
           className="w-full py-4 rounded-2xl text-white text-xl font-bold disabled:opacity-40"
           style={{
             fontFamily: 'Cinzel, serif',
@@ -196,7 +196,7 @@ export function CpuSetupScreen() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          {isLoading ? '起動中...' : 'ゲーム開始'}
+          {isLoading || isSubmitting ? '起動中...' : 'ゲーム開始'}
         </motion.button>
       </div>
     </div>

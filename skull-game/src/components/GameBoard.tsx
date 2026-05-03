@@ -28,6 +28,7 @@ export function GameBoard({ onGameEnd }: Props) {
 
   const actionLockRef = useRef(false)
 
+  const [isActing, setIsActing] = useState(false)
   const [log, setLog] = useState<LogEntry[]>([])
   const [modal, setModal] = useState<{
     show: boolean
@@ -83,44 +84,52 @@ export function GameBoard({ onGameEnd }: Props) {
   const handlePlaceFlower = useCallback(async () => {
     if (actionLockRef.current) return
     actionLockRef.current = true
+    setIsActing(true)
     try {
       await placeDisc('flower')
       addLog(`${myPlayer?.player_name} が花を置いた`, 'place')
     } finally {
       actionLockRef.current = false
+      setIsActing(false)
     }
   }, [placeDisc, myPlayer])
 
   const handlePlaceSkull = useCallback(async () => {
     if (actionLockRef.current) return
     actionLockRef.current = true
+    setIsActing(true)
     try {
       await placeDisc('skull')
       addLog(`${myPlayer?.player_name} がカードを置いた`, 'place')
     } finally {
       actionLockRef.current = false
+      setIsActing(false)
     }
   }, [placeDisc, myPlayer])
 
   const handleBid = useCallback(async (amount: number) => {
     if (actionLockRef.current) return
     actionLockRef.current = true
+    setIsActing(true)
     try {
       await placeBid(amount)
       addLog(`${myPlayer?.player_name} が ${amount} 枚と宣言`, 'bid')
     } finally {
       actionLockRef.current = false
+      setIsActing(false)
     }
   }, [placeBid, myPlayer])
 
   const handleFold = useCallback(async () => {
     if (actionLockRef.current) return
     actionLockRef.current = true
+    setIsActing(true)
     try {
       await fold()
       addLog(`${myPlayer?.player_name} がパス`, 'fold')
     } finally {
       actionLockRef.current = false
+      setIsActing(false)
     }
   }, [fold, myPlayer])
 
@@ -128,6 +137,7 @@ export function GameBoard({ onGameEnd }: Props) {
     if (!myPlayer || !gameState) return
     if (actionLockRef.current) return
     actionLockRef.current = true
+    setIsActing(true)
 
     const disc = [...myDiscs, ...publicDiscs].find(d => d.id === discId)
     const owner = players.find(p => disc && p.id === disc.player_id)
@@ -141,7 +151,7 @@ export function GameBoard({ onGameEnd }: Props) {
       const freshDisc = [...freshState.myDiscs, ...freshState.publicDiscs].find(d => d.id === discId)
       await new Promise(r => setTimeout(r, 500))
       setModal({ show: true, type: 'skull', challenger: myPlayer, skullOwner: owner, lostDisc: freshDisc })
-      // lock stays set until onClose
+      // lock + isActing stay set until onClose
     } else {
       addLog(`🌸 ${myPlayer.player_name} が花をめくった`, 'flip')
       if (freshFlipCount >= highestBid) {
@@ -153,9 +163,10 @@ export function GameBoard({ onGameEnd }: Props) {
         } else {
           setModal({ show: true, type: 'success', challenger: myPlayer })
         }
-        // lock stays set until onClose
+        // lock + isActing stay set until onClose
       } else {
-        actionLockRef.current = false  // normal flower, next tap allowed
+        actionLockRef.current = false
+        setIsActing(false)  // normal flower, next tap allowed
       }
     }
   }, [myPlayer, gameState, flipDisc, myDiscs, publicDiscs, players, highestBid])
@@ -294,7 +305,7 @@ export function GameBoard({ onGameEnd }: Props) {
                 <div className="flex gap-2">
                   <motion.button
                     onClick={handlePlaceFlower}
-                    disabled={isLoading || myPlayer.flower_count === 0}
+                    disabled={isLoading || isActing || myPlayer.flower_count === 0}
                     className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-emerald-800 to-emerald-600 text-white font-bold disabled:opacity-40 text-sm"
                     whileTap={{ scale: 0.96 }}
                     style={{ fontFamily: 'Cinzel, serif' }}
@@ -303,7 +314,7 @@ export function GameBoard({ onGameEnd }: Props) {
                   </motion.button>
                   <motion.button
                     onClick={handlePlaceSkull}
-                    disabled={isLoading || myPlayer.skull_count === 0}
+                    disabled={isLoading || isActing || myPlayer.skull_count === 0}
                     className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-gray-700 to-gray-600 text-white font-bold disabled:opacity-40 text-sm"
                     whileTap={{ scale: 0.96 }}
                     style={{ fontFamily: 'Cinzel, serif' }}
@@ -320,7 +331,7 @@ export function GameBoard({ onGameEnd }: Props) {
                   onBid={handleBid}
                   onFold={handleFold}
                   canFold={canFoldNow}
-                  isLoading={isLoading}
+                  isLoading={isLoading || isActing}
                 />
               )}
 
@@ -387,7 +398,8 @@ export function GameBoard({ onGameEnd }: Props) {
         onClose={async () => {
           const type = modal.type
           const skullOwnerId = modal.skullOwner?.id
-          actionLockRef.current = false  // unlock for next round
+          actionLockRef.current = false
+          setIsActing(false)
           setModal({ show: false, type: null })
           if (type === 'win' || type === 'lose') {
             resetGame()

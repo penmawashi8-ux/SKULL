@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useGameStore } from '../store/gameStore'
@@ -12,7 +12,7 @@ export function JoinRoomScreen() {
   const [defaultName]       = useState(() => RANDOM_NAMES[Math.floor(Math.random() * RANDOM_NAMES.length)])
   const [name, setName]     = useState('')
   const [code, setCode]     = useState('')
-  const submittingRef = useRef(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   function handleCodeChange(raw: string) {
     // Auto uppercase, max 6 chars, letters/digits only
@@ -20,15 +20,15 @@ export function JoinRoomScreen() {
   }
 
   async function handleJoin() {
-    if (code.length !== 6 || submittingRef.current || isLoading) return
-    submittingRef.current = true
+    if (code.length !== 6 || isSubmitting || isLoading) return
+    setIsSubmitting(true)
     try {
       await joinRoom(code, name.trim() || defaultName)
       if (!useGameStore.getState().error) {
         navigate(`/room/${code}`)
       }
     } finally {
-      submittingRef.current = false
+      setIsSubmitting(false)
     }
   }
 
@@ -124,7 +124,7 @@ export function JoinRoomScreen() {
       >
         <motion.button
           onClick={handleJoin}
-          disabled={isLoading || !isReady}
+          disabled={isLoading || isSubmitting || !isReady}
           className="w-full py-4 rounded-2xl text-white text-xl font-bold disabled:opacity-40"
           style={{
             fontFamily: 'Cinzel, serif',
@@ -137,7 +137,7 @@ export function JoinRoomScreen() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
         >
-          {isLoading ? '参加中...' : '参加する'}
+          {isLoading || isSubmitting ? '参加中...' : '参加する'}
         </motion.button>
       </div>
     </div>

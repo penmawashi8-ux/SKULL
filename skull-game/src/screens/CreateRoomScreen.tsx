@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useGameStore } from '../store/gameStore'
@@ -14,16 +14,16 @@ export function CreateRoomScreen() {
   const [maxPlayers, setMaxPlayers] = useState(4)
   const [roomCode, setRoomCode]   = useState<string | null>(null)
   const [copied, setCopied]       = useState(false)
-  const submittingRef = useRef(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   async function handleCreate() {
-    if (submittingRef.current || isLoading) return
-    submittingRef.current = true
+    if (isSubmitting || isLoading) return
+    setIsSubmitting(true)
     try {
       const code = await createRoom(name.trim() || defaultName, maxPlayers)
       setRoomCode(code)
     } finally {
-      submittingRef.current = false
+      setIsSubmitting(false)
     }
   }
 
@@ -119,7 +119,7 @@ export function CreateRoomScreen() {
 
               <motion.button
                 onClick={handleCreate}
-                disabled={isLoading}
+                disabled={isLoading || isSubmitting}
                 className="w-full py-4 rounded-2xl text-white text-xl font-bold disabled:opacity-40 mt-4"
                 style={{
                   fontFamily: 'Cinzel, serif',
@@ -129,7 +129,7 @@ export function CreateRoomScreen() {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.97 }}
               >
-                {isLoading ? '作成中...' : 'ルームを作成'}
+                {isLoading || isSubmitting ? '作成中...' : 'ルームを作成'}
               </motion.button>
             </motion.div>
           ) : (

@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useGameStore } from '../store/gameStore'
@@ -21,8 +21,8 @@ export function LobbyScreen() {
   } = useGameStore()
 
   const [copied, setCopied] = useState(false)
-  const addingCpuRef = useRef(false)
-  const startingRef = useRef(false)
+  const [isAddingCpu, setIsAddingCpu] = useState(false)
+  const [isStarting, setIsStarting] = useState(false)
 
   const isHost   = room?.host_id === sessionId
   const canStart = players.filter(p => !p.is_eliminated).length >= 3
@@ -39,25 +39,25 @@ export function LobbyScreen() {
   }, [room?.id])
 
   async function handleAddCpu() {
-    if (addingCpuRef.current || isLoading) return
-    addingCpuRef.current = true
+    if (isAddingCpu || isLoading) return
+    setIsAddingCpu(true)
     try {
       await addCpuPlayer()
     } finally {
-      addingCpuRef.current = false
+      setIsAddingCpu(false)
     }
   }
 
   async function handleStart() {
-    if (startingRef.current || isLoading) return
-    startingRef.current = true
+    if (isStarting || isLoading) return
+    setIsStarting(true)
     try {
       await startGame()
       if (!useGameStore.getState().error) {
         navigate(`/game/${roomCode}`)
       }
     } finally {
-      startingRef.current = false
+      setIsStarting(false)
     }
   }
 
@@ -183,7 +183,7 @@ export function LobbyScreen() {
               {isHost && i === 0 && (
                 <motion.button
                   onClick={handleAddCpu}
-                  disabled={isLoading}
+                  disabled={isLoading || isAddingCpu}
                   className="text-xs px-2.5 py-1 rounded-lg bg-purple-900/50 border border-purple-500/40 text-purple-300 disabled:opacity-40"
                   whileTap={{ scale: 0.95 }}
                   style={{ fontFamily: 'Crimson Text, serif' }}
@@ -222,7 +222,7 @@ export function LobbyScreen() {
         {isHost ? (
           <motion.button
             onClick={handleStart}
-            disabled={isLoading || !canStart}
+            disabled={isLoading || isStarting || !canStart}
             className="w-full py-4 rounded-2xl text-white text-xl font-bold disabled:opacity-40"
             style={{
               fontFamily: 'Cinzel, serif',
