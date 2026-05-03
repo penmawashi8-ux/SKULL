@@ -20,7 +20,7 @@ export function HomeScreen() {
 
   return (
     <div
-      className="h-svh flex flex-col items-center justify-center relative overflow-hidden"
+      className="h-full flex flex-col items-center justify-center relative overflow-hidden"
       style={{ background: 'radial-gradient(ellipse at 50% 20%, #1a0a2e 0%, #030712 65%)' }}
     >
       {/* Floating background cards */}
