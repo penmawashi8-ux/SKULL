@@ -757,8 +757,9 @@ export const useGameStore = create<StoreState>()((set, get) => {
 
     // ── addCpuPlayer ──────────────────────────────────────────────────────────
     addCpuPlayer: async () => {
-      const { room, players, sessionId } = get()
+      const { room, players, sessionId, isLoading } = get()
       if (!room || room.host_id !== sessionId) return
+      if (isLoading) return  // prevent rapid-tap race condition
       if (players.length >= room.max_players) return
       set({ isLoading: true, error: null })
       try {
