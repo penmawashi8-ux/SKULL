@@ -1230,10 +1230,14 @@ export const useGameStore = create<StoreState>()((set, get) => {
             : { ...disc, disc_type: 'flower' }
 
           if (payload.eventType === 'INSERT') {
-            set(s => ({
-              publicDiscs: [...s.publicDiscs, publicDisc],
-              myDiscs: isOwn ? [...s.myDiscs, disc] : s.myDiscs,
-            }))
+            set(s => {
+              // Dedup: subscription can fire twice (own insert + realtime echo)
+              if (s.publicDiscs.some(d => d.id === disc.id)) return {}
+              return {
+                publicDiscs: [...s.publicDiscs, publicDisc],
+                myDiscs: isOwn ? [...s.myDiscs, disc] : s.myDiscs,
+              }
+            })
           } else {
             set(s => ({
               publicDiscs: s.publicDiscs.map(d => d.id === disc.id ? publicDisc : d),
@@ -1246,10 +1250,42 @@ export const useGameStore = create<StoreState>()((set, get) => {
             if (evt.status === 'SUBSCRIBED') {
               if (reconnectTimer) clearTimeout(reconnectTimer)
               set({ isReconnecting: false })
-              // Re-fetch players to catch anyone who joined while subscription was being established or during reconnect
+              // Re-fetch players to catch anyone who joined during the subscription gap
               supabase.from('players').select().eq('room_id', roomId).then(({ data }) => {
                 if (data && data.length > 0) set({ players: data })
               })
+              // Re-fetch placed_discs to catch any placements missed during the
+              // subscription gap (e.g. between LobbyScreen sub teardown and GameScreen
+              // sub becoming SUBSCRIBED). Without this, allPlaced is never true and
+              // the bid phase never triggers for the player who missed the events.
+              const currentRound = get().gameState?.round_number
+              const myId = get()._myPlayerId
+              if (currentRound != null) {
+                supabase.from('placed_discs').select()
+                  .eq('room_id', roomId).eq('round_number', currentRound)
+                  .then(({ data }) => {
+                    if (!data || data.length === 0) return
+                    set(s => {
+                      const existingIds = new Set(s.publicDiscs.map(d => d.id))
+                      const fresh = data.filter(d => !existingIds.has(d.id))
+                      if (fresh.length === 0) return {}
+                      return {
+                        publicDiscs: [
+                          ...s.publicDiscs,
+                          ...fresh.map(d =>
+                            d.player_id === myId || d.is_flipped
+                              ? d
+                              : { ...d, disc_type: 'flower' as DiscType },
+                          ),
+                        ],
+                        myDiscs: [
+                          ...s.myDiscs,
+                          ...fresh.filter(d => d.player_id === myId),
+                        ],
+                      }
+                    })
+                  })
+              }
             } else if (evt.status === 'CHANNEL_ERROR' || evt.status === 'TIMED_OUT') {
               set({ isReconnecting: true })
               reconnectTimer = setTimeout(() => {
