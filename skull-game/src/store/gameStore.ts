@@ -570,10 +570,16 @@ export const useGameStore = create<StoreState>()((set, get) => {
         const newFlipCount = gs2.flip_count + 1
         await supabase.from('placed_discs').update({ is_flipped: true, flipped_by: cpuPlayer.id }).eq('id', targetId)
         await supabase.from('game_states').update({ flip_count: newFlipCount, updated_at: ts() }).eq('id', gs2.id)
+
+        const flipLog = realDisc.disc_type === 'skull'
+          ? { id: crypto.randomUUID(), message: `💀 ${cpuPlayer.player_name} がドクロを踏んだ！`, type: 'result' as const }
+          : { id: crypto.randomUUID(), message: `🌸 ${cpuPlayer.player_name} がカードをめくった`, type: 'flip' as const }
+
         set(prev => ({
           publicDiscs: prev.publicDiscs.map(d => d.id === targetId ? { ...d, disc_type: realDisc.disc_type, is_flipped: true } : d),
           _cpuDiscs: prev._cpuDiscs.map(d => d.id === targetId ? { ...d, is_flipped: true } : d),
           myDiscs: prev.myDiscs.map(d => d.id === targetId ? { ...d, is_flipped: true } : d),
+          _cpuLog: flipLog,
         }))
 
         if (realDisc.disc_type === 'skull') {
@@ -590,7 +596,11 @@ export const useGameStore = create<StoreState>()((set, get) => {
           const updatedPerm = { ...freshS._permCards, [cpuPlayer.id]: newPerm }
           await supabase.from('players').update({ flower_count: newPerm.flowers, skull_count: newPerm.skulls, is_eliminated: isEliminated }).eq('id', cpuPlayer.id)
           const updatedPlayers = freshS.players.map(p => p.id !== cpuPlayer.id ? p : { ...p, flower_count: newPerm.flowers, skull_count: newPerm.skulls, is_eliminated: isEliminated })
-          set({ players: updatedPlayers, _permCards: updatedPerm })
+          set({
+            players: updatedPlayers,
+            _permCards: updatedPerm,
+            _cpuLog: { id: crypto.randomUUID(), message: `💀 ${cpuPlayer.player_name} がドクロを踏んだ！カードを1枚失った`, type: 'result' },
+          })
           const winner = getWinner(updatedPlayers)
           if (!winner) {
             // Challenger (who failed) starts next round
@@ -604,6 +614,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
               const perm = updatedPerm[p.id]
               return perm ? { ...p, flower_count: perm.flowers, skull_count: perm.skulls } : p
             })
+            await new Promise(r => setTimeout(r, 1500))
             await supabase.from('placed_discs').delete().eq('room_id', room.id).eq('round_number', gs2.round_number)
             await supabase.from('game_states').update({
               round_number: newRound, phase: 'place', current_player_id: starterId,
@@ -619,7 +630,10 @@ export const useGameStore = create<StoreState>()((set, get) => {
           await supabase.from('players').update({ win_count: cpuPlayer.win_count + 1 }).eq('id', cpuPlayer.id)
           const freshS = get()
           const updatedPlayers = freshS.players.map(p => p.id !== cpuPlayer.id ? p : { ...p, win_count: p.win_count + 1 })
-          set({ players: updatedPlayers })
+          set({
+            players: updatedPlayers,
+            _cpuLog: { id: crypto.randomUUID(), message: `🌸 ${cpuPlayer.player_name} がチャレンジ成功！`, type: 'result' },
+          })
           const winner = getWinner(updatedPlayers)
           if (!winner) {
             const newRound = gs2.round_number + 1
@@ -628,6 +642,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
               const perm = freshS._permCards[p.id]
               return perm ? { ...p, flower_count: perm.flowers, skull_count: perm.skulls } : p
             })
+            await new Promise(r => setTimeout(r, 1500))
             await supabase.from('placed_discs').delete().eq('room_id', room.id).eq('round_number', gs2.round_number)
             await supabase.from('game_states').update({
               round_number: newRound, phase: 'place', current_player_id: cpuPlayer.id,
@@ -1061,7 +1076,8 @@ export const useGameStore = create<StoreState>()((set, get) => {
         await supabase.from('game_states').update({
           flip_count: newFlipCount, updated_at: ts(),
         }).eq('id', gameState.id)
-        set({ isLoading: false })
+        // Update local flip_count immediately so handleFlip can read it before subscription fires
+        set(s => ({ isLoading: false, gameState: s.gameState ? { ...s.gameState, flip_count: newFlipCount } : null }))
         return (updatedDisc?.disc_type as DiscType) ?? 'flower'
       } catch (e) {
         set({ error: (e as any)?.message ?? String(e), isLoading: false })
@@ -1259,7 +1275,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
           }).eq('id', gameState.id)
           await supabase.from('placed_discs')
             .delete().eq('room_id', room.id).eq('round_number', gameState.round_number)
-          set({ players: updatedPlayers })
+          set({ players: updatedPlayers, publicDiscs: [], myDiscs: [], _cpuDiscs: [], _foldedPlayerIds: [] })
         }
       } else {
         // Challenge loss: remove one random card permanently
@@ -1308,7 +1324,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
           }).eq('id', gameState.id)
           await supabase.from('placed_discs')
             .delete().eq('room_id', room.id).eq('round_number', gameState.round_number)
-          set({ players: updatedPlayers })
+          set({ players: updatedPlayers, publicDiscs: [], myDiscs: [], _cpuDiscs: [], _foldedPlayerIds: [] })
         }
       }
     },
