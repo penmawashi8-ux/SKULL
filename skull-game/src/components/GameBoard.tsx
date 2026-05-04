@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
+import { flushSync } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useGameStore } from '../store/gameStore'
 import { PlayerCard } from './PlayerCard'
@@ -6,7 +7,7 @@ import { BidController } from './BidController'
 import { ActionLog } from './ActionLog'
 import { ResultModal } from './ResultModal'
 import { canFold, getTotalDiscsInPlay, getWinner } from '../lib/gameEngine'
-import { playButtonPress, playFlowerFlip, playSkullFlip } from '../lib/sounds'
+import { playButtonPress, playFlowerFlip, playSkullFlip, playCardPlace, playSuccess, playFailure } from '../lib/sounds'
 import type { LogEntry } from './ActionLog'
 import type { Player, PlacedDisc } from '../types/game'
 
@@ -62,7 +63,14 @@ export function GameBoard({ onGameEnd }: Props) {
   }
 
   useEffect(() => {
-    if (_cpuLog) addLog(_cpuLog.message, _cpuLog.type)
+    if (!_cpuLog) return
+    addLog(_cpuLog.message, _cpuLog.type)
+    if (_cpuLog.type === 'place') playCardPlace()
+    else if (_cpuLog.type === 'flip') playFlowerFlip()
+    else if (_cpuLog.type === 'result') {
+      if (_cpuLog.message.includes('💀')) playFailure()
+      else if (_cpuLog.message.includes('成功')) playSuccess()
+    }
   }, [_cpuLog?.id])
 
   // Re-trigger CPU turns when page comes back from background
@@ -89,8 +97,8 @@ export function GameBoard({ onGameEnd }: Props) {
   const handlePlaceFlower = useCallback(async () => {
     if (actionLockRef.current) return
     actionLockRef.current = true
-    setIsActing(true)
-    playButtonPress()
+    flushSync(() => setIsActing(true))
+    playCardPlace()
     try {
       await placeDisc('flower')
       addLog(`${myPlayer?.player_name} が花を置いた`, 'place')
@@ -103,8 +111,8 @@ export function GameBoard({ onGameEnd }: Props) {
   const handlePlaceSkull = useCallback(async () => {
     if (actionLockRef.current) return
     actionLockRef.current = true
-    setIsActing(true)
-    playButtonPress()
+    flushSync(() => setIsActing(true))
+    playCardPlace()
     try {
       await placeDisc('skull')
       addLog(`${myPlayer?.player_name} がカードを置いた`, 'place')
@@ -117,7 +125,7 @@ export function GameBoard({ onGameEnd }: Props) {
   const handleBid = useCallback(async (amount: number) => {
     if (actionLockRef.current) return
     actionLockRef.current = true
-    setIsActing(true)
+    flushSync(() => setIsActing(true))
     playButtonPress()
     try {
       await placeBid(amount)
@@ -131,7 +139,7 @@ export function GameBoard({ onGameEnd }: Props) {
   const handleFold = useCallback(async () => {
     if (actionLockRef.current) return
     actionLockRef.current = true
-    setIsActing(true)
+    flushSync(() => setIsActing(true))
     playButtonPress()
     try {
       await fold()
@@ -158,6 +166,7 @@ export function GameBoard({ onGameEnd }: Props) {
 
     if (realType === 'skull') {
       playSkullFlip()
+      playFailure()
       addLog(`💀 ${myPlayer.player_name} が ${owner?.player_name} のドクロを踏んだ！`, 'result')
       const freshDisc = [...freshState.myDiscs, ...freshState.publicDiscs].find(d => d.id === discId)
       await new Promise(r => setTimeout(r, 500))
@@ -168,6 +177,7 @@ export function GameBoard({ onGameEnd }: Props) {
       addLog(`🌸 ${myPlayer.player_name} が花をめくった`, 'flip')
       if (freshFlipCount >= freshHighestBid) {
         addLog(`🎉 チャレンジ成功！`, 'result')
+        playSuccess()
         await new Promise(r => setTimeout(r, 700))
         const freshPlayer = freshState.players.find(p => p.id === myPlayer.id)
         if (freshPlayer && freshPlayer.win_count + 1 >= 2) {
