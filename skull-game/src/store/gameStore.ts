@@ -1166,6 +1166,12 @@ export const useGameStore = create<StoreState>()((set, get) => {
       const roomId = room.id
       let reconnectTimer: ReturnType<typeof setTimeout> | null = null
 
+      // Immediately fetch current players — don't wait for SUBSCRIBED event.
+      // Handles the case where guests joined before the host opened the lobby.
+      supabase.from('players').select().eq('room_id', roomId).then(({ data }) => {
+        if (data && data.length > 0) set({ players: data })
+      })
+
       const channel = supabase
         .channel(`room:${roomId}`)
         .on('postgres_changes', {
