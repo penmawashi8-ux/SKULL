@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useGameStore } from '../store/gameStore'
@@ -13,6 +13,7 @@ export function JoinRoomScreen() {
   const [name, setName]     = useState('')
   const [code, setCode]     = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const joiningRef = useRef(false)
 
   function handleCodeChange(raw: string) {
     // Filter non-alphanumeric, max 6 chars. Do NOT toUpperCase here —
@@ -22,7 +23,8 @@ export function JoinRoomScreen() {
   }
 
   async function handleJoin() {
-    if (code.length !== 6 || isSubmitting || isLoading) return
+    if (code.length !== 6 || joiningRef.current || isSubmitting || isLoading) return
+    joiningRef.current = true
     setIsSubmitting(true)
     try {
       await joinRoom(code.toUpperCase(), name.trim() || defaultName)
@@ -30,6 +32,7 @@ export function JoinRoomScreen() {
         navigate(`/room/${code}`)
       }
     } finally {
+      joiningRef.current = false
       setIsSubmitting(false)
     }
   }
@@ -135,9 +138,11 @@ export function JoinRoomScreen() {
             fontFamily: 'Cinzel, serif',
             background: 'linear-gradient(135deg, #6d28d9, #4c1d95)',
             boxShadow: isReady ? '0 0 24px rgba(109,40,217,0.4)' : 'none',
+            touchAction: 'manipulation',
+            pointerEvents: (isLoading || isSubmitting) ? 'none' : 'auto',
           }}
-          whileHover={isReady ? { scale: 1.02 } : {}}
-          whileTap={isReady ? { scale: 0.97 } : {}}
+          whileHover={isReady && !isSubmitting ? { scale: 1.02 } : {}}
+          whileTap={isReady && !isSubmitting ? { scale: 0.97 } : {}}
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}

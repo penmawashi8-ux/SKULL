@@ -1177,7 +1177,10 @@ export const useGameStore = create<StoreState>()((set, get) => {
           event: '*', schema: 'public', table: 'players', filter: `room_id=eq.${roomId}`,
         }, payload => {
           if (payload.eventType === 'INSERT') {
-            set(s => ({ players: [...s.players, payload.new as Player] }))
+            const p = payload.new as Player
+            set(s => s.players.some(x => x.id === p.id)
+              ? {}
+              : { players: [...s.players, p] })
           } else if (payload.eventType === 'UPDATE') {
             set(s => ({
               players: s.players.map(p =>
