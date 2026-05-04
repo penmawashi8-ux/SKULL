@@ -29,7 +29,7 @@ export function JoinRoomScreen() {
     try {
       await joinRoom(code.toUpperCase(), name.trim() || defaultName)
       if (!useGameStore.getState().error) {
-        navigate(`/room/${code}`)
+        navigate(`/room/${code.toUpperCase()}`)
       }
     } finally {
       joiningRef.current = false
