@@ -1172,8 +1172,18 @@ export const useGameStore = create<StoreState>()((set, get) => {
 
       // Immediately fetch current players — don't wait for SUBSCRIBED event.
       // Handles the case where guests joined before the host opened the lobby.
+      // Also seeds _permCards for guests who never ran startGame.
       supabase.from('players').select().eq('room_id', roomId).then(({ data }) => {
-        if (data && data.length > 0) set({ players: data })
+        if (!data || data.length === 0) return
+        set(s => {
+          const update: Partial<StoreState> = { players: data }
+          if (Object.keys(s._permCards).length === 0) {
+            const perm: Record<string, { flowers: number; skulls: number }> = {}
+            for (const p of data) if (!p.is_eliminated) perm[p.id] = { flowers: p.flower_count, skulls: p.skull_count }
+            update._permCards = perm
+          }
+          return update
+        })
       })
 
       const channel = supabase
@@ -1276,9 +1286,19 @@ export const useGameStore = create<StoreState>()((set, get) => {
             if (evt.status === 'SUBSCRIBED') {
               if (reconnectTimer) clearTimeout(reconnectTimer)
               set({ isReconnecting: false })
-              // Re-fetch players to catch anyone who joined during the subscription gap
+              // Re-fetch players to catch anyone who joined during the subscription gap.
+              // Also seeds _permCards for guests who never ran startGame.
               supabase.from('players').select().eq('room_id', roomId).then(({ data }) => {
-                if (data && data.length > 0) set({ players: data })
+                if (!data || data.length === 0) return
+                set(s => {
+                  const update: Partial<StoreState> = { players: data }
+                  if (Object.keys(s._permCards).length === 0) {
+                    const perm: Record<string, { flowers: number; skulls: number }> = {}
+                    for (const p of data) if (!p.is_eliminated) perm[p.id] = { flowers: p.flower_count, skulls: p.skull_count }
+                    update._permCards = perm
+                  }
+                  return update
+                })
               })
               // Re-fetch placed_discs to catch any placements missed during the
               // subscription gap (e.g. between LobbyScreen sub teardown and GameScreen
@@ -1349,11 +1369,24 @@ export const useGameStore = create<StoreState>()((set, get) => {
           startNextRound(myPlayer.id, updatedPlayers, room, gameState)
           await processCpuTurns()
         } else {
-          // Online: restore all player hands using _permCards, then advance round
-          const freshPermCards = get()._permCards
+          // Online: reconstruct perm from DB (placed_discs + current counts) instead of
+          // _permCards, which is empty on guest clients and may be stale on the host.
+          const { data: roundDiscs } = await supabase
+            .from('placed_discs').select('player_id, disc_type')
+            .eq('room_id', room.id).eq('round_number', gameState.round_number)
+          const permFromDB: Record<string, { flowers: number; skulls: number }> = {}
+          for (const p of updatedPlayers) {
+            if (p.is_eliminated) continue
+            const placed = (roundDiscs ?? []).filter(d => d.player_id === p.id)
+            permFromDB[p.id] = {
+              flowers: p.flower_count + placed.filter(d => d.disc_type === 'flower').length,
+              skulls: p.skull_count + placed.filter(d => d.disc_type === 'skull').length,
+            }
+          }
+          set({ _permCards: permFromDB })
           const resetPlayers = updatedPlayers.map(p => {
             if (p.is_eliminated) return p
-            const perm = freshPermCards[p.id]
+            const perm = permFromDB[p.id]
             return perm ? { ...p, flower_count: perm.flowers, skull_count: perm.skulls } : p
           })
           await Promise.all(
@@ -1409,10 +1442,29 @@ export const useGameStore = create<StoreState>()((set, get) => {
           startNextRound(starterId, updatedPlayers, room, gameState)
           await processCpuTurns()
         } else {
-          // Online: restore all player hands; loser's new perm already in updatedPermCards
+          // Online: reconstruct perm for all other players from DB (same pattern as win
+          // case). updatedPermCards already has the skull-loss-adjusted perm for myPlayer;
+          // merge that in so we don't re-compute the skull loss.
+          const { data: roundDiscs } = await supabase
+            .from('placed_discs').select('player_id, disc_type')
+            .eq('room_id', room.id).eq('round_number', gameState.round_number)
+          const correctedPerm: Record<string, { flowers: number; skulls: number }> = {}
+          for (const p of updatedPlayers) {
+            if (p.is_eliminated) continue
+            if (p.id === myPlayer.id) {
+              correctedPerm[p.id] = updatedPermCards[p.id]  // already skull-loss adjusted
+            } else {
+              const placed = (roundDiscs ?? []).filter(d => d.player_id === p.id)
+              correctedPerm[p.id] = {
+                flowers: p.flower_count + placed.filter(d => d.disc_type === 'flower').length,
+                skulls: p.skull_count + placed.filter(d => d.disc_type === 'skull').length,
+              }
+            }
+          }
+          set({ _permCards: correctedPerm })
           const resetPlayers = updatedPlayers.map(p => {
             if (p.is_eliminated) return p
-            const perm = updatedPermCards[p.id]
+            const perm = correctedPerm[p.id]
             return perm ? { ...p, flower_count: perm.flowers, skull_count: perm.skulls } : p
           })
           await Promise.all(
