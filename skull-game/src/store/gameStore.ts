@@ -1204,7 +1204,13 @@ export const useGameStore = create<StoreState>()((set, get) => {
         }, payload => {
           if (payload.eventType !== 'DELETE') {
             const newGs = payload.new as GameState
-            set({ gameState: newGs })
+            const prevGs = get().gameState
+            // If round advanced, clear all disc/fold state for every client
+            const roundChanged = prevGs != null && newGs.round_number !== prevGs.round_number
+            set({
+              gameState: newGs,
+              ...(roundChanged ? { publicDiscs: [], myDiscs: [], _cpuDiscs: [], _foldedPlayerIds: [] } : {}),
+            })
             // Host processes CPU turns in online+CPU hybrid mode
             const s = get()
             if (!s.isCpuGame && s.room?.host_id === s.sessionId) {
@@ -1281,8 +1287,22 @@ export const useGameStore = create<StoreState>()((set, get) => {
           startNextRound(myPlayer.id, updatedPlayers, room, gameState)
           await processCpuTurns()
         } else {
-          // Online: update DB
-          await supabase.from('players').update({ win_count: myPlayer.win_count + 1 }).eq('id', myPlayer.id)
+          // Online: restore all player hands using _permCards, then advance round
+          const freshPermCards = get()._permCards
+          const resetPlayers = updatedPlayers.map(p => {
+            if (p.is_eliminated) return p
+            const perm = freshPermCards[p.id]
+            return perm ? { ...p, flower_count: perm.flowers, skull_count: perm.skulls } : p
+          })
+          await Promise.all(
+            resetPlayers.filter(p => !p.is_eliminated).map(p =>
+              supabase.from('players').update({
+                flower_count: p.flower_count,
+                skull_count: p.skull_count,
+                ...(p.id === myPlayer.id ? { win_count: myPlayer.win_count + 1 } : {}),
+              }).eq('id', p.id)
+            )
+          )
           const newRound = gameState.round_number + 1
           await supabase.from('game_states').update({
             round_number: newRound, phase: 'place',
@@ -1292,7 +1312,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
           }).eq('id', gameState.id)
           await supabase.from('placed_discs')
             .delete().eq('room_id', room.id).eq('round_number', gameState.round_number)
-          set({ players: updatedPlayers, publicDiscs: [], myDiscs: [], _cpuDiscs: [], _foldedPlayerIds: [] })
+          set({ players: resetPlayers, publicDiscs: [], myDiscs: [], _cpuDiscs: [], _foldedPlayerIds: [] })
         }
       } else {
         // Challenge loss: remove one random card permanently
@@ -1327,11 +1347,21 @@ export const useGameStore = create<StoreState>()((set, get) => {
           startNextRound(starterId, updatedPlayers, room, gameState)
           await processCpuTurns()
         } else {
-          await supabase.from('players').update({
-            flower_count: updatedMe.flower_count,
-            skull_count: updatedMe.skull_count,
-            is_eliminated: updatedMe.is_eliminated,
-          }).eq('id', myPlayer.id)
+          // Online: restore all player hands; loser's new perm already in updatedPermCards
+          const resetPlayers = updatedPlayers.map(p => {
+            if (p.is_eliminated) return p
+            const perm = updatedPermCards[p.id]
+            return perm ? { ...p, flower_count: perm.flowers, skull_count: perm.skulls } : p
+          })
+          await Promise.all(
+            resetPlayers.filter(p => !p.is_eliminated).map(p =>
+              supabase.from('players').update({
+                flower_count: p.flower_count,
+                skull_count: p.skull_count,
+                ...(p.id === myPlayer.id ? { is_eliminated: p.is_eliminated } : {}),
+              }).eq('id', p.id)
+            )
+          )
           const newRound = gameState.round_number + 1
           await supabase.from('game_states').update({
             round_number: newRound, phase: 'place',
@@ -1341,7 +1371,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
           }).eq('id', gameState.id)
           await supabase.from('placed_discs')
             .delete().eq('room_id', room.id).eq('round_number', gameState.round_number)
-          set({ players: updatedPlayers, publicDiscs: [], myDiscs: [], _cpuDiscs: [], _foldedPlayerIds: [] })
+          set({ players: resetPlayers, publicDiscs: [], myDiscs: [], _cpuDiscs: [], _foldedPlayerIds: [] })
         }
       }
     },
