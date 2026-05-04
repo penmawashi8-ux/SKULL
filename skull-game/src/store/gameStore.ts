@@ -525,8 +525,9 @@ export const useGameStore = create<StoreState>()((set, get) => {
         const result = await cpuDecideBidOrFold(cpuPlayer, gs2, players, allReal, cpuDifficulty)
         const activePlayers = players.filter(p => !p.is_eliminated)
         const newFoldedIds = result.action === 'fold' ? [..._foldedPlayerIds, cpuPlayer.id] : _foldedPlayerIds
-        const nonFolded = activePlayers.filter(p => !newFoldedIds.includes(p.id))
-        const isChallenge = nonFolded.length <= 1
+        // Use pass_count (authoritative in DB) instead of local _foldedPlayerIds,
+        // because guest folds are not propagated to the host's _foldedPlayerIds.
+        const isChallenge = result.action === 'fold' && (gs2.pass_count + 1) >= (activePlayers.length - 1)
 
         if (result.action === 'fold') {
           set({ _foldedPlayerIds: newFoldedIds, _cpuLog: { id: crypto.randomUUID(), message: `${cpuPlayer.player_name} がパス`, type: 'fold' } })
@@ -1014,15 +1015,18 @@ export const useGameStore = create<StoreState>()((set, get) => {
         return
       }
 
+      // Online: use pass_count (authoritative in DB) for isChallenge — local
+      // _foldedPlayerIds is not updated when other human guests fold.
+      const isChallengeOnline = (gameState.pass_count + 1) >= (activePlayers.length - 1)
       set({ isLoading: true })
       try {
-        const next = isChallenge
+        const next = isChallengeOnline
           ? players.find(p => p.id === gameState.highest_bidder_id) ?? null
           : getNextActivePlayer(players, myPlayer.id, newFoldedIds)
 
         const updates = {
           pass_count: gameState.pass_count + 1,
-          phase: (isChallenge ? 'flip' : gameState.phase) as 'bid' | 'flip',
+          phase: (isChallengeOnline ? 'flip' : gameState.phase) as 'bid' | 'flip',
           current_player_id: next?.id ?? null,
           updated_at: ts(),
         }
