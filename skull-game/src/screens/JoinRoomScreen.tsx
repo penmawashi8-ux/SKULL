@@ -15,15 +15,17 @@ export function JoinRoomScreen() {
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   function handleCodeChange(raw: string) {
-    // Auto uppercase, max 6 chars, letters/digits only
-    setCode(raw.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6))
+    // Filter non-alphanumeric, max 6 chars. Do NOT toUpperCase here —
+    // transforming the value triggers extra onChange events on mobile keyboards.
+    // We show uppercase visually via CSS and convert on submit.
+    setCode(raw.replace(/[^a-zA-Z0-9]/g, '').slice(0, 6))
   }
 
   async function handleJoin() {
     if (code.length !== 6 || isSubmitting || isLoading) return
     setIsSubmitting(true)
     try {
-      await joinRoom(code, name.trim() || defaultName)
+      await joinRoom(code.toUpperCase(), name.trim() || defaultName)
       if (!useGameStore.getState().error) {
         navigate(`/room/${code}`)
       }
@@ -93,7 +95,7 @@ export function JoinRoomScreen() {
             autoCapitalize="off"
             spellCheck={false}
             className="w-full px-4 py-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/20 focus:outline-none focus:border-purple-500/60 text-center text-3xl tracking-[0.3em] font-bold"
-            style={{ fontFamily: 'Cinzel, serif' }}
+            style={{ fontFamily: 'Cinzel, serif', textTransform: 'uppercase' }}
           />
           {/* Progress dots */}
           <div className="flex justify-center gap-2 mt-3">
