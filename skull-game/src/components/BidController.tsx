@@ -58,8 +58,8 @@ export function BidController({ currentHighest, totalDiscs, onBid, onFold, canFo
               onClick={onFold}
               disabled={isLoading}
               className="px-3 py-2 rounded-xl border border-white/20 text-white/70 text-sm disabled:opacity-50"
-              whileTap={{ scale: 0.97 }}
-              style={{ fontFamily: 'Crimson Text, serif' }}
+              whileTap={!isLoading ? { scale: 0.97 } : {}}
+              style={{ fontFamily: 'Crimson Text, serif', touchAction: 'manipulation', pointerEvents: isLoading ? 'none' : 'auto' }}
             >
               パス
             </motion.button>
@@ -68,8 +68,8 @@ export function BidController({ currentHighest, totalDiscs, onBid, onFold, canFo
             onClick={() => onBid(amount)}
             disabled={isLoading || amount > maxBid}
             className="px-3 py-2 rounded-xl bg-gradient-to-r from-purple-700 to-purple-500 text-white font-bold text-sm disabled:opacity-50 shadow-lg shadow-purple-500/20 whitespace-nowrap"
-            whileTap={{ scale: 0.97 }}
-            style={{ fontFamily: 'Cinzel, serif' }}
+            whileTap={!isLoading ? { scale: 0.97 } : {}}
+            style={{ fontFamily: 'Cinzel, serif', touchAction: 'manipulation', pointerEvents: isLoading ? 'none' : 'auto' }}
           >
             {amount}枚宣言
           </motion.button>

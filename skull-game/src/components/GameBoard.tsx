@@ -329,8 +329,8 @@ export function GameBoard({ onGameEnd }: Props) {
                     onClick={handlePlaceFlower}
                     disabled={isLoading || isActing || myPlayer.flower_count === 0}
                     className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-emerald-800 to-emerald-600 text-white font-bold disabled:opacity-40 text-sm"
-                    whileTap={{ scale: 0.96 }}
-                    style={{ fontFamily: 'Cinzel, serif' }}
+                    whileTap={!isActing ? { scale: 0.96 } : {}}
+                    style={{ fontFamily: 'Cinzel, serif', touchAction: 'manipulation', pointerEvents: (isLoading || isActing) ? 'none' : 'auto' }}
                   >
                     🌸 花を置く
                   </motion.button>
@@ -338,8 +338,8 @@ export function GameBoard({ onGameEnd }: Props) {
                     onClick={handlePlaceSkull}
                     disabled={isLoading || isActing || myPlayer.skull_count === 0}
                     className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-gray-700 to-gray-600 text-white font-bold disabled:opacity-40 text-sm"
-                    whileTap={{ scale: 0.96 }}
-                    style={{ fontFamily: 'Cinzel, serif' }}
+                    whileTap={!isActing ? { scale: 0.96 } : {}}
+                    style={{ fontFamily: 'Cinzel, serif', touchAction: 'manipulation', pointerEvents: (isLoading || isActing) ? 'none' : 'auto' }}
                   >
                     💀 ドクロ
                   </motion.button>

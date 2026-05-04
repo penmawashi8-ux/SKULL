@@ -42,6 +42,14 @@ export function LobbyScreen() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [room?.id])
 
+  // Auto-navigate when host starts the game (works for both host and guest)
+  useEffect(() => {
+    if (room?.status === 'playing' && roomCode) {
+      navigate(`/game/${roomCode}`)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [room?.status])
+
   async function handleAddCpu() {
     if (addingCpuRef.current) return
     addingCpuRef.current = true
@@ -195,8 +203,8 @@ export function LobbyScreen() {
                   onClick={handleAddCpu}
                   disabled={isLoading || isAddingCpu}
                   className="text-xs px-2.5 py-1 rounded-lg bg-purple-900/50 border border-purple-500/40 text-purple-300 disabled:opacity-40"
-                  whileTap={{ scale: 0.95 }}
-                  style={{ fontFamily: 'Crimson Text, serif' }}
+                  whileTap={!isAddingCpu ? { scale: 0.95 } : {}}
+                  style={{ fontFamily: 'Crimson Text, serif', touchAction: 'manipulation', pointerEvents: (isLoading || isAddingCpu) ? 'none' : 'auto' }}
                 >
                   CPU追加
                 </motion.button>

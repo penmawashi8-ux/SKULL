@@ -88,7 +88,10 @@ export function JoinRoomScreen() {
             onChange={e => handleCodeChange(e.target.value)}
             placeholder="ABC123"
             inputMode="text"
-            autoCapitalize="characters"
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="off"
+            spellCheck={false}
             className="w-full px-4 py-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/20 focus:outline-none focus:border-purple-500/60 text-center text-3xl tracking-[0.3em] font-bold"
             style={{ fontFamily: 'Cinzel, serif' }}
           />
