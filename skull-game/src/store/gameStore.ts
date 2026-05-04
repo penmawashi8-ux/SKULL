@@ -1205,12 +1205,38 @@ export const useGameStore = create<StoreState>()((set, get) => {
           if (payload.eventType !== 'DELETE') {
             const newGs = payload.new as GameState
             const prevGs = get().gameState
-            // If round advanced, clear all disc/fold state for every client
             const roundChanged = prevGs != null && newGs.round_number !== prevGs.round_number
+
+            // Infer folds from pass_count increase — keeps _foldedPlayerIds in sync
+            // for all clients including guests who don't execute processOnlineCpuTurn.
+            if (!roundChanged && prevGs && newGs.pass_count > prevGs.pass_count) {
+              const foldedId = prevGs.current_player_id
+              if (foldedId) {
+                set(s => s._foldedPlayerIds.includes(foldedId)
+                  ? {}
+                  : { _foldedPlayerIds: [...s._foldedPlayerIds, foldedId] })
+              }
+            }
+
             set({
               gameState: newGs,
               ...(roundChanged ? { publicDiscs: [], myDiscs: [], _cpuDiscs: [], _foldedPlayerIds: [] } : {}),
             })
+
+            // On round change, re-fetch players to pick up restored hand counts
+            // and rebuild _permCards so every client (host + guests) has accurate
+            // permanent card totals going into the new round.
+            if (roundChanged) {
+              supabase.from('players').select().eq('room_id', roomId).then(({ data }) => {
+                if (!data || data.length === 0) return
+                const permCards: Record<string, { flowers: number; skulls: number }> = {}
+                for (const p of data) {
+                  if (!p.is_eliminated) permCards[p.id] = { flowers: p.flower_count, skulls: p.skull_count }
+                }
+                set({ players: data, _permCards: permCards })
+              })
+            }
+
             // Host processes CPU turns in online+CPU hybrid mode
             const s = get()
             if (!s.isCpuGame && s.room?.host_id === s.sessionId) {
