@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { flushSync } from 'react-dom'
 import { useNavigate, useParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useGameStore } from '../store/gameStore'
@@ -44,7 +45,7 @@ export function LobbyScreen() {
   async function handleAddCpu() {
     if (addingCpuRef.current) return
     addingCpuRef.current = true
-    setIsAddingCpu(true)
+    flushSync(() => setIsAddingCpu(true))  // immediate DOM disable before any await
     playButtonPress()
     try {
       await addCpuPlayer()
@@ -57,7 +58,7 @@ export function LobbyScreen() {
   async function handleStart() {
     if (startingRef.current) return
     startingRef.current = true
-    setIsStarting(true)
+    flushSync(() => setIsStarting(true))  // immediate DOM disable before any await
     playButtonPress()
     try {
       await startGame()
@@ -82,7 +83,7 @@ export function LobbyScreen() {
 
   return (
     <div
-      className="h-full flex flex-col"
+      className="h-full flex flex-col overflow-hidden"
       style={{ background: 'radial-gradient(ellipse at 50% 0%, #1a0a2e 0%, #030712 70%)' }}
     >
       {/* Header */}
@@ -134,7 +135,7 @@ export function LobbyScreen() {
       </div>
 
       {/* Players list */}
-      <div className="flex-1 overflow-y-auto px-6">
+      <div className="flex-1 overflow-y-auto px-6 min-h-0">
         <div className="flex items-center justify-between mb-3">
           <p className="text-white/50 text-sm" style={{ fontFamily: 'Crimson Text, serif' }}>
             参加者
@@ -231,7 +232,7 @@ export function LobbyScreen() {
         {isHost ? (
           <motion.button
             onClick={handleStart}
-            disabled={isLoading || isStarting || !canStart}
+            disabled={isStarting || !canStart}
             className="w-full py-4 rounded-2xl text-white text-xl font-bold disabled:opacity-40"
             style={{
               fontFamily: 'Cinzel, serif',

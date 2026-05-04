@@ -12,16 +12,12 @@ function getNextActivePlayer(
   currentPlayerId: string,
   skipIds: string[] = [],
 ): Player | null {
-  const active = [...players]
-    .filter(p => !p.is_eliminated && !skipIds.includes(p.id))
-    .sort((a, b) => a.seat_order - b.seat_order)
-  if (active.length === 0) return null
   const all = [...players]
     .filter(p => !p.is_eliminated)
     .sort((a, b) => a.seat_order - b.seat_order)
   const idx = all.findIndex(p => p.id === currentPlayerId)
-  // Walk forward until we find someone not in skipIds
-  for (let i = 1; i <= all.length; i++) {
+  // Walk forward; never return the current player themselves (wrap-around guard)
+  for (let i = 1; i < all.length; i++) {
     const candidate = all[(idx + i) % all.length]
     if (!skipIds.includes(candidate.id)) return candidate
   }
@@ -311,15 +307,15 @@ export const useGameStore = create<StoreState>()((set, get) => {
         }
       } else {
         const totalPlaced = publicDiscs.filter(d => d.round_number === round).length
-        const isMaxBid = result.amount! >= totalPlaced
-        const next = isMaxBid ? currentPlayer : getNextActivePlayer(players, currentPlayer.id, _foldedPlayerIds)
+        const nextPlayer = getNextActivePlayer(players, currentPlayer.id, _foldedPlayerIds)
+        const goToFlip = result.amount! >= totalPlaced || !nextPlayer
         set(prev => ({
           gameState: {
             ...prev.gameState!,
             highest_bid: result.amount!,
             highest_bidder_id: currentPlayer.id,
-            current_player_id: isMaxBid ? currentPlayer.id : (next?.id ?? null),
-            phase: isMaxBid ? 'flip' : 'bid',
+            current_player_id: goToFlip ? currentPlayer.id : nextPlayer!.id,
+            phase: goToFlip ? 'flip' : 'bid',
             updated_at: ts(),
           },
           _cpuLog: { id: crypto.randomUUID(), message: `${currentPlayer.player_name} が ${result.amount} 枚と宣言`, type: 'bid' },
@@ -550,12 +546,12 @@ export const useGameStore = create<StoreState>()((set, get) => {
           set({ _cpuLog: { id: crypto.randomUUID(), message: `${cpuPlayer.player_name} が ${result.amount} 枚と宣言`, type: 'bid' } })
           const round2 = gs2.round_number
           const totalPlaced2 = publicDiscs.filter(d => d.round_number === round2).length
-          const isMaxBid2 = result.amount! >= totalPlaced2
-          const next = isMaxBid2 ? cpuPlayer : getNextActivePlayer(players, cpuPlayer.id, _foldedPlayerIds)
+          const nextPlayer2 = getNextActivePlayer(players, cpuPlayer.id, _foldedPlayerIds)
+          const goToFlip2 = result.amount! >= totalPlaced2 || !nextPlayer2
           await supabase.from('game_states').update({
             highest_bid: result.amount!, highest_bidder_id: cpuPlayer.id,
-            current_player_id: isMaxBid2 ? cpuPlayer.id : (next?.id ?? null),
-            phase: isMaxBid2 ? 'flip' : 'bid',
+            current_player_id: goToFlip2 ? cpuPlayer.id : nextPlayer2!.id,
+            phase: goToFlip2 ? 'flip' : 'bid',
             updated_at: ts(),
           }).eq('id', gs2.id)
         }
@@ -924,10 +920,11 @@ export const useGameStore = create<StoreState>()((set, get) => {
 
       const round = gameState.round_number
       const totalPlaced = publicDiscs.filter(d => d.round_number === round).length
-      const isMaxBid = amount >= totalPlaced
+      const nextPlayer = getNextActivePlayer(players, myPlayer.id, _foldedPlayerIds)
+      // Max bid OR only bidder left → flip phase starts immediately
+      const goToFlip = amount >= totalPlaced || !nextPlayer
 
-      // Max bid: all others are forced to pass, flip phase starts immediately
-      const updates = isMaxBid ? {
+      const updates = goToFlip ? {
         phase: 'flip' as const,
         highest_bid: amount,
         highest_bidder_id: myPlayer.id,
@@ -937,7 +934,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
         phase: 'bid' as const,
         highest_bid: amount,
         highest_bidder_id: myPlayer.id,
-        current_player_id: getNextActivePlayer(players, myPlayer.id, _foldedPlayerIds)?.id ?? null,
+        current_player_id: nextPlayer.id,
         updated_at: ts(),
       }
 
