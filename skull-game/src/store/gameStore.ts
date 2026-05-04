@@ -1230,6 +1230,10 @@ export const useGameStore = create<StoreState>()((set, get) => {
             if (evt.status === 'SUBSCRIBED') {
               if (reconnectTimer) clearTimeout(reconnectTimer)
               set({ isReconnecting: false })
+              // Re-fetch players to catch anyone who joined while subscription was being established or during reconnect
+              supabase.from('players').select().eq('room_id', roomId).then(({ data }) => {
+                if (data && data.length > 0) set({ players: data })
+              })
             } else if (evt.status === 'CHANNEL_ERROR' || evt.status === 'TIMED_OUT') {
               set({ isReconnecting: true })
               reconnectTimer = setTimeout(() => {
