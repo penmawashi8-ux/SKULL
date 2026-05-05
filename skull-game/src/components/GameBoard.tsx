@@ -97,9 +97,9 @@ export function GameBoard({ onGameEnd }: Props) {
   const handlePlaceFlower = useCallback(async () => {
     if (actionLockRef.current) return
     actionLockRef.current = true
-    flushSync(() => setIsActing(true))
-    playCardPlace()
     try {
+      flushSync(() => setIsActing(true))
+      playCardPlace()
       await placeDisc('flower')
       addLog(`${myPlayer?.player_name} が花を置いた`, 'place')
     } finally {
@@ -111,9 +111,9 @@ export function GameBoard({ onGameEnd }: Props) {
   const handlePlaceSkull = useCallback(async () => {
     if (actionLockRef.current) return
     actionLockRef.current = true
-    flushSync(() => setIsActing(true))
-    playCardPlace()
     try {
+      flushSync(() => setIsActing(true))
+      playCardPlace()
       await placeDisc('skull')
       addLog(`${myPlayer?.player_name} がカードを置いた`, 'place')
     } finally {
@@ -125,9 +125,9 @@ export function GameBoard({ onGameEnd }: Props) {
   const handleBid = useCallback(async (amount: number) => {
     if (actionLockRef.current) return
     actionLockRef.current = true
-    flushSync(() => setIsActing(true))
-    playButtonPress()
     try {
+      flushSync(() => setIsActing(true))
+      playButtonPress()
       await placeBid(amount)
       addLog(`${myPlayer?.player_name} が ${amount} 枚と宣言`, 'bid')
     } finally {
@@ -139,9 +139,9 @@ export function GameBoard({ onGameEnd }: Props) {
   const handleFold = useCallback(async () => {
     if (actionLockRef.current) return
     actionLockRef.current = true
-    flushSync(() => setIsActing(true))
-    playButtonPress()
     try {
+      flushSync(() => setIsActing(true))
+      playButtonPress()
       await fold()
       addLog(`${myPlayer?.player_name} がパス`, 'fold')
     } finally {
