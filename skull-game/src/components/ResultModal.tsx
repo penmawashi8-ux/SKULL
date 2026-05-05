@@ -41,14 +41,27 @@ function Confetti() {
 
 export function ResultModal({ show, type, challenger, skullOwner, lostDisc, onClose }: Props) {
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const firedRef = useRef(false)
+
+  // One-shot wrapper prevents double-call when timer and tap race each other
+  const fireOnce = useRef(() => {
+    if (firedRef.current) return
+    firedRef.current = true
+    onClose()
+  })
+  fireOnce.current = () => {
+    if (firedRef.current) return
+    firedRef.current = true
+    onClose()
+  }
 
   useEffect(() => {
-    if (!show) return
+    if (!show) { firedRef.current = false; return }
     if (type === 'success' || type === 'skull') {
-      timerRef.current = setTimeout(onClose, 3200)
+      timerRef.current = setTimeout(() => fireOnce.current(), 3200)
     }
     return () => { if (timerRef.current) clearTimeout(timerRef.current) }
-  }, [show, type, onClose])
+  }, [show, type])
 
   return (
     <AnimatePresence>
@@ -58,7 +71,7 @@ export function ResultModal({ show, type, challenger, skullOwner, lostDisc, onCl
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          onClick={type !== 'win' && type !== 'lose' ? onClose : undefined}
+          onClick={type !== 'win' && type !== 'lose' ? () => fireOnce.current() : undefined}
         >
           {(type === 'success' || type === 'win') && <Confetti />}
 

@@ -24,6 +24,20 @@ function getNextActivePlayer(
   return null
 }
 
+// Like getNextActivePlayer but also skips players with empty hands.
+// Returns null when no other active player has cards — caller should force bid.
+function getNextPlayerWithHand(players: Player[], currentPlayerId: string): Player | null {
+  const all = [...players]
+    .filter(p => !p.is_eliminated)
+    .sort((a, b) => a.seat_order - b.seat_order)
+  const idx = all.findIndex(p => p.id === currentPlayerId)
+  for (let i = 1; i < all.length; i++) {
+    const candidate = all[(idx + i) % all.length]
+    if (candidate.flower_count + candidate.skull_count > 0) return candidate
+  }
+  return null
+}
+
 function ts(): string {
   return new Date().toISOString()
 }
@@ -467,8 +481,13 @@ export const useGameStore = create<StoreState>()((set, get) => {
             await supabase.from('game_states').update({ phase: 'bid', current_player_id: first?.id ?? null, updated_at: ts() }).eq('id', gs2.id)
             set({ _foldedPlayerIds: [] })
           } else {
-            const next = getNextActivePlayer(players, cpuPlayer.id)
-            await supabase.from('game_states').update({ current_player_id: next?.id ?? null, updated_at: ts() }).eq('id', gs2.id)
+            const next = getNextPlayerWithHand(players, cpuPlayer.id)
+            if (next === null) {
+              await supabase.from('game_states').update({ phase: 'bid', current_player_id: cpuPlayer.id, updated_at: ts() }).eq('id', gs2.id)
+              set({ _foldedPlayerIds: [] })
+            } else {
+              await supabase.from('game_states').update({ current_player_id: next.id, updated_at: ts() }).eq('id', gs2.id)
+            }
           }
           return
         }
@@ -514,8 +533,13 @@ export const useGameStore = create<StoreState>()((set, get) => {
           await supabase.from('game_states').update({ phase: 'bid', current_player_id: first?.id ?? null, updated_at: ts() }).eq('id', gs2.id)
           set({ _foldedPlayerIds: [] })
         } else {
-          const next = getNextActivePlayer(updatedPlayers, cpuPlayer.id)
-          await supabase.from('game_states').update({ current_player_id: next?.id ?? null, updated_at: ts() }).eq('id', gs2.id)
+          const next = getNextPlayerWithHand(updatedPlayers, cpuPlayer.id)
+          if (next === null) {
+            await supabase.from('game_states').update({ phase: 'bid', current_player_id: cpuPlayer.id, updated_at: ts() }).eq('id', gs2.id)
+            set({ _foldedPlayerIds: [] })
+          } else {
+            await supabase.from('game_states').update({ current_player_id: next.id, updated_at: ts() }).eq('id', gs2.id)
+          }
         }
         return
       }
@@ -916,13 +940,23 @@ export const useGameStore = create<StoreState>()((set, get) => {
             current_player_id: firstActive?.id ?? null,
             updated_at: ts(),
           }).eq('id', gameState.id)
+          set({ isLoading: false, _foldedPlayerIds: [] })
         } else {
-          const next = getNextActivePlayer(updatedPlayers, myPlayer.id)
-          await supabase.from('game_states').update({
-            current_player_id: next?.id ?? null, updated_at: ts(),
-          }).eq('id', gameState.id)
+          // Skip empty-hand players; if no other player has cards, force bid
+          // (current player will see the bid controller since allPlaced=true).
+          const next = getNextPlayerWithHand(updatedPlayers, myPlayer.id)
+          if (next === null) {
+            await supabase.from('game_states').update({
+              phase: 'bid', current_player_id: myPlayer.id, updated_at: ts(),
+            }).eq('id', gameState.id)
+            set({ isLoading: false, _foldedPlayerIds: [] })
+          } else {
+            await supabase.from('game_states').update({
+              current_player_id: next.id, updated_at: ts(),
+            }).eq('id', gameState.id)
+            set({ isLoading: false, _foldedPlayerIds })
+          }
         }
-        set({ isLoading: false, _foldedPlayerIds })
       } catch (e) {
         set({ error: (e as any)?.message ?? String(e), isLoading: false })
       }
@@ -1410,61 +1444,71 @@ export const useGameStore = create<StoreState>()((set, get) => {
           set({ players: resetPlayers, publicDiscs: [], myDiscs: [], _cpuDiscs: [], _foldedPlayerIds: [] })
         }
       } else {
-        // Challenge loss: remove one random card permanently
-        const { _permCards } = get()
-        const currentPerm = _permCards[myPlayer.id] ?? { flowers: 3, skulls: 1 }
-        const permTotal = currentPerm.flowers + currentPerm.skulls
-        const loseSkull = permTotal > 0 && currentPerm.skulls > 0 && Math.random() < currentPerm.skulls / permTotal
-        const newPerm = {
-          flowers: loseSkull ? currentPerm.flowers : Math.max(0, currentPerm.flowers - 1),
-          skulls:  loseSkull ? Math.max(0, currentPerm.skulls - 1) : currentPerm.skulls,
-        }
-        const isEliminated = newPerm.flowers + newPerm.skulls === 0
-        const updatedPermCards = { ..._permCards, [myPlayer.id]: newPerm }
-        const updatedPlayers = players.map(p => {
-          if (p.id !== myPlayer.id) return p
-          return { ...p, flower_count: newPerm.flowers, skull_count: newPerm.skulls, is_eliminated: isEliminated }
-        })
-        set({ _permCards: updatedPermCards })
-
-        const winner = getWinner(updatedPlayers)
-        if (winner) {
-          set({ players: updatedPlayers })
-          return
-        }
-        // Challenger (who failed) starts next round
-        const updatedMe = updatedPlayers.find(p => p.id === myPlayer.id)!
-        const starterId = updatedMe.is_eliminated
-          ? getNextActivePlayer(updatedPlayers, myPlayer.id)?.id ?? myPlayer.id
-          : myPlayer.id
-
+        // Challenge loss: remove one random card permanently.
+        // CPU and online paths are separate because online must reconstruct perm
+        // from DB to avoid using _permCards that was seeded from mid-round depleted counts.
         if (isCpuGame) {
+          const { _permCards } = get()
+          const currentPerm = _permCards[myPlayer.id] ?? { flowers: 3, skulls: 1 }
+          const permTotal = currentPerm.flowers + currentPerm.skulls
+          const loseSkull = permTotal > 0 && currentPerm.skulls > 0 && Math.random() < currentPerm.skulls / permTotal
+          const newPerm = {
+            flowers: loseSkull ? currentPerm.flowers : Math.max(0, currentPerm.flowers - 1),
+            skulls:  loseSkull ? Math.max(0, currentPerm.skulls - 1) : currentPerm.skulls,
+          }
+          const isEliminated = newPerm.flowers + newPerm.skulls === 0
+          const updatedPermCards = { ..._permCards, [myPlayer.id]: newPerm }
+          const updatedPlayers = players.map(p => {
+            if (p.id !== myPlayer.id) return p
+            return { ...p, flower_count: newPerm.flowers, skull_count: newPerm.skulls, is_eliminated: isEliminated }
+          })
+          set({ _permCards: updatedPermCards })
+          const winner = getWinner(updatedPlayers)
+          if (winner) { set({ players: updatedPlayers }); return }
+          const updatedMe = updatedPlayers.find(p => p.id === myPlayer.id)!
+          const starterId = updatedMe.is_eliminated
+            ? getNextActivePlayer(updatedPlayers, myPlayer.id)?.id ?? myPlayer.id
+            : myPlayer.id
           startNextRound(starterId, updatedPlayers, room, gameState)
           await processCpuTurns()
         } else {
-          // Online: reconstruct perm for all other players from DB (same pattern as win
-          // case). updatedPermCards already has the skull-loss-adjusted perm for myPlayer;
-          // merge that in so we don't re-compute the skull loss.
+          // Online: fetch placed_discs first so skull-loss is computed from authoritative
+          // perm values rather than _permCards which may be seeded from depleted counts.
           const { data: roundDiscs } = await supabase
             .from('placed_discs').select('player_id, disc_type')
             .eq('room_id', room.id).eq('round_number', gameState.round_number)
-          const correctedPerm: Record<string, { flowers: number; skulls: number }> = {}
-          for (const p of updatedPlayers) {
+          const permFromDB: Record<string, { flowers: number; skulls: number }> = {}
+          for (const p of players) {
             if (p.is_eliminated) continue
-            if (p.id === myPlayer.id) {
-              correctedPerm[p.id] = updatedPermCards[p.id]  // already skull-loss adjusted
-            } else {
-              const placed = (roundDiscs ?? []).filter(d => d.player_id === p.id)
-              correctedPerm[p.id] = {
-                flowers: p.flower_count + placed.filter(d => d.disc_type === 'flower').length,
-                skulls: p.skull_count + placed.filter(d => d.disc_type === 'skull').length,
-              }
+            const placed = (roundDiscs ?? []).filter(d => d.player_id === p.id)
+            permFromDB[p.id] = {
+              flowers: p.flower_count + placed.filter(d => d.disc_type === 'flower').length,
+              skulls: p.skull_count + placed.filter(d => d.disc_type === 'skull').length,
             }
           }
-          set({ _permCards: correctedPerm })
+          const currentPerm = permFromDB[myPlayer.id] ?? { flowers: 3, skulls: 1 }
+          const permTotal = currentPerm.flowers + currentPerm.skulls
+          const loseSkull = permTotal > 0 && currentPerm.skulls > 0 && Math.random() < currentPerm.skulls / permTotal
+          const newPerm = {
+            flowers: loseSkull ? currentPerm.flowers : Math.max(0, currentPerm.flowers - 1),
+            skulls:  loseSkull ? Math.max(0, currentPerm.skulls - 1) : currentPerm.skulls,
+          }
+          const isEliminated = newPerm.flowers + newPerm.skulls === 0
+          permFromDB[myPlayer.id] = newPerm
+          set({ _permCards: permFromDB })
+          const updatedPlayers = players.map(p => {
+            if (p.id !== myPlayer.id) return p
+            return { ...p, flower_count: newPerm.flowers, skull_count: newPerm.skulls, is_eliminated: isEliminated }
+          })
+          const winner = getWinner(updatedPlayers)
+          if (winner) { set({ players: updatedPlayers }); return }
+          const updatedMe = updatedPlayers.find(p => p.id === myPlayer.id)!
+          const starterId = updatedMe.is_eliminated
+            ? getNextActivePlayer(updatedPlayers, myPlayer.id)?.id ?? myPlayer.id
+            : myPlayer.id
           const resetPlayers = updatedPlayers.map(p => {
             if (p.is_eliminated) return p
-            const perm = correctedPerm[p.id]
+            const perm = permFromDB[p.id]
             return perm ? { ...p, flower_count: perm.flowers, skull_count: perm.skulls } : p
           })
           await Promise.all(
