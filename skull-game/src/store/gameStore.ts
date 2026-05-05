@@ -691,6 +691,56 @@ export const useGameStore = create<StoreState>()((set, get) => {
     }
   }
 
+  // ── processOnlineEmptyHandTurn ────────────────────────────────────────────
+  // Host: called when a human player gets the turn in place phase but may have
+  // 0 cards due to subscription race (player counts updated before game_states).
+  // Mirrors the empty-hand branch in processOnlineCpuTurn.
+  async function processOnlineEmptyHandTurn(player: Player, gs: GameState): Promise<void> {
+    if (_onlineCpuProcessing) return
+    _onlineCpuProcessing = true
+    try {
+      const s = get()
+      if (!s.room || s.isCpuGame || !s.gameState) return
+      if (s.gameState.current_player_id !== player.id || s.gameState.phase !== 'place') return
+
+      // Fetch authoritative player counts from DB to avoid stale local state
+      const { data: freshPlayers } = await supabase.from('players').select().eq('room_id', s.room.id)
+      if (!freshPlayers) return
+
+      // Guard: turn may have moved while we awaited the DB fetch
+      const s2 = get()
+      if (!s2.gameState || s2.gameState.current_player_id !== player.id || s2.gameState.phase !== 'place') return
+
+      const freshPlayer = freshPlayers.find(p => p.id === player.id)
+      if (!freshPlayer || freshPlayer.flower_count + freshPlayer.skull_count > 0) return
+
+      // Player has 0 cards — advance turn or force bid (same logic as CPU empty-hand)
+      const active = freshPlayers.filter(p => !p.is_eliminated)
+      const allEmpty = active.every(p => p.flower_count + p.skull_count === 0)
+      if (allEmpty) {
+        const first = [...active].sort((a, b) => a.seat_order - b.seat_order)[0]
+        await supabase.from('game_states').update({
+          phase: 'bid', current_player_id: first?.id ?? null, updated_at: ts(),
+        }).eq('id', gs.id)
+        set({ _foldedPlayerIds: [] })
+      } else {
+        const next = getNextPlayerWithHand(freshPlayers, freshPlayer.id)
+        if (next === null) {
+          await supabase.from('game_states').update({
+            phase: 'bid', current_player_id: freshPlayer.id, updated_at: ts(),
+          }).eq('id', gs.id)
+          set({ _foldedPlayerIds: [] })
+        } else {
+          await supabase.from('game_states').update({
+            current_player_id: next.id, updated_at: ts(),
+          }).eq('id', gs.id)
+        }
+      }
+    } finally {
+      _onlineCpuProcessing = false
+    }
+  }
+
   return {
     // ── Initial state ─────────────────────────────────────────────────────────
     room: null,
@@ -1281,11 +1331,25 @@ export const useGameStore = create<StoreState>()((set, get) => {
               })
             }
 
-            // Host processes CPU turns in online+CPU hybrid mode
+            // Host processes CPU turns and detects empty-hand human players
             const s = get()
             if (!s.isCpuGame && s.room?.host_id === s.sessionId) {
               const cp = s.players.find(p => p.id === newGs.current_player_id)
-              if (cp?.is_cpu) processOnlineCpuTurn(cp, newGs)
+              if (cp?.is_cpu) {
+                processOnlineCpuTurn(cp, newGs)
+              } else if (cp && !cp.is_eliminated && newGs.phase === 'place') {
+                // If local state already shows 0 cards, act immediately; otherwise
+                // wait 800 ms for the players subscription to arrive then re-check.
+                const check = () => {
+                  const s2 = get()
+                  const p2 = s2.players.find(p => p.id === cp.id)
+                  if (p2 && p2.flower_count + p2.skull_count === 0) {
+                    processOnlineEmptyHandTurn(p2, newGs)
+                  }
+                }
+                if (cp.flower_count + cp.skull_count === 0) check()
+                else setTimeout(check, 800)
+              }
             }
           }
         })
@@ -1396,8 +1460,12 @@ export const useGameStore = create<StoreState>()((set, get) => {
         )
         const winner = getWinner(updatedPlayers)
         if (winner) {
+          if (!isCpuGame) {
+            // Online: push win_count to DB so other clients see the winner via subscription
+            await supabase.from('players').update({ win_count: myPlayer.win_count + 1 }).eq('id', myPlayer.id)
+          }
           set({ players: updatedPlayers })
-          return // GameBoard will redirect via resetGame
+          return
         }
         if (isCpuGame) {
           startNextRound(myPlayer.id, updatedPlayers, room, gameState)
@@ -1501,7 +1569,16 @@ export const useGameStore = create<StoreState>()((set, get) => {
             return { ...p, flower_count: newPerm.flowers, skull_count: newPerm.skulls, is_eliminated: isEliminated }
           })
           const winner = getWinner(updatedPlayers)
-          if (winner) { set({ players: updatedPlayers }); return }
+          if (winner) {
+            // Online: push elimination to DB so other clients see the winner via subscription
+            await supabase.from('players').update({
+              flower_count: newPerm.flowers,
+              skull_count: newPerm.skulls,
+              is_eliminated: isEliminated,
+            }).eq('id', myPlayer.id)
+            set({ players: updatedPlayers })
+            return
+          }
           const updatedMe = updatedPlayers.find(p => p.id === myPlayer.id)!
           const starterId = updatedMe.is_eliminated
             ? getNextActivePlayer(updatedPlayers, myPlayer.id)?.id ?? myPlayer.id

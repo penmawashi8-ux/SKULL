@@ -29,6 +29,7 @@ export function GameBoard({ onGameEnd }: Props) {
   } = useGameStore()
 
   const actionLockRef = useRef(false)
+  const placedRef = useRef(false)  // true while waiting for turn-change after a place action
 
   const [isActing, setIsActing] = useState(false)
   const [log, setLog] = useState<LogEntry[]>([])
@@ -82,6 +83,16 @@ export function GameBoard({ onGameEnd }: Props) {
     return () => document.removeEventListener('visibilitychange', handleVisibility)
   }, [resumeCpuTurns])
 
+  // Release place-action lock once the turn or phase moves away from place
+  // This prevents double-placement during the subscription propagation window
+  useEffect(() => {
+    if (placedRef.current && (!isMyTurn || phase !== 'place')) {
+      placedRef.current = false
+      actionLockRef.current = false
+      setIsActing(false)
+    }
+  }, [isMyTurn, phase])
+
   // Detect CPU win (by 2 rounds or last-player-standing) and show modal
   useEffect(() => {
     if (!gameState || modal.show) return
@@ -97,28 +108,38 @@ export function GameBoard({ onGameEnd }: Props) {
   const handlePlaceFlower = useCallback(async () => {
     if (actionLockRef.current) return
     actionLockRef.current = true
+    let placed = false
     try {
       flushSync(() => setIsActing(true))
       playCardPlace()
       await placeDisc('flower')
       addLog(`${myPlayer?.player_name} が花を置いた`, 'place')
+      placed = true
+      placedRef.current = true  // keep lock held until turn/phase changes (useEffect above)
     } finally {
-      actionLockRef.current = false
-      setIsActing(false)
+      if (!placed) {
+        actionLockRef.current = false
+        setIsActing(false)
+      }
     }
   }, [placeDisc, myPlayer])
 
   const handlePlaceSkull = useCallback(async () => {
     if (actionLockRef.current) return
     actionLockRef.current = true
+    let placed = false
     try {
       flushSync(() => setIsActing(true))
       playCardPlace()
       await placeDisc('skull')
       addLog(`${myPlayer?.player_name} がカードを置いた`, 'place')
+      placed = true
+      placedRef.current = true  // keep lock held until turn/phase changes (useEffect above)
     } finally {
-      actionLockRef.current = false
-      setIsActing(false)
+      if (!placed) {
+        actionLockRef.current = false
+        setIsActing(false)
+      }
     }
   }, [placeDisc, myPlayer])
 
