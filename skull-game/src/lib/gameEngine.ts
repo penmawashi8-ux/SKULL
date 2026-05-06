@@ -1,9 +1,14 @@
 import type { Player, PlayerColor, GameState, PlacedDisc } from '../types/game'
 
 export function generateRoomCode(): string {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+  if (Math.random() < 0.5) {
+    const letters = 'ABCDEFGHJKLMNPQRSTUVWXYZ'
+    return Array.from({ length: 6 }, () =>
+      letters[Math.floor(Math.random() * letters.length)]
+    ).join('')
+  }
   return Array.from({ length: 6 }, () =>
-    chars[Math.floor(Math.random() * chars.length)]
+    String(Math.floor(Math.random() * 10))
   ).join('')
 }
 

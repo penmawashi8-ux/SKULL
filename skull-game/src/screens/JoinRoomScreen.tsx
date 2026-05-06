@@ -16,10 +16,16 @@ export function JoinRoomScreen() {
   const joiningRef = useRef(false)
 
   function handleCodeChange(raw: string) {
-    // Filter non-alphanumeric, max 6 chars. Do NOT toUpperCase here —
-    // transforming the value triggers extra onChange events on mobile keyboards.
-    // We show uppercase visually via CSS and convert on submit.
-    setCode(raw.replace(/[^a-zA-Z0-9]/g, '').slice(0, 6))
+    // Room codes are either all letters or all numbers.
+    // Determine mode from the first character already entered.
+    const filtered = raw.replace(/[^a-zA-Z0-9]/g, '')
+    const base = code.length > 0 ? code : filtered
+    if (base.length === 0) { setCode(''); return }
+    const isDigits = /^\d/.test(base)
+    const cleaned = isDigits
+      ? filtered.replace(/[^0-9]/g, '')
+      : filtered.replace(/[^a-zA-Z]/g, '')
+    setCode(cleaned.slice(0, 6))
   }
 
   async function handleJoin() {
@@ -85,13 +91,13 @@ export function JoinRoomScreen() {
             className="block text-white/60 text-sm mb-2"
             style={{ fontFamily: 'Crimson Text, serif' }}
           >
-            ルームコード（6桁）
+            ルームコード（英字6文字 または 数字6桁）
           </label>
           <input
             type="text"
             value={code}
             onChange={e => handleCodeChange(e.target.value)}
-            placeholder="ABC123"
+            placeholder="ABCDEF / 123456"
             inputMode="text"
             autoComplete="off"
             autoCorrect="off"
