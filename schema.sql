@@ -1,4 +1,4 @@
--- Skull Game Database Schema
+-- BOMB Game Database Schema
 -- Run this in Supabase SQL Editor (https://supabase.com/dashboard → SQL Editor)
 
 -- Enable UUID extension
@@ -26,7 +26,7 @@ create table if not exists public.players (
   is_cpu        boolean not null default false,
   session_id    text not null,
   flower_count  int  not null default 3,
-  skull_count   int  not null default 1,
+  bomb_count    int  not null default 1,
   win_count     int  not null default 0,
   is_eliminated boolean not null default false,
   created_at    timestamptz not null default now()
@@ -43,6 +43,8 @@ create table if not exists public.game_states (
   highest_bidder_id  uuid references public.players(id) on delete set null,
   pass_count         int  not null default 0,
   flip_count         int  not null default 0,
+  turn_started_at    timestamptz,
+  last_emote         jsonb,
   created_at         timestamptz not null default now(),
   updated_at         timestamptz not null default now()
 );
@@ -53,7 +55,7 @@ create table if not exists public.placed_discs (
   room_id      uuid not null references public.rooms(id) on delete cascade,
   player_id    uuid not null references public.players(id) on delete cascade,
   round_number int  not null,
-  disc_type    text not null default 'flower' check (disc_type in ('flower','skull')),
+  disc_type    text not null default 'flower' check (disc_type in ('flower','bomb')),
   position     int  not null default 1,
   is_flipped   boolean not null default false,
   flipped_by   uuid references public.players(id) on delete set null,

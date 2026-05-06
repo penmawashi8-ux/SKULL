@@ -3,7 +3,7 @@ import type { RealtimeChannel } from '@supabase/supabase-js'
 import { supabase, getSessionId } from '../lib/supabase'
 import { generateRoomCode, getInitialPlayerState, getWinner } from '../lib/gameEngine'
 import { cpuDecidePlace, cpuDecideBidOrFold, cpuDecideFlipTarget } from '../lib/cpuAI'
-import type { Room, Player, GameState, PlacedDisc, DiscType, PlayerColor } from '../types/game'
+import type { Room, Player, GameState, PlacedDisc, DiscType, PlayerColor, EmoteType } from '../types/game'
 
 const PLAYER_COLORS: PlayerColor[] = ['red', 'blue', 'green', 'yellow', 'purple', 'pink']
 
@@ -33,7 +33,7 @@ function getNextPlayerWithHand(players: Player[], currentPlayerId: string): Play
   const idx = all.findIndex(p => p.id === currentPlayerId)
   for (let i = 1; i < all.length; i++) {
     const candidate = all[(idx + i) % all.length]
-    if (candidate.flower_count + candidate.skull_count > 0) return candidate
+    if (candidate.flower_count + candidate.bomb_count > 0) return candidate
   }
   return null
 }
@@ -57,8 +57,8 @@ export interface StoreState {
   _subscription: RealtimeChannel | null
   _myPlayerId: string | null
   _cpuDiscs: PlacedDisc[]
-  _foldedPlayerIds: string[]  // client-side fold tracking
-  _permCards: Record<string, { flowers: number; skulls: number }>  // permanent card totals
+  _foldedPlayerIds: string[]
+  _permCards: Record<string, { flowers: number; bombs: number }>
   _cpuLog: { id: string; message: string; type: 'place' | 'bid' | 'fold' | 'flip' | 'result' } | null
 
   createRoom: (playerName: string, maxPlayers: number) => Promise<string>
@@ -68,13 +68,14 @@ export interface StoreState {
   placeBid: (amount: number) => Promise<void>
   fold: () => Promise<void>
   flipDisc: (discId: string) => Promise<DiscType>
-  advanceAfterChallenge: (result: 'win' | 'loss', skullOwnerId?: string) => Promise<void>
+  advanceAfterChallenge: (result: 'win' | 'loss', bombOwnerId?: string) => Promise<void>
   addCpuPlayer: () => Promise<void>
   startCpuGame: (playerName: string, cpuCount: number, difficulty: string) => Promise<void>
   subscribeToRoom: (roomCode: string) => void
   unsubscribeFromRoom: () => void
   resetGame: () => void
   resumeCpuTurns: () => Promise<void>
+  sendEmote: (type: EmoteType) => Promise<void>
 }
 
 // Mutex to prevent concurrent online CPU turn processing
@@ -94,7 +95,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
   }
 
   function allHandsEmpty(players: Player[]): boolean {
-    return players.filter(p => !p.is_eliminated).every(p => p.flower_count + p.skull_count === 0)
+    return players.filter(p => !p.is_eliminated).every(p => p.flower_count + p.bomb_count === 0)
   }
 
   // ── startNextRound (CPU game) ─────────────────────────────────────────────
@@ -114,16 +115,18 @@ export const useGameStore = create<StoreState>()((set, get) => {
       highest_bidder_id: null,
       pass_count: 0,
       flip_count: 0,
+      turn_started_at: ts(),
+      last_emote: null,
       updated_at: ts(),
     }
-    // Restore hand to permanent totals (respects cards lost to skulls)
+    // Restore hand to permanent totals (respects cards lost to bombs)
     const { _permCards } = get()
     const resetPlayers = playersIn.map(p => {
       if (p.is_eliminated) return p
       const perm = _permCards[p.id]
       return perm
-        ? { ...p, flower_count: perm.flowers, skull_count: perm.skulls }
-        : { ...p, flower_count: Math.min(3, p.flower_count + 3), skull_count: Math.min(1, p.skull_count + 1) }
+        ? { ...p, flower_count: perm.flowers, bomb_count: perm.bombs }
+        : { ...p, flower_count: Math.min(3, p.flower_count + 3), bomb_count: Math.min(1, p.bomb_count + 1) }
     })
     set({
       gameState: newGs,
@@ -152,7 +155,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
 
     // ── place phase ──────────────────────────────────────────────────────────
     if (gameState.phase === 'place') {
-      const hasHand = currentPlayer.flower_count + currentPlayer.skull_count > 0
+      const hasHand = currentPlayer.flower_count + currentPlayer.bomb_count > 0
       const placed = allPlacedAtLeastOnce(players, publicDiscs, round)
 
       // If no hand left, skip to next player
@@ -167,6 +170,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
               ...prev.gameState!,
               phase: 'bid',
               current_player_id: firstActive?.id ?? null,
+              turn_started_at: ts(),
               updated_at: ts(),
             },
             _foldedPlayerIds: [],
@@ -176,7 +180,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
         }
         const next = getNextActivePlayer(players, currentPlayer.id)
         set(prev => ({
-          gameState: { ...prev.gameState!, current_player_id: next?.id ?? null, updated_at: ts() },
+          gameState: { ...prev.gameState!, current_player_id: next?.id ?? null, turn_started_at: ts(), updated_at: ts() },
         }))
         await _runCpuLoop()
         return
@@ -203,6 +207,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
               highest_bid: minBid,
               highest_bidder_id: currentPlayer.id,
               current_player_id: next?.id ?? null,
+              turn_started_at: ts(),
               updated_at: ts(),
             },
             _foldedPlayerIds: [],
@@ -235,7 +240,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
         p.id !== currentPlayer.id ? p : {
           ...p,
           flower_count: discType === 'flower' ? p.flower_count - 1 : p.flower_count,
-          skull_count:  discType === 'skull'  ? p.skull_count  - 1 : p.skull_count,
+          bomb_count:   discType === 'bomb'   ? p.bomb_count   - 1 : p.bomb_count,
         },
       )
 
@@ -254,6 +259,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
             ...prev.gameState!,
             phase: 'bid',
             current_player_id: firstActive?.id ?? null,
+            turn_started_at: ts(),
             updated_at: ts(),
           },
           _foldedPlayerIds: [],
@@ -268,7 +274,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
         players: updatedPlayers,
         publicDiscs: [...prev.publicDiscs, maskedDisc],
         _cpuDiscs: [...prev._cpuDiscs, realDisc],
-        gameState: { ...prev.gameState!, current_player_id: next?.id ?? null, updated_at: ts() },
+        gameState: { ...prev.gameState!, current_player_id: next?.id ?? null, turn_started_at: ts(), updated_at: ts() },
         _cpuLog: cpuPlaceLog,
       }))
       await _runCpuLoop()
@@ -312,6 +318,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
               ...prev.gameState!,
               pass_count: prev.gameState!.pass_count + 1,
               current_player_id: next?.id ?? null,
+              turn_started_at: ts(),
               updated_at: ts(),
             },
             _foldedPlayerIds: newFoldedIds,
@@ -330,6 +337,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
             highest_bidder_id: currentPlayer.id,
             current_player_id: goToFlip ? currentPlayer.id : nextPlayer!.id,
             phase: goToFlip ? 'flip' : 'bid',
+            turn_started_at: ts(),
             updated_at: ts(),
           },
           _cpuLog: { id: crypto.randomUUID(), message: `${currentPlayer.player_name} が ${result.amount} 枚と宣言`, type: 'bid' },
@@ -361,8 +369,8 @@ export const useGameStore = create<StoreState>()((set, get) => {
 
       const newFlipCount = gameState.flip_count + 1
 
-      const flipLog = realDisc.disc_type === 'skull'
-        ? { id: crypto.randomUUID(), message: `💀 ${currentPlayer.player_name} がドクロを踏んだ！`, type: 'result' as const }
+      const flipLog = realDisc.disc_type === 'bomb'
+        ? { id: crypto.randomUUID(), message: `💣 ${currentPlayer.player_name} が爆弾を踏んだ！`, type: 'result' as const }
         : { id: crypto.randomUUID(), message: `🌸 ${currentPlayer.player_name} がカードをめくった`, type: 'flip' as const }
 
       set(prev => ({
@@ -381,21 +389,21 @@ export const useGameStore = create<StoreState>()((set, get) => {
         _cpuLog: flipLog,
       }))
 
-      if (realDisc.disc_type === 'skull') {
-        // CPU challenger hit a skull — lose a random card permanently
+      if (realDisc.disc_type === 'bomb') {
+        // CPU challenger hit a bomb — lose a random card permanently
         const freshState = get()
-        const currentPerm = freshState._permCards[currentPlayer.id] ?? { flowers: 3, skulls: 1 }
-        const permTotal = currentPerm.flowers + currentPerm.skulls
-        const loseSkull = permTotal > 0 && currentPerm.skulls > 0 && Math.random() < currentPerm.skulls / permTotal
+        const currentPerm = freshState._permCards[currentPlayer.id] ?? { flowers: 3, bombs: 1 }
+        const permTotal = currentPerm.flowers + currentPerm.bombs
+        const loseBomb = permTotal > 0 && currentPerm.bombs > 0 && Math.random() < currentPerm.bombs / permTotal
         const newPerm = {
-          flowers: loseSkull ? currentPerm.flowers : Math.max(0, currentPerm.flowers - 1),
-          skulls:  loseSkull ? Math.max(0, currentPerm.skulls - 1) : currentPerm.skulls,
+          flowers: loseBomb ? currentPerm.flowers : Math.max(0, currentPerm.flowers - 1),
+          bombs:   loseBomb ? Math.max(0, currentPerm.bombs - 1) : currentPerm.bombs,
         }
-        const isEliminated = newPerm.flowers + newPerm.skulls === 0
+        const isEliminated = newPerm.flowers + newPerm.bombs === 0
         const updatedPermCards = { ...freshState._permCards, [currentPlayer.id]: newPerm }
         const updatedPlayers = freshState.players.map(p => {
           if (p.id !== currentPlayer.id) return p
-          return { ...p, flower_count: newPerm.flowers, skull_count: newPerm.skulls, is_eliminated: isEliminated }
+          return { ...p, flower_count: newPerm.flowers, bomb_count: newPerm.bombs, is_eliminated: isEliminated }
         })
         const winner = getWinner(updatedPlayers)
         set({
@@ -404,15 +412,14 @@ export const useGameStore = create<StoreState>()((set, get) => {
           gameState: winner
             ? { ...freshState.gameState!, phase: 'place', updated_at: ts() }
             : freshState.gameState,
-          _cpuLog: { id: crypto.randomUUID(), message: `💀 ${currentPlayer.player_name} がドクロを踏んだ！カードを1枚失った`, type: 'result' },
+          _cpuLog: { id: crypto.randomUUID(), message: `💣 ${currentPlayer.player_name} が爆弾を踏んだ！カードを1枚失った`, type: 'result' },
         })
         if (!winner) {
-          // Challenger (who failed) starts next round
           const failedChallenger = updatedPlayers.find(p => p.id === currentPlayer.id)
           const starterId = failedChallenger?.is_eliminated
             ? getNextActivePlayer(updatedPlayers, currentPlayer.id)?.id ?? currentPlayer.id
             : currentPlayer.id
-          await new Promise(r => setTimeout(r, 1500))  // let user read the skull result
+          await new Promise(r => setTimeout(r, 1500))
           startNextRound(starterId, updatedPlayers, freshState.room!, freshState.gameState!)
           await _runCpuLoop()
         }
@@ -431,7 +438,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
           _cpuLog: { id: crypto.randomUUID(), message: `🌸 ${currentPlayer.player_name} がチャレンジ成功！`, type: 'result' },
         })
         if (!winner) {
-          await new Promise(r => setTimeout(r, 1500))  // let user read the success result
+          await new Promise(r => setTimeout(r, 1500))
           startNextRound(currentPlayer.id, updatedPlayers, freshState.room!, freshState.gameState!)
           await _runCpuLoop()
         }
@@ -468,25 +475,25 @@ export const useGameStore = create<StoreState>()((set, get) => {
       const { players, publicDiscs, myDiscs, _cpuDiscs, _foldedPlayerIds, room, cpuDifficulty } = s
       const round = s.gameState.round_number
       const allReal = [...myDiscs, ..._cpuDiscs]
-      const gs2 = s.gameState  // fresh game state
+      const gs2 = s.gameState
 
       // ── place ────────────────────────────────────────────────────────────
       if (gs2.phase === 'place') {
-        const hasHand = cpuPlayer.flower_count + cpuPlayer.skull_count > 0
+        const hasHand = cpuPlayer.flower_count + cpuPlayer.bomb_count > 0
         const placed = allPlacedAtLeastOnce(players, publicDiscs, round)
 
         if (!hasHand) {
           if (allHandsEmpty(players)) {
             const first = [...players].filter(p => !p.is_eliminated).sort((a, b) => a.seat_order - b.seat_order)[0]
-            await supabase.from('game_states').update({ phase: 'bid', current_player_id: first?.id ?? null, updated_at: ts() }).eq('id', gs2.id)
+            await supabase.from('game_states').update({ phase: 'bid', current_player_id: first?.id ?? null, turn_started_at: ts(), updated_at: ts() }).eq('id', gs2.id)
             set({ _foldedPlayerIds: [] })
           } else {
             const next = getNextPlayerWithHand(players, cpuPlayer.id)
             if (next === null) {
-              await supabase.from('game_states').update({ phase: 'bid', current_player_id: cpuPlayer.id, updated_at: ts() }).eq('id', gs2.id)
+              await supabase.from('game_states').update({ phase: 'bid', current_player_id: cpuPlayer.id, turn_started_at: ts(), updated_at: ts() }).eq('id', gs2.id)
               set({ _foldedPlayerIds: [] })
             } else {
-              await supabase.from('game_states').update({ current_player_id: next.id, updated_at: ts() }).eq('id', gs2.id)
+              await supabase.from('game_states').update({ current_player_id: next.id, turn_started_at: ts(), updated_at: ts() }).eq('id', gs2.id)
             }
           }
           return
@@ -505,7 +512,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
             const next = getNextActivePlayer(players, cpuPlayer.id, _foldedPlayerIds)
             await supabase.from('game_states').update({
               phase: 'bid', highest_bid: minBid, highest_bidder_id: cpuPlayer.id,
-              current_player_id: next?.id ?? null, updated_at: ts(),
+              current_player_id: next?.id ?? null, turn_started_at: ts(), updated_at: ts(),
             }).eq('id', gs2.id)
             set({ _foldedPlayerIds: [], _cpuLog: { id: crypto.randomUUID(), message: `${cpuPlayer.player_name} が ${minBid} 枚と宣言`, type: 'bid' } })
             return
@@ -520,25 +527,25 @@ export const useGameStore = create<StoreState>()((set, get) => {
         if (insertedDisc) set(prev => ({ _cpuDiscs: [...prev._cpuDiscs, insertedDisc] }))
 
         const newFlower = discType === 'flower' ? cpuPlayer.flower_count - 1 : cpuPlayer.flower_count
-        const newSkull  = discType === 'skull'  ? cpuPlayer.skull_count  - 1 : cpuPlayer.skull_count
-        await supabase.from('players').update({ flower_count: newFlower, skull_count: newSkull }).eq('id', cpuPlayer.id)
+        const newBomb   = discType === 'bomb'   ? cpuPlayer.bomb_count   - 1 : cpuPlayer.bomb_count
+        await supabase.from('players').update({ flower_count: newFlower, bomb_count: newBomb }).eq('id', cpuPlayer.id)
         set(prev => ({
-          players: prev.players.map(p => p.id !== cpuPlayer.id ? p : { ...p, flower_count: newFlower, skull_count: newSkull }),
+          players: prev.players.map(p => p.id !== cpuPlayer.id ? p : { ...p, flower_count: newFlower, bomb_count: newBomb }),
           _cpuLog: { id: crypto.randomUUID(), message: `${cpuPlayer.player_name} がカードを置いた`, type: 'place' },
         }))
 
-        const updatedPlayers = players.map(p => p.id !== cpuPlayer.id ? p : { ...p, flower_count: newFlower, skull_count: newSkull })
+        const updatedPlayers = players.map(p => p.id !== cpuPlayer.id ? p : { ...p, flower_count: newFlower, bomb_count: newBomb })
         if (allHandsEmpty(updatedPlayers)) {
           const first = [...updatedPlayers].filter(p => !p.is_eliminated).sort((a, b) => a.seat_order - b.seat_order)[0]
-          await supabase.from('game_states').update({ phase: 'bid', current_player_id: first?.id ?? null, updated_at: ts() }).eq('id', gs2.id)
+          await supabase.from('game_states').update({ phase: 'bid', current_player_id: first?.id ?? null, turn_started_at: ts(), updated_at: ts() }).eq('id', gs2.id)
           set({ _foldedPlayerIds: [] })
         } else {
           const next = getNextPlayerWithHand(updatedPlayers, cpuPlayer.id)
           if (next === null) {
-            await supabase.from('game_states').update({ phase: 'bid', current_player_id: cpuPlayer.id, updated_at: ts() }).eq('id', gs2.id)
+            await supabase.from('game_states').update({ phase: 'bid', current_player_id: cpuPlayer.id, turn_started_at: ts(), updated_at: ts() }).eq('id', gs2.id)
             set({ _foldedPlayerIds: [] })
           } else {
-            await supabase.from('game_states').update({ current_player_id: next.id, updated_at: ts() }).eq('id', gs2.id)
+            await supabase.from('game_states').update({ current_player_id: next.id, turn_started_at: ts(), updated_at: ts() }).eq('id', gs2.id)
           }
         }
         return
@@ -564,7 +571,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
           } else {
             const next = getNextActivePlayer(players, cpuPlayer.id, newFoldedIds)
             await supabase.from('game_states').update({
-              pass_count: gs2.pass_count + 1, current_player_id: next?.id ?? null, updated_at: ts(),
+              pass_count: gs2.pass_count + 1, current_player_id: next?.id ?? null, turn_started_at: ts(), updated_at: ts(),
             }).eq('id', gs2.id)
           }
         } else {
@@ -577,7 +584,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
             highest_bid: result.amount!, highest_bidder_id: cpuPlayer.id,
             current_player_id: goToFlip2 ? cpuPlayer.id : nextPlayer2!.id,
             phase: goToFlip2 ? 'flip' : 'bid',
-            updated_at: ts(),
+            turn_started_at: ts(), updated_at: ts(),
           }).eq('id', gs2.id)
         }
         return
@@ -596,8 +603,8 @@ export const useGameStore = create<StoreState>()((set, get) => {
         await supabase.from('placed_discs').update({ is_flipped: true, flipped_by: cpuPlayer.id }).eq('id', targetId)
         await supabase.from('game_states').update({ flip_count: newFlipCount, updated_at: ts() }).eq('id', gs2.id)
 
-        const flipLog = realDisc.disc_type === 'skull'
-          ? { id: crypto.randomUUID(), message: `💀 ${cpuPlayer.player_name} がドクロを踏んだ！`, type: 'result' as const }
+        const flipLog = realDisc.disc_type === 'bomb'
+          ? { id: crypto.randomUUID(), message: `💣 ${cpuPlayer.player_name} が爆弾を踏んだ！`, type: 'result' as const }
           : { id: crypto.randomUUID(), message: `🌸 ${cpuPlayer.player_name} がカードをめくった`, type: 'flip' as const }
 
         set(prev => ({
@@ -607,28 +614,27 @@ export const useGameStore = create<StoreState>()((set, get) => {
           _cpuLog: flipLog,
         }))
 
-        if (realDisc.disc_type === 'skull') {
-          // CPU hit a skull — lose a random card
+        if (realDisc.disc_type === 'bomb') {
+          // CPU hit a bomb — lose a random card
           const freshS = get()
-          const currentPerm = freshS._permCards[cpuPlayer.id] ?? { flowers: 3, skulls: 1 }
-          const permTotal = currentPerm.flowers + currentPerm.skulls
-          const loseSkull = permTotal > 0 && currentPerm.skulls > 0 && Math.random() < currentPerm.skulls / permTotal
+          const currentPerm = freshS._permCards[cpuPlayer.id] ?? { flowers: 3, bombs: 1 }
+          const permTotal = currentPerm.flowers + currentPerm.bombs
+          const loseBomb = permTotal > 0 && currentPerm.bombs > 0 && Math.random() < currentPerm.bombs / permTotal
           const newPerm = {
-            flowers: loseSkull ? currentPerm.flowers : Math.max(0, currentPerm.flowers - 1),
-            skulls:  loseSkull ? Math.max(0, currentPerm.skulls - 1) : currentPerm.skulls,
+            flowers: loseBomb ? currentPerm.flowers : Math.max(0, currentPerm.flowers - 1),
+            bombs:   loseBomb ? Math.max(0, currentPerm.bombs - 1) : currentPerm.bombs,
           }
-          const isEliminated = newPerm.flowers + newPerm.skulls === 0
+          const isEliminated = newPerm.flowers + newPerm.bombs === 0
           const updatedPerm = { ...freshS._permCards, [cpuPlayer.id]: newPerm }
-          await supabase.from('players').update({ flower_count: newPerm.flowers, skull_count: newPerm.skulls, is_eliminated: isEliminated }).eq('id', cpuPlayer.id)
-          const updatedPlayers = freshS.players.map(p => p.id !== cpuPlayer.id ? p : { ...p, flower_count: newPerm.flowers, skull_count: newPerm.skulls, is_eliminated: isEliminated })
+          await supabase.from('players').update({ flower_count: newPerm.flowers, bomb_count: newPerm.bombs, is_eliminated: isEliminated }).eq('id', cpuPlayer.id)
+          const updatedPlayers = freshS.players.map(p => p.id !== cpuPlayer.id ? p : { ...p, flower_count: newPerm.flowers, bomb_count: newPerm.bombs, is_eliminated: isEliminated })
           set({
             players: updatedPlayers,
             _permCards: updatedPerm,
-            _cpuLog: { id: crypto.randomUUID(), message: `💀 ${cpuPlayer.player_name} がドクロを踏んだ！カードを1枚失った`, type: 'result' },
+            _cpuLog: { id: crypto.randomUUID(), message: `💣 ${cpuPlayer.player_name} が爆弾を踏んだ！カードを1枚失った`, type: 'result' },
           })
           const winner = getWinner(updatedPlayers)
           if (!winner) {
-            // Challenger (who failed) starts next round
             const failedChallenger = updatedPlayers.find(p => p.id === cpuPlayer.id)
             const starterId = failedChallenger?.is_eliminated
               ? getNextActivePlayer(updatedPlayers, cpuPlayer.id)?.id ?? cpuPlayer.id
@@ -637,16 +643,17 @@ export const useGameStore = create<StoreState>()((set, get) => {
             const resetPlayers = updatedPlayers.map(p => {
               if (p.is_eliminated) return p
               const perm = updatedPerm[p.id]
-              return perm ? { ...p, flower_count: perm.flowers, skull_count: perm.skulls } : p
+              return perm ? { ...p, flower_count: perm.flowers, bomb_count: perm.bombs } : p
             })
             await new Promise(r => setTimeout(r, 1500))
             await supabase.from('placed_discs').delete().eq('room_id', room.id).eq('round_number', gs2.round_number)
             await supabase.from('game_states').update({
               round_number: newRound, phase: 'place', current_player_id: starterId,
-              highest_bid: 0, highest_bidder_id: null, pass_count: 0, flip_count: 0, updated_at: ts(),
+              highest_bid: 0, highest_bidder_id: null, pass_count: 0, flip_count: 0,
+              turn_started_at: ts(), last_emote: null, updated_at: ts(),
             }).eq('id', gs2.id)
             for (const p of resetPlayers.filter(p => !p.is_eliminated)) {
-              await supabase.from('players').update({ flower_count: p.flower_count, skull_count: p.skull_count }).eq('id', p.id)
+              await supabase.from('players').update({ flower_count: p.flower_count, bomb_count: p.bomb_count }).eq('id', p.id)
             }
             set({ players: resetPlayers, publicDiscs: [], myDiscs: [], _cpuDiscs: [], _foldedPlayerIds: [] })
           }
@@ -665,16 +672,17 @@ export const useGameStore = create<StoreState>()((set, get) => {
             const resetPlayers = updatedPlayers.map(p => {
               if (p.is_eliminated) return p
               const perm = freshS._permCards[p.id]
-              return perm ? { ...p, flower_count: perm.flowers, skull_count: perm.skulls } : p
+              return perm ? { ...p, flower_count: perm.flowers, bomb_count: perm.bombs } : p
             })
             await new Promise(r => setTimeout(r, 1500))
             await supabase.from('placed_discs').delete().eq('room_id', room.id).eq('round_number', gs2.round_number)
             await supabase.from('game_states').update({
               round_number: newRound, phase: 'place', current_player_id: cpuPlayer.id,
-              highest_bid: 0, highest_bidder_id: null, pass_count: 0, flip_count: 0, updated_at: ts(),
+              highest_bid: 0, highest_bidder_id: null, pass_count: 0, flip_count: 0,
+              turn_started_at: ts(), last_emote: null, updated_at: ts(),
             }).eq('id', gs2.id)
             for (const p of resetPlayers.filter(p => !p.is_eliminated)) {
-              await supabase.from('players').update({ flower_count: p.flower_count, skull_count: p.skull_count }).eq('id', p.id)
+              await supabase.from('players').update({ flower_count: p.flower_count, bomb_count: p.bomb_count }).eq('id', p.id)
             }
             set({ players: resetPlayers, publicDiscs: [], myDiscs: [], _cpuDiscs: [], _foldedPlayerIds: [] })
           }
@@ -692,9 +700,6 @@ export const useGameStore = create<StoreState>()((set, get) => {
   }
 
   // ── processOnlineEmptyHandTurn ────────────────────────────────────────────
-  // Host: called when a human player gets the turn in place phase but may have
-  // 0 cards due to subscription race (player counts updated before game_states).
-  // Mirrors the empty-hand branch in processOnlineCpuTurn.
   async function processOnlineEmptyHandTurn(player: Player, gs: GameState): Promise<void> {
     if (_onlineCpuProcessing) return
     _onlineCpuProcessing = true
@@ -703,36 +708,33 @@ export const useGameStore = create<StoreState>()((set, get) => {
       if (!s.room || s.isCpuGame || !s.gameState) return
       if (s.gameState.current_player_id !== player.id || s.gameState.phase !== 'place') return
 
-      // Fetch authoritative player counts from DB to avoid stale local state
       const { data: freshPlayers } = await supabase.from('players').select().eq('room_id', s.room.id)
       if (!freshPlayers) return
 
-      // Guard: turn may have moved while we awaited the DB fetch
       const s2 = get()
       if (!s2.gameState || s2.gameState.current_player_id !== player.id || s2.gameState.phase !== 'place') return
 
       const freshPlayer = freshPlayers.find(p => p.id === player.id)
-      if (!freshPlayer || freshPlayer.flower_count + freshPlayer.skull_count > 0) return
+      if (!freshPlayer || freshPlayer.flower_count + freshPlayer.bomb_count > 0) return
 
-      // Player has 0 cards — advance turn or force bid (same logic as CPU empty-hand)
       const active = freshPlayers.filter(p => !p.is_eliminated)
-      const allEmpty = active.every(p => p.flower_count + p.skull_count === 0)
+      const allEmpty = active.every(p => p.flower_count + p.bomb_count === 0)
       if (allEmpty) {
         const first = [...active].sort((a, b) => a.seat_order - b.seat_order)[0]
         await supabase.from('game_states').update({
-          phase: 'bid', current_player_id: first?.id ?? null, updated_at: ts(),
+          phase: 'bid', current_player_id: first?.id ?? null, turn_started_at: ts(), updated_at: ts(),
         }).eq('id', gs.id)
         set({ _foldedPlayerIds: [] })
       } else {
         const next = getNextPlayerWithHand(freshPlayers, freshPlayer.id)
         if (next === null) {
           await supabase.from('game_states').update({
-            phase: 'bid', current_player_id: freshPlayer.id, updated_at: ts(),
+            phase: 'bid', current_player_id: freshPlayer.id, turn_started_at: ts(), updated_at: ts(),
           }).eq('id', gs.id)
           set({ _foldedPlayerIds: [] })
         } else {
           await supabase.from('game_states').update({
-            current_player_id: next.id, updated_at: ts(),
+            current_player_id: next.id, turn_started_at: ts(), updated_at: ts(),
           }).eq('id', gs.id)
         }
       }
@@ -850,14 +852,14 @@ export const useGameStore = create<StoreState>()((set, get) => {
             round_number: 1,
             phase: 'place',
             current_player_id: firstPlayer.id,
+            turn_started_at: new Date().toISOString(),
           })
           .select().single()
         if (gsErr) throw gsErr
 
         await supabase.from('rooms').update({ status: 'playing' }).eq('id', room.id)
-        // Init _permCards for online+CPU hybrid mode
-        const initPerm: Record<string, { flowers: number; skulls: number }> = {}
-        for (const p of players) initPerm[p.id] = { flowers: p.flower_count, skulls: p.skull_count }
+        const initPerm: Record<string, { flowers: number; bombs: number }> = {}
+        for (const p of players) initPerm[p.id] = { flowers: p.flower_count, bombs: p.bomb_count }
         set({ gameState: gs, room: { ...room, status: 'playing' }, isLoading: false, _permCards: initPerm, _cpuDiscs: [] })
       } catch (e) {
         set({ error: (e as any)?.message ?? String(e), isLoading: false })
@@ -867,7 +869,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
 
     // ── addCpuPlayer ──────────────────────────────────────────────────────────
     addCpuPlayer: async () => {
-      if (_addingCpu) return  // synchronous module-level guard
+      if (_addingCpu) return
       _addingCpu = true
       const { room, players, sessionId } = get()
       if (!room || room.host_id !== sessionId) { _addingCpu = false; return }
@@ -885,7 +887,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
           seat_order: seatOrder,
           is_cpu: true,
           flower_count: 3,
-          skull_count: 1,
+          bomb_count: 1,
           win_count: 0,
           is_eliminated: false,
         })
@@ -925,7 +927,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
           p.id !== myPlayer.id ? p : {
             ...p,
             flower_count: discType === 'flower' ? p.flower_count - 1 : p.flower_count,
-            skull_count:  discType === 'skull'  ? p.skull_count  - 1 : p.skull_count,
+            bomb_count:   discType === 'bomb'   ? p.bomb_count   - 1 : p.bomb_count,
           },
         )
         const newPublicDiscs = [...publicDiscs, newDisc]
@@ -943,6 +945,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
               ...gameState,
               phase: 'bid',
               current_player_id: firstActive?.id ?? null,
+              turn_started_at: ts(),
               updated_at: ts(),
             },
             _foldedPlayerIds: [],
@@ -956,7 +959,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
           myDiscs: [...myDiscs, newDisc],
           publicDiscs: newPublicDiscs,
           players: updatedPlayers,
-          gameState: { ...gameState, current_player_id: next?.id ?? null, updated_at: ts() },
+          gameState: { ...gameState, current_player_id: next?.id ?? null, turn_started_at: ts(), updated_at: ts() },
         })
         await processCpuTurns()
         return
@@ -971,14 +974,14 @@ export const useGameStore = create<StoreState>()((set, get) => {
         })
         await supabase.from('players').update({
           flower_count: discType === 'flower' ? myPlayer.flower_count - 1 : myPlayer.flower_count,
-          skull_count:  discType === 'skull'  ? myPlayer.skull_count  - 1 : myPlayer.skull_count,
+          bomb_count:   discType === 'bomb'   ? myPlayer.bomb_count   - 1 : myPlayer.bomb_count,
         }).eq('id', myPlayer.id)
 
         const updatedPlayers = players.map(p =>
           p.id !== myPlayer.id ? p : {
             ...p,
             flower_count: discType === 'flower' ? p.flower_count - 1 : p.flower_count,
-            skull_count:  discType === 'skull'  ? p.skull_count  - 1 : p.skull_count,
+            bomb_count:   discType === 'bomb'   ? p.bomb_count   - 1 : p.bomb_count,
           },
         )
         if (allHandsEmpty(updatedPlayers)) {
@@ -988,21 +991,20 @@ export const useGameStore = create<StoreState>()((set, get) => {
           await supabase.from('game_states').update({
             phase: 'bid',
             current_player_id: firstActive?.id ?? null,
+            turn_started_at: ts(),
             updated_at: ts(),
           }).eq('id', gameState.id)
           set({ isLoading: false, _foldedPlayerIds: [] })
         } else {
-          // Skip empty-hand players; if no other player has cards, force bid
-          // (current player will see the bid controller since allPlaced=true).
           const next = getNextPlayerWithHand(updatedPlayers, myPlayer.id)
           if (next === null) {
             await supabase.from('game_states').update({
-              phase: 'bid', current_player_id: myPlayer.id, updated_at: ts(),
+              phase: 'bid', current_player_id: myPlayer.id, turn_started_at: ts(), updated_at: ts(),
             }).eq('id', gameState.id)
             set({ isLoading: false, _foldedPlayerIds: [] })
           } else {
             await supabase.from('game_states').update({
-              current_player_id: next.id, updated_at: ts(),
+              current_player_id: next.id, turn_started_at: ts(), updated_at: ts(),
             }).eq('id', gameState.id)
             set({ isLoading: false, _foldedPlayerIds })
           }
@@ -1021,7 +1023,6 @@ export const useGameStore = create<StoreState>()((set, get) => {
       const round = gameState.round_number
       const totalPlaced = publicDiscs.filter(d => d.round_number === round).length
       const nextPlayer = getNextActivePlayer(players, myPlayer.id, _foldedPlayerIds)
-      // Max bid OR only bidder left → flip phase starts immediately
       const goToFlip = amount >= totalPlaced || !nextPlayer
 
       const updates = goToFlip ? {
@@ -1029,19 +1030,20 @@ export const useGameStore = create<StoreState>()((set, get) => {
         highest_bid: amount,
         highest_bidder_id: myPlayer.id,
         current_player_id: myPlayer.id,
+        turn_started_at: ts(),
         updated_at: ts(),
       } : {
         phase: 'bid' as const,
         highest_bid: amount,
         highest_bidder_id: myPlayer.id,
         current_player_id: nextPlayer.id,
+        turn_started_at: ts(),
         updated_at: ts(),
       }
 
       if (isCpuGame) {
         set(s => ({
           gameState: { ...s.gameState!, ...updates },
-          // Only clear folds when starting bid from place phase; preserve them on raises
           _foldedPlayerIds: gameState.phase === 'place' ? [] : _foldedPlayerIds,
         }))
         await processCpuTurns()
@@ -1090,6 +1092,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
               ...s.gameState!,
               pass_count: s.gameState!.pass_count + 1,
               current_player_id: next?.id ?? null,
+              turn_started_at: ts(),
               updated_at: ts(),
             },
             _foldedPlayerIds: newFoldedIds,
@@ -1099,8 +1102,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
         return
       }
 
-      // Online: use pass_count (authoritative in DB) for isChallenge — local
-      // _foldedPlayerIds is not updated when other human guests fold.
+      // Online: use pass_count (authoritative in DB) for isChallenge
       const isChallengeOnline = (gameState.pass_count + 1) >= (activePlayers.length - 1)
       set({ isLoading: true })
       try {
@@ -1112,6 +1114,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
           pass_count: gameState.pass_count + 1,
           phase: (isChallengeOnline ? 'flip' : gameState.phase) as 'bid' | 'flip',
           current_player_id: next?.id ?? null,
+          turn_started_at: ts(),
           updated_at: ts(),
         }
         const { error } = await supabase.from('game_states').update(updates).eq('id', gameState.id)
@@ -1164,7 +1167,6 @@ export const useGameStore = create<StoreState>()((set, get) => {
         await supabase.from('game_states').update({
           flip_count: newFlipCount, updated_at: ts(),
         }).eq('id', gameState.id)
-        // Update local flip_count immediately so handleFlip can read it before subscription fires
         set(s => ({ isLoading: false, gameState: s.gameState ? { ...s.gameState, flip_count: newFlipCount } : null }))
         return (updatedDisc?.disc_type as DiscType) ?? 'flower'
       } catch (e) {
@@ -1220,12 +1222,14 @@ export const useGameStore = create<StoreState>()((set, get) => {
         highest_bidder_id: null,
         pass_count: 0,
         flip_count: 0,
+        turn_started_at: ts(),
+        last_emote: null,
         created_at: ts(),
         updated_at: ts(),
       }
 
-      const initPermCards: Record<string, { flowers: number; skulls: number }> = {}
-      for (const p of allPlayers) initPermCards[p.id] = { flowers: 3, skulls: 1 }
+      const initPermCards: Record<string, { flowers: number; bombs: number }> = {}
+      for (const p of allPlayers) initPermCards[p.id] = { flowers: 3, bombs: 1 }
 
       set({
         room,
@@ -1254,8 +1258,6 @@ export const useGameStore = create<StoreState>()((set, get) => {
       const roomId = room.id
       let reconnectTimer: ReturnType<typeof setTimeout> | null = null
 
-      // Immediately fetch current players — don't wait for SUBSCRIBED event.
-      // Handles the case where guests joined before the host opened the lobby.
       supabase.from('players').select().eq('room_id', roomId).then(({ data }) => {
         if (!data || data.length === 0) return
         set({ players: data })
@@ -1292,8 +1294,6 @@ export const useGameStore = create<StoreState>()((set, get) => {
             const prevGs = get().gameState
             const roundChanged = prevGs != null && newGs.round_number !== prevGs.round_number
 
-            // Infer folds from pass_count increase — keeps _foldedPlayerIds in sync
-            // for all clients including guests who don't execute processOnlineCpuTurn.
             if (!roundChanged && prevGs && newGs.pass_count > prevGs.pass_count) {
               const foldedId = prevGs.current_player_id
               if (foldedId) {
@@ -1308,15 +1308,12 @@ export const useGameStore = create<StoreState>()((set, get) => {
               ...(roundChanged ? { publicDiscs: [], myDiscs: [], _cpuDiscs: [], _foldedPlayerIds: [] } : {}),
             })
 
-            // On round change, re-fetch players to pick up restored hand counts
-            // and rebuild _permCards so every client (host + guests) has accurate
-            // permanent card totals going into the new round.
             if (roundChanged) {
               supabase.from('players').select().eq('room_id', roomId).then(({ data }) => {
                 if (!data || data.length === 0) return
-                const permCards: Record<string, { flowers: number; skulls: number }> = {}
+                const permCards: Record<string, { flowers: number; bombs: number }> = {}
                 for (const p of data) {
-                  if (!p.is_eliminated) permCards[p.id] = { flowers: p.flower_count, skulls: p.skull_count }
+                  if (!p.is_eliminated) permCards[p.id] = { flowers: p.flower_count, bombs: p.bomb_count }
                 }
                 set({ players: data, _permCards: permCards })
               })
@@ -1329,16 +1326,14 @@ export const useGameStore = create<StoreState>()((set, get) => {
               if (cp?.is_cpu) {
                 processOnlineCpuTurn(cp, newGs)
               } else if (cp && !cp.is_eliminated && newGs.phase === 'place') {
-                // If local state already shows 0 cards, act immediately; otherwise
-                // wait 800 ms for the players subscription to arrive then re-check.
                 const check = () => {
                   const s2 = get()
                   const p2 = s2.players.find(p => p.id === cp.id)
-                  if (p2 && p2.flower_count + p2.skull_count === 0) {
+                  if (p2 && p2.flower_count + p2.bomb_count === 0) {
                     processOnlineEmptyHandTurn(p2, newGs)
                   }
                 }
-                if (cp.flower_count + cp.skull_count === 0) check()
+                if (cp.flower_count + cp.bomb_count === 0) check()
                 else setTimeout(check, 800)
               }
             }
@@ -1356,7 +1351,6 @@ export const useGameStore = create<StoreState>()((set, get) => {
 
           if (payload.eventType === 'INSERT') {
             set(s => {
-              // Dedup: subscription can fire twice (own insert + realtime echo)
               if (s.publicDiscs.some(d => d.id === disc.id)) return {}
               return {
                 publicDiscs: [...s.publicDiscs, publicDisc],
@@ -1375,14 +1369,10 @@ export const useGameStore = create<StoreState>()((set, get) => {
             if (evt.status === 'SUBSCRIBED') {
               if (reconnectTimer) clearTimeout(reconnectTimer)
               set({ isReconnecting: false })
-              // Re-fetch players to catch anyone who joined during the subscription gap.
               supabase.from('players').select().eq('room_id', roomId).then(({ data }) => {
                 if (!data || data.length === 0) return
                 set({ players: data })
               })
-              // Re-fetch placed_discs to catch any placements missed during the
-              // subscription gap. Also seeds _permCards using disc count only (not
-              // disc_type) to avoid leaking which card type was placed.
               const currentRound = get().gameState?.round_number
               const myId = get()._myPlayerId
               if (currentRound != null) {
@@ -1390,17 +1380,15 @@ export const useGameStore = create<StoreState>()((set, get) => {
                   .eq('room_id', roomId).eq('round_number', currentRound)
                   .then(({ data: placed }) => {
                     set(s => {
-                      // Seed _permCards if empty: count placed discs per player and add
-                      // to current hand to reconstruct perm total, without revealing types.
                       let permUpdate: Partial<StoreState> = {}
                       if (Object.keys(s._permCards).length === 0) {
                         const counts: Record<string, number> = {}
                         for (const d of (placed ?? [])) counts[d.player_id] = (counts[d.player_id] ?? 0) + 1
-                        const perm: Record<string, { flowers: number; skulls: number }> = {}
+                        const perm: Record<string, { flowers: number; bombs: number }> = {}
                         for (const p of s.players) {
                           if (!p.is_eliminated) {
-                            const total = p.flower_count + p.skull_count + (counts[p.id] ?? 0)
-                            perm[p.id] = { flowers: total, skulls: 0 }
+                            const total = p.flower_count + p.bomb_count + (counts[p.id] ?? 0)
+                            perm[p.id] = { flowers: total, bombs: 0 }
                           }
                         }
                         permUpdate = { _permCards: perm }
@@ -1445,8 +1433,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
     },
 
     // ── advanceAfterChallenge ─────────────────────────────────────────────────
-    // Called by UI after showing skull/success modal to human player.
-    advanceAfterChallenge: async (result, _skullOwnerId) => {
+    advanceAfterChallenge: async (result, _bombOwnerId) => {
       const { players, gameState, room, isCpuGame, sessionId } = get()
       const myPlayer = players.find(p => p.session_id === sessionId)
       if (!myPlayer || !gameState || !room) return
@@ -1458,7 +1445,6 @@ export const useGameStore = create<StoreState>()((set, get) => {
         const winner = getWinner(updatedPlayers)
         if (winner) {
           if (!isCpuGame) {
-            // Online: push win_count to DB so other clients see the winner via subscription
             await supabase.from('players').update({ win_count: myPlayer.win_count + 1 }).eq('id', myPlayer.id)
           }
           set({ players: updatedPlayers })
@@ -1468,31 +1454,29 @@ export const useGameStore = create<StoreState>()((set, get) => {
           startNextRound(myPlayer.id, updatedPlayers, room, gameState)
           await processCpuTurns()
         } else {
-          // Online: reconstruct perm from DB (placed_discs + current counts) instead of
-          // _permCards, which is empty on guest clients and may be stale on the host.
           const { data: roundDiscs } = await supabase
             .from('placed_discs').select('player_id, disc_type')
             .eq('room_id', room.id).eq('round_number', gameState.round_number)
-          const permFromDB: Record<string, { flowers: number; skulls: number }> = {}
+          const permFromDB: Record<string, { flowers: number; bombs: number }> = {}
           for (const p of updatedPlayers) {
             if (p.is_eliminated) continue
             const placed = (roundDiscs ?? []).filter(d => d.player_id === p.id)
             permFromDB[p.id] = {
               flowers: p.flower_count + placed.filter(d => d.disc_type === 'flower').length,
-              skulls: p.skull_count + placed.filter(d => d.disc_type === 'skull').length,
+              bombs:   p.bomb_count   + placed.filter(d => d.disc_type === 'bomb').length,
             }
           }
           set({ _permCards: permFromDB })
           const resetPlayers = updatedPlayers.map(p => {
             if (p.is_eliminated) return p
             const perm = permFromDB[p.id]
-            return perm ? { ...p, flower_count: perm.flowers, skull_count: perm.skulls } : p
+            return perm ? { ...p, flower_count: perm.flowers, bomb_count: perm.bombs } : p
           })
           await Promise.all(
             resetPlayers.filter(p => !p.is_eliminated).map(p =>
               supabase.from('players').update({
                 flower_count: p.flower_count,
-                skull_count: p.skull_count,
+                bomb_count: p.bomb_count,
                 ...(p.id === myPlayer.id ? { win_count: myPlayer.win_count + 1 } : {}),
               }).eq('id', p.id)
             )
@@ -1502,7 +1486,8 @@ export const useGameStore = create<StoreState>()((set, get) => {
             round_number: newRound, phase: 'place',
             current_player_id: myPlayer.id,
             highest_bid: 0, highest_bidder_id: null,
-            pass_count: 0, flip_count: 0, updated_at: ts(),
+            pass_count: 0, flip_count: 0,
+            turn_started_at: ts(), last_emote: null, updated_at: ts(),
           }).eq('id', gameState.id)
           await supabase.from('placed_discs')
             .delete().eq('room_id', room.id).eq('round_number', gameState.round_number)
@@ -1510,22 +1495,20 @@ export const useGameStore = create<StoreState>()((set, get) => {
         }
       } else {
         // Challenge loss: remove one random card permanently.
-        // CPU and online paths are separate because online must reconstruct perm
-        // from DB to avoid using _permCards that was seeded from mid-round depleted counts.
         if (isCpuGame) {
           const { _permCards } = get()
-          const currentPerm = _permCards[myPlayer.id] ?? { flowers: 3, skulls: 1 }
-          const permTotal = currentPerm.flowers + currentPerm.skulls
-          const loseSkull = permTotal > 0 && currentPerm.skulls > 0 && Math.random() < currentPerm.skulls / permTotal
+          const currentPerm = _permCards[myPlayer.id] ?? { flowers: 3, bombs: 1 }
+          const permTotal = currentPerm.flowers + currentPerm.bombs
+          const loseBomb = permTotal > 0 && currentPerm.bombs > 0 && Math.random() < currentPerm.bombs / permTotal
           const newPerm = {
-            flowers: loseSkull ? currentPerm.flowers : Math.max(0, currentPerm.flowers - 1),
-            skulls:  loseSkull ? Math.max(0, currentPerm.skulls - 1) : currentPerm.skulls,
+            flowers: loseBomb ? currentPerm.flowers : Math.max(0, currentPerm.flowers - 1),
+            bombs:   loseBomb ? Math.max(0, currentPerm.bombs - 1) : currentPerm.bombs,
           }
-          const isEliminated = newPerm.flowers + newPerm.skulls === 0
+          const isEliminated = newPerm.flowers + newPerm.bombs === 0
           const updatedPermCards = { ..._permCards, [myPlayer.id]: newPerm }
           const updatedPlayers = players.map(p => {
             if (p.id !== myPlayer.id) return p
-            return { ...p, flower_count: newPerm.flowers, skull_count: newPerm.skulls, is_eliminated: isEliminated }
+            return { ...p, flower_count: newPerm.flowers, bomb_count: newPerm.bombs, is_eliminated: isEliminated }
           })
           set({ _permCards: updatedPermCards })
           const winner = getWinner(updatedPlayers)
@@ -1537,40 +1520,38 @@ export const useGameStore = create<StoreState>()((set, get) => {
           startNextRound(starterId, updatedPlayers, room, gameState)
           await processCpuTurns()
         } else {
-          // Online: fetch placed_discs first so skull-loss is computed from authoritative
-          // perm values rather than _permCards which may be seeded from depleted counts.
+          // Online: fetch placed_discs first so bomb-loss is computed from authoritative perm values
           const { data: roundDiscs } = await supabase
             .from('placed_discs').select('player_id, disc_type')
             .eq('room_id', room.id).eq('round_number', gameState.round_number)
-          const permFromDB: Record<string, { flowers: number; skulls: number }> = {}
+          const permFromDB: Record<string, { flowers: number; bombs: number }> = {}
           for (const p of players) {
             if (p.is_eliminated) continue
             const placed = (roundDiscs ?? []).filter(d => d.player_id === p.id)
             permFromDB[p.id] = {
               flowers: p.flower_count + placed.filter(d => d.disc_type === 'flower').length,
-              skulls: p.skull_count + placed.filter(d => d.disc_type === 'skull').length,
+              bombs:   p.bomb_count   + placed.filter(d => d.disc_type === 'bomb').length,
             }
           }
-          const currentPerm = permFromDB[myPlayer.id] ?? { flowers: 3, skulls: 1 }
-          const permTotal = currentPerm.flowers + currentPerm.skulls
-          const loseSkull = permTotal > 0 && currentPerm.skulls > 0 && Math.random() < currentPerm.skulls / permTotal
+          const currentPerm = permFromDB[myPlayer.id] ?? { flowers: 3, bombs: 1 }
+          const permTotal = currentPerm.flowers + currentPerm.bombs
+          const loseBomb = permTotal > 0 && currentPerm.bombs > 0 && Math.random() < currentPerm.bombs / permTotal
           const newPerm = {
-            flowers: loseSkull ? currentPerm.flowers : Math.max(0, currentPerm.flowers - 1),
-            skulls:  loseSkull ? Math.max(0, currentPerm.skulls - 1) : currentPerm.skulls,
+            flowers: loseBomb ? currentPerm.flowers : Math.max(0, currentPerm.flowers - 1),
+            bombs:   loseBomb ? Math.max(0, currentPerm.bombs - 1) : currentPerm.bombs,
           }
-          const isEliminated = newPerm.flowers + newPerm.skulls === 0
+          const isEliminated = newPerm.flowers + newPerm.bombs === 0
           permFromDB[myPlayer.id] = newPerm
           set({ _permCards: permFromDB })
           const updatedPlayers = players.map(p => {
             if (p.id !== myPlayer.id) return p
-            return { ...p, flower_count: newPerm.flowers, skull_count: newPerm.skulls, is_eliminated: isEliminated }
+            return { ...p, flower_count: newPerm.flowers, bomb_count: newPerm.bombs, is_eliminated: isEliminated }
           })
           const winner = getWinner(updatedPlayers)
           if (winner) {
-            // Online: push elimination to DB so other clients see the winner via subscription
             await supabase.from('players').update({
               flower_count: newPerm.flowers,
-              skull_count: newPerm.skulls,
+              bomb_count: newPerm.bombs,
               is_eliminated: isEliminated,
             }).eq('id', myPlayer.id)
             set({ players: updatedPlayers })
@@ -1583,13 +1564,13 @@ export const useGameStore = create<StoreState>()((set, get) => {
           const resetPlayers = updatedPlayers.map(p => {
             if (p.is_eliminated) return p
             const perm = permFromDB[p.id]
-            return perm ? { ...p, flower_count: perm.flowers, skull_count: perm.skulls } : p
+            return perm ? { ...p, flower_count: perm.flowers, bomb_count: perm.bombs } : p
           })
           await Promise.all(
             resetPlayers.filter(p => !p.is_eliminated).map(p =>
               supabase.from('players').update({
                 flower_count: p.flower_count,
-                skull_count: p.skull_count,
+                bomb_count: p.bomb_count,
                 ...(p.id === myPlayer.id ? { is_eliminated: p.is_eliminated } : {}),
               }).eq('id', p.id)
             )
@@ -1599,12 +1580,26 @@ export const useGameStore = create<StoreState>()((set, get) => {
             round_number: newRound, phase: 'place',
             current_player_id: starterId,
             highest_bid: 0, highest_bidder_id: null,
-            pass_count: 0, flip_count: 0, updated_at: ts(),
+            pass_count: 0, flip_count: 0,
+            turn_started_at: ts(), last_emote: null, updated_at: ts(),
           }).eq('id', gameState.id)
           await supabase.from('placed_discs')
             .delete().eq('room_id', room.id).eq('round_number', gameState.round_number)
           set({ players: resetPlayers, publicDiscs: [], myDiscs: [], _cpuDiscs: [], _foldedPlayerIds: [] })
         }
+      }
+    },
+
+    // ── sendEmote ─────────────────────────────────────────────────────────────
+    sendEmote: async (type: EmoteType) => {
+      const { room, gameState, players, sessionId, isCpuGame } = get()
+      const myPlayer = players.find(p => p.session_id === sessionId)
+      if (!myPlayer || !gameState) return
+      const emote = { playerId: myPlayer.id, type, sentAt: ts() }
+      if (isCpuGame) {
+        set(s => ({ gameState: s.gameState ? { ...s.gameState, last_emote: emote } : null }))
+      } else {
+        await supabase.from('game_states').update({ last_emote: emote }).eq('id', gameState.id)
       }
     },
 
@@ -1618,7 +1613,6 @@ export const useGameStore = create<StoreState>()((set, get) => {
     },
 
     // ── resumeCpuTurns ────────────────────────────────────────────────────────
-    // Re-trigger CPU processing after page comes back from background.
     resumeCpuTurns: async () => {
       const s = get()
       if (!s.isCpuGame || !s.gameState) return

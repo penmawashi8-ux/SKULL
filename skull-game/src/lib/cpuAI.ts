@@ -16,26 +16,26 @@ export async function cpuDecidePlace(
   await thinkDelay()
 
   // 選択肢がない場合は強制
-  if (cpu.skull_count === 0) return 'flower'
-  if (cpu.flower_count === 0) return 'skull'
+  if (cpu.bomb_count === 0) return 'flower'
+  if (cpu.flower_count === 0) return 'bomb'
 
   if (difficulty === 'easy') {
-    return Math.random() < 0.4 ? 'skull' : 'flower'
+    return Math.random() < 0.4 ? 'bomb' : 'flower'
   }
 
   if (difficulty === 'normal') {
-    // 残りカードが少ないほどドクロを置く圧が高まる
-    const totalCards = cpu.flower_count + cpu.skull_count
-    const skullRate = totalCards <= 1 ? 0.5 : 0.25
-    return Math.random() < skullRate ? 'skull' : 'flower'
+    // 残りカードが少ないほど爆弾を置く圧が高まる
+    const totalCards = cpu.flower_count + cpu.bomb_count
+    const bombRate = totalCards <= 1 ? 0.5 : 0.25
+    return Math.random() < bombRate ? 'bomb' : 'flower'
   }
 
   // hard: 花が2枚以上あればチャレンジを狙いたいので花を優先
-  // 序盤に低確率でドクロを仕込んでブラフ
-  const totalCards = cpu.flower_count + cpu.skull_count
+  // 序盤に低確率で爆弾を仕込んでブラフ
+  const totalCards = cpu.flower_count + cpu.bomb_count
   const wantsToBid = cpu.flower_count >= 2
   if (wantsToBid && Math.random() < 0.75) return 'flower'
-  if (totalCards >= 3 && Math.random() < 0.2) return 'skull'
+  if (totalCards >= 3 && Math.random() < 0.2) return 'bomb'
   return 'flower'
 }
 
@@ -67,9 +67,9 @@ export async function cpuDecideBidOrFold(
 
   const ownDiscs = roundDiscs.filter((d) => d.player_id === cpu.id)
   const ownFlowers = ownDiscs.filter((d) => d.disc_type === 'flower').length
-  const ownHasSkull = ownDiscs.some((d) => d.disc_type === 'skull')
-  // 自分のスタックの安全枚数（ドクロを置いていれば花の枚数のみ）
-  const ownSafeCount = ownHasSkull ? ownFlowers : ownDiscs.length
+  const ownHasBomb = ownDiscs.some((d) => d.disc_type === 'bomb')
+  // 自分のスタックの安全枚数（爆弾を置いていれば花の枚数のみ）
+  const ownSafeCount = ownHasBomb ? ownFlowers : ownDiscs.length
 
   if (difficulty === 'normal') {
     const otherDiscsCount = totalDiscs - ownDiscs.length
@@ -129,14 +129,12 @@ export async function cpuDecideFlipTarget(
   }
 
   // normal / hard: 枚数の少ないスタックの上部を優先
-  // （枚数が少ない = ドクロが上にある確率が相対的に高いが、めくる枚数が少なくて済む）
   const byPlayer = new Map<string, PlacedDisc[]>()
   for (const disc of othersUnflipped) {
     if (!byPlayer.has(disc.player_id)) byPlayer.set(disc.player_id, [])
     byPlayer.get(disc.player_id)!.push(disc)
   }
 
-  // スタックの残り枚数が少ない順に並べ、最上部のディスクを狙う
   const sorted = [...byPlayer.entries()].sort((a, b) => a[1].length - b[1].length)
   const targetStack = sorted[0][1].sort((a, b) => b.position - a.position)
   return targetStack[0].id

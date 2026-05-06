@@ -24,7 +24,7 @@ export function getInitialPlayerState(
     seat_order: seatOrder,
     is_cpu: isCpu,
     flower_count: 3,
-    skull_count: 1,
+    bomb_count: 1,
     win_count: 0,
     is_eliminated: false,
   }
@@ -34,7 +34,7 @@ export function canPlaceDisc(player: Player, gameState: GameState): boolean {
   if (gameState.phase !== 'place') return false
   if (gameState.current_player_id !== player.id) return false
   if (player.is_eliminated) return false
-  return player.flower_count + player.skull_count > 0
+  return player.flower_count + player.bomb_count > 0
 }
 
 export function canBid(
@@ -64,7 +64,7 @@ export function resolveChallenge(
   discs: PlacedDisc[],
   players: Player[],
   bid: number
-): { success: boolean; hitSkull: boolean; skullOwner?: Player } {
+): { success: boolean; hitBomb: boolean; bombOwner?: Player } {
   // めくる順: チャレンジャー自身の積みから先にめくり、次に他プレイヤーを任意順でめくる
   const myDiscs = discs
     .filter((d) => d.player_id === challenger.id && !d.is_flipped)
@@ -78,17 +78,17 @@ export function resolveChallenge(
 
   let flipped = 0
   for (const disc of flipOrder) {
-    if (disc.disc_type === 'skull') {
-      const skullOwner = players.find((p) => p.id === disc.player_id)
-      return { success: false, hitSkull: true, skullOwner }
+    if (disc.disc_type === 'bomb') {
+      const bombOwner = players.find((p) => p.id === disc.player_id)
+      return { success: false, hitBomb: true, bombOwner }
     }
     flipped++
     if (flipped >= bid) {
-      return { success: true, hitSkull: false }
+      return { success: true, hitBomb: false }
     }
   }
 
-  return { success: flipped >= bid, hitSkull: false }
+  return { success: flipped >= bid, hitBomb: false }
 }
 
 export function shouldAdvanceToNextRound(
@@ -139,7 +139,7 @@ export function getMustBidPlayer(
 
   // 全員が手札を使い切った or フェーズを進めるべき状態
   const allHandsEmpty = activePlayers.every(
-    (p) => p.flower_count + p.skull_count === 0
+    (p) => p.flower_count + p.bomb_count === 0
   )
   if (allHandsEmpty) {
     // 最初に置いたプレイヤー（seat_order最小）からビッドを開始

@@ -124,7 +124,7 @@ export function playFailure() {
   } catch { /* ignore */ }
 }
 
-export function playSkullFlip() {
+export function playBombFlip() {
   try {
     const c = ctx()
     // Low ominous thud

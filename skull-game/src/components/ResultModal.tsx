@@ -4,9 +4,9 @@ import type { Player, PlacedDisc } from '../types/game'
 
 interface Props {
   show: boolean
-  type: 'success' | 'skull' | 'win' | 'lose' | null
+  type: 'success' | 'bomb' | 'win' | 'lose' | null
   challenger?: Player
-  skullOwner?: Player
+  bombOwner?: Player
   lostDisc?: PlacedDisc
   onClose: () => void
 }
@@ -39,7 +39,7 @@ function Confetti() {
   )
 }
 
-export function ResultModal({ show, type, challenger, skullOwner, lostDisc, onClose }: Props) {
+export function ResultModal({ show, type, challenger, bombOwner, lostDisc, onClose }: Props) {
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const firedRef = useRef(false)
 
@@ -57,7 +57,7 @@ export function ResultModal({ show, type, challenger, skullOwner, lostDisc, onCl
 
   useEffect(() => {
     if (!show) { firedRef.current = false; return }
-    if (type === 'success' || type === 'skull') {
+    if (type === 'success' || type === 'bomb') {
       timerRef.current = setTimeout(() => fireOnce.current(), 3200)
     }
     return () => { if (timerRef.current) clearTimeout(timerRef.current) }
@@ -75,8 +75,8 @@ export function ResultModal({ show, type, challenger, skullOwner, lostDisc, onCl
         >
           {(type === 'success' || type === 'win') && <Confetti />}
 
-          {/* Skull hit – screen shake */}
-          {type === 'skull' && (
+          {/* Bomb hit – screen shake */}
+          {type === 'bomb' && (
             <motion.div
               className="absolute inset-0 bg-red-600/20"
               animate={{ x: [0, -8, 8, -8, 8, 0] }}
@@ -105,15 +105,15 @@ export function ResultModal({ show, type, challenger, skullOwner, lostDisc, onCl
               </>
             )}
 
-            {/* SKULL HIT */}
-            {type === 'skull' && (
+            {/* BOMB HIT */}
+            {type === 'bomb' && (
               <>
-                <div className="text-6xl mb-3 animate-bounce">💀</div>
+                <div className="text-6xl mb-3 animate-bounce">💣</div>
                 <h2 className="text-2xl font-bold text-red-400 mb-2" style={{ fontFamily: 'Cinzel, serif' }}>
-                  ドクロを踏んだ！
+                  爆弾を踏んだ！
                 </h2>
                 <p className="text-white/70 mb-3" style={{ fontFamily: 'Crimson Text, serif' }}>
-                  {skullOwner?.player_name} のドクロに触れてしまった
+                  {bombOwner?.player_name} の爆弾に触れてしまった
                 </p>
                 {lostDisc && (
                   <div className="bg-red-950/50 border border-red-500/30 rounded-xl p-3 text-sm text-red-300">

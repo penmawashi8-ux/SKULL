@@ -11,9 +11,9 @@ export default defineConfig({
       registerType: 'prompt',
       includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
       manifest: {
-        name: 'SKULL',
-        short_name: 'SKULL',
-        description: 'スカル カードゲーム',
+        name: 'BOMB',
+        short_name: 'BOMB',
+        description: 'BOMB カードゲーム',
         theme_color: '#030712',
         background_color: '#030712',
         display: 'standalone',

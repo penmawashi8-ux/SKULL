@@ -1,5 +1,5 @@
-import { motion } from 'framer-motion'
-import type { Player, GameState, PlacedDisc } from '../types/game'
+import { motion, AnimatePresence } from 'framer-motion'
+import type { Player, GameState, PlacedDisc, EmoteType } from '../types/game'
 import { DiscStack } from './DiscStack'
 
 interface Props {
@@ -12,7 +12,8 @@ interface Props {
   onFlip?: (discId: string) => void
   compact?: boolean
   hasFolded?: boolean
-  permCards?: { flowers: number; skulls: number }
+  permCards?: { flowers: number; bombs: number }
+  emote?: { type: EmoteType; sentAt: string } | null
 }
 
 const COLOR_RING: Record<string, string> = {
@@ -35,7 +36,7 @@ const COLOR_DOT: Record<string, string> = {
 
 export function PlayerCard({
   player, gameState, discs, isCurrentTurn, isMyTurnToFlip, challengerId, onFlip,
-  compact = false, hasFolded = false, permCards,
+  compact = false, hasFolded = false, permCards, emote,
 }: Props) {
   const ringClass = COLOR_RING[player.player_color] ?? COLOR_RING.purple
   const dotClass = COLOR_DOT[player.player_color] ?? COLOR_DOT.purple
@@ -48,8 +49,8 @@ export function PlayerCard({
   const isHighestBidder = gameState?.highest_bidder_id === player.id
   const phase = gameState?.phase ?? 'place'
   const totalCards = permCards
-    ? permCards.flowers + permCards.skulls
-    : player.flower_count + player.skull_count + playerDiscs.length
+    ? permCards.flowers + permCards.bombs
+    : player.flower_count + player.bomb_count + playerDiscs.length
 
   if (compact) {
     return (
@@ -70,12 +71,27 @@ export function PlayerCard({
         <div className="flex items-center gap-2 p-2">
           {/* Left: info column */}
           <div className="flex-1 min-w-0">
-            {/* Name */}
+            {/* Name + emote */}
             <div className="flex items-center gap-1 mb-0.5">
               <span className={`w-2 h-2 rounded-full flex-shrink-0 ${dotClass}`} />
               <span className="text-white text-xs font-medium truncate" style={{ fontFamily: 'Crimson Text, serif' }}>
                 {player.player_name}
               </span>
+              {/* Floating emote bubble */}
+              <AnimatePresence>
+                {emote && (
+                  <motion.span
+                    key={emote.sentAt}
+                    className="text-base leading-none ml-0.5"
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -6 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    {emote.type === 'BOMB' ? '💣' : '🌸'}
+                  </motion.span>
+                )}
+              </AnimatePresence>
             </div>
 
             {/* Stats row: wins + card count */}
@@ -160,7 +176,7 @@ export function PlayerCard({
           )}
           <div className="flex gap-1 text-xs text-white/50">
             <span>花×{player.flower_count}</span>
-            <span>💀×{player.skull_count}</span>
+            <span>💣×{player.bomb_count}</span>
           </div>
         </div>
         {!player.is_eliminated && (
