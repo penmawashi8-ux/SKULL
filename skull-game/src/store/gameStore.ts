@@ -1256,18 +1256,9 @@ export const useGameStore = create<StoreState>()((set, get) => {
 
       // Immediately fetch current players — don't wait for SUBSCRIBED event.
       // Handles the case where guests joined before the host opened the lobby.
-      // Also seeds _permCards for guests who never ran startGame.
       supabase.from('players').select().eq('room_id', roomId).then(({ data }) => {
         if (!data || data.length === 0) return
-        set(s => {
-          const update: Partial<StoreState> = { players: data }
-          if (Object.keys(s._permCards).length === 0) {
-            const perm: Record<string, { flowers: number; skulls: number }> = {}
-            for (const p of data) if (!p.is_eliminated) perm[p.id] = { flowers: p.flower_count, skulls: p.skull_count }
-            update._permCards = perm
-          }
-          return update
-        })
+        set({ players: data })
       })
 
       const channel = supabase
@@ -1385,35 +1376,41 @@ export const useGameStore = create<StoreState>()((set, get) => {
               if (reconnectTimer) clearTimeout(reconnectTimer)
               set({ isReconnecting: false })
               // Re-fetch players to catch anyone who joined during the subscription gap.
-              // Also seeds _permCards for guests who never ran startGame.
               supabase.from('players').select().eq('room_id', roomId).then(({ data }) => {
                 if (!data || data.length === 0) return
-                set(s => {
-                  const update: Partial<StoreState> = { players: data }
-                  if (Object.keys(s._permCards).length === 0) {
-                    const perm: Record<string, { flowers: number; skulls: number }> = {}
-                    for (const p of data) if (!p.is_eliminated) perm[p.id] = { flowers: p.flower_count, skulls: p.skull_count }
-                    update._permCards = perm
-                  }
-                  return update
-                })
+                set({ players: data })
               })
               // Re-fetch placed_discs to catch any placements missed during the
-              // subscription gap (e.g. between LobbyScreen sub teardown and GameScreen
-              // sub becoming SUBSCRIBED). Without this, allPlaced is never true and
-              // the bid phase never triggers for the player who missed the events.
+              // subscription gap. Also seeds _permCards using disc count only (not
+              // disc_type) to avoid leaking which card type was placed.
               const currentRound = get().gameState?.round_number
               const myId = get()._myPlayerId
               if (currentRound != null) {
                 supabase.from('placed_discs').select()
                   .eq('room_id', roomId).eq('round_number', currentRound)
-                  .then(({ data }) => {
-                    if (!data || data.length === 0) return
+                  .then(({ data: placed }) => {
                     set(s => {
+                      // Seed _permCards if empty: count placed discs per player and add
+                      // to current hand to reconstruct perm total, without revealing types.
+                      let permUpdate: Partial<StoreState> = {}
+                      if (Object.keys(s._permCards).length === 0) {
+                        const counts: Record<string, number> = {}
+                        for (const d of (placed ?? [])) counts[d.player_id] = (counts[d.player_id] ?? 0) + 1
+                        const perm: Record<string, { flowers: number; skulls: number }> = {}
+                        for (const p of s.players) {
+                          if (!p.is_eliminated) {
+                            const total = p.flower_count + p.skull_count + (counts[p.id] ?? 0)
+                            perm[p.id] = { flowers: total, skulls: 0 }
+                          }
+                        }
+                        permUpdate = { _permCards: perm }
+                      }
+                      if (!placed || placed.length === 0) return permUpdate
                       const existingIds = new Set(s.publicDiscs.map(d => d.id))
-                      const fresh = data.filter(d => !existingIds.has(d.id))
-                      if (fresh.length === 0) return {}
+                      const fresh = placed.filter(d => !existingIds.has(d.id))
+                      if (fresh.length === 0) return permUpdate
                       return {
+                        ...permUpdate,
                         publicDiscs: [
                           ...s.publicDiscs,
                           ...fresh.map(d =>

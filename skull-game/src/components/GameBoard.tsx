@@ -108,38 +108,32 @@ export function GameBoard({ onGameEnd }: Props) {
   const handlePlaceFlower = useCallback(async () => {
     if (actionLockRef.current) return
     actionLockRef.current = true
-    let placed = false
+    placedRef.current = true  // set BEFORE await so the subscription can release the lock
     try {
       flushSync(() => setIsActing(true))
       playCardPlace()
       await placeDisc('flower')
       addLog(`${myPlayer?.player_name} が花を置いた`, 'place')
-      placed = true
-      placedRef.current = true  // keep lock held until turn/phase changes (useEffect above)
-    } finally {
-      if (!placed) {
-        actionLockRef.current = false
-        setIsActing(false)
-      }
+    } catch {
+      placedRef.current = false
+      actionLockRef.current = false
+      setIsActing(false)
     }
   }, [placeDisc, myPlayer])
 
   const handlePlaceSkull = useCallback(async () => {
     if (actionLockRef.current) return
     actionLockRef.current = true
-    let placed = false
+    placedRef.current = true  // set BEFORE await so the subscription can release the lock
     try {
       flushSync(() => setIsActing(true))
       playCardPlace()
       await placeDisc('skull')
       addLog(`${myPlayer?.player_name} がカードを置いた`, 'place')
-      placed = true
-      placedRef.current = true  // keep lock held until turn/phase changes (useEffect above)
-    } finally {
-      if (!placed) {
-        actionLockRef.current = false
-        setIsActing(false)
-      }
+    } catch {
+      placedRef.current = false
+      actionLockRef.current = false
+      setIsActing(false)
     }
   }, [placeDisc, myPlayer])
 
