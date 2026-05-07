@@ -372,7 +372,7 @@ export function GameBoard({ onGameEnd }: Props) {
       const current = players.find(p => p.id === gameState?.current_player_id)
       return `${current?.player_name ?? '...'} の手番`
     }
-    if (phase === 'place') return '花か爆弾を置いてください'
+    if (phase === 'place') return 'りんごか爆弾を置いてください'
     if (phase === 'bid') return highestBid === 0 ? '入札を開始' : '入札かパス'
     if (phase === 'flip') return myUnflipped.length > 0 ? '自分のスタックから先にめくる' : 'スタックをめくる'
     return ''
@@ -471,6 +471,7 @@ export function GameBoard({ onGameEnd }: Props) {
             isMyTurnToFlip={isMyTurnToFlip}
             challengerId={challengerId}
             onFlip={handleFlip}
+            emote={lastEmote?.playerId === myPlayer.id ? { type: lastEmote.type, sentAt: lastEmote.sentAt } : null}
           />
           <div className="flex-1">
             <p className="text-white/40 text-xs mb-1">手札</p>
@@ -492,9 +493,9 @@ export function GameBoard({ onGameEnd }: Props) {
           )}
         </div>
 
-        {/* Emote buttons — shown 3s after placing */}
+        {/* Emote buttons — shown 3s after placing, only while waiting for others */}
         <AnimatePresence>
-          {showEmoteButtons && phase === 'place' && (
+          {showEmoteButtons && phase === 'place' && !isMyTurn && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
@@ -544,7 +545,7 @@ export function GameBoard({ onGameEnd }: Props) {
                     whileTap={!isActing ? { scale: 0.96 } : {}}
                     style={{ fontFamily: 'Cinzel, serif', touchAction: 'manipulation', pointerEvents: (isLoading || isActing) ? 'none' : 'auto' }}
                   >
-                    🍎 🍎を置く
+                    🍎を置く
                   </motion.button>
                   <motion.button
                     onClick={handlePlaceBomb}
