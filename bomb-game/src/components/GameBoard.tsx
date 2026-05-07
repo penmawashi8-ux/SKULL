@@ -233,11 +233,10 @@ export function GameBoard({ onGameEnd }: Props) {
       playCardPlace()
       await placeDisc('flower')
       addLog(`${myPlayer?.player_name} が🍎を置いた`, 'place')
-      // Show emote buttons for 3 seconds
       setShowEmoteButtons(true)
       if (emoteTimerRef.current) clearTimeout(emoteTimerRef.current)
       emoteTimerRef.current = setTimeout(() => setShowEmoteButtons(false), 3000)
-    } catch {
+    } finally {
       placedRef.current = false
       actionLockRef.current = false
       setIsActing(false)
@@ -253,11 +252,10 @@ export function GameBoard({ onGameEnd }: Props) {
       playCardPlace()
       await placeDisc('bomb')
       addLog(`${myPlayer?.player_name} がカードを置いた`, 'place')
-      // Show emote buttons for 3 seconds
       setShowEmoteButtons(true)
       if (emoteTimerRef.current) clearTimeout(emoteTimerRef.current)
       emoteTimerRef.current = setTimeout(() => setShowEmoteButtons(false), 3000)
-    } catch {
+    } finally {
       placedRef.current = false
       actionLockRef.current = false
       setIsActing(false)
