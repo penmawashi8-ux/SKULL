@@ -84,6 +84,8 @@ let _onlineCpuProcessing = false
 let _cpuRunning = false
 // Mutex to prevent concurrent addCpuPlayer calls (module-level for synchronous block)
 let _addingCpu = false
+// Mutex to prevent double-placing a disc (spam taps in online mode)
+let _placingDisc = false
 
 export const useGameStore = create<StoreState>()((set, get) => {
 
@@ -986,6 +988,8 @@ export const useGameStore = create<StoreState>()((set, get) => {
       }
 
       // Online
+      if (_placingDisc) return
+      _placingDisc = true
       set({ isLoading: true })
       try {
         await supabase.from('placed_discs').insert({
@@ -1031,6 +1035,8 @@ export const useGameStore = create<StoreState>()((set, get) => {
         }
       } catch (e) {
         set({ error: (e as any)?.message ?? String(e), isLoading: false })
+      } finally {
+        _placingDisc = false
       }
     },
 
@@ -1325,7 +1331,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
 
             set({
               gameState: newGs,
-              ...(roundChanged ? { publicDiscs: [], myDiscs: [], _cpuDiscs: [], _foldedPlayerIds: [] } : {}),
+              ...(roundChanged ? { publicDiscs: [], myDiscs: [], _cpuDiscs: [], _foldedPlayerIds: [], _permCards: {} } : {}),
             })
 
             if (roundChanged) {
@@ -1586,15 +1592,19 @@ export const useGameStore = create<StoreState>()((set, get) => {
             const perm = permFromDB[p.id]
             return perm ? { ...p, flower_count: perm.flowers, bomb_count: perm.bombs } : p
           })
-          await Promise.all(
-            resetPlayers.filter(p => !p.is_eliminated).map(p =>
+          await Promise.all([
+            ...resetPlayers.filter(p => !p.is_eliminated).map(p =>
               supabase.from('players').update({
                 flower_count: p.flower_count,
                 bomb_count: p.bomb_count,
-                ...(p.id === myPlayer.id ? { is_eliminated: p.is_eliminated } : {}),
               }).eq('id', p.id)
-            )
-          )
+            ),
+            ...(isEliminated ? [
+              supabase.from('players').update({
+                flower_count: 0, bomb_count: 0, is_eliminated: true,
+              }).eq('id', myPlayer.id),
+            ] : []),
+          ])
           const newRound = gameState.round_number + 1
           await supabase.from('game_states').update({
             round_number: newRound, phase: 'place',

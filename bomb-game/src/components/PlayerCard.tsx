@@ -75,7 +75,9 @@ export function PlayerCard({
   const phase = gameState?.phase ?? 'place'
   const permTotal = permCards ? permCards.flowers + permCards.bombs : null
   const liveTotal = player.flower_count + player.bomb_count + playerDiscs.length
-  const totalCards = (permTotal !== null && permTotal > 0) ? permTotal : liveTotal
+  const totalCards = player.is_eliminated ? 0
+    : (permTotal !== null && permTotal > 0) ? permTotal
+    : liveTotal
 
   if (compact) {
     return (
