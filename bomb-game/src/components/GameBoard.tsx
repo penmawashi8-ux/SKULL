@@ -509,28 +509,35 @@ export function GameBoard({ onGameEnd }: Props) {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="flex gap-2 overflow-hidden"
+              className="overflow-hidden"
             >
-              <motion.button
-                onClick={async () => {
-                  setShowEmoteButtons(false)
-                  await sendEmote('BOMB')
-                }}
-                className="flex-1 py-2 rounded-xl bg-red-900/50 border border-red-500/30 text-xl"
-                whileTap={{ scale: 0.95 }}
-              >
-                💣
-              </motion.button>
-              <motion.button
-                onClick={async () => {
-                  setShowEmoteButtons(false)
-                  await sendEmote('FLOWER')
-                }}
-                className="flex-1 py-2 rounded-xl bg-emerald-900/50 border border-emerald-500/30 text-xl"
-                whileTap={{ scale: 0.95 }}
-              >
-                🍎
-              </motion.button>
+              <p className="text-white/40 text-xs text-center mb-1.5" style={{ fontFamily: 'Crimson Text, serif' }}>
+                💬 エモートを送る
+              </p>
+              <div className="flex gap-2">
+                <motion.button
+                  onClick={async () => {
+                    setShowEmoteButtons(false)
+                    await sendEmote('BOMB')
+                  }}
+                  className="flex-1 py-2 rounded-xl bg-red-900/50 border border-red-500/30 flex items-center justify-center gap-1.5"
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <span className="text-xl leading-none">💣</span>
+                  <span className="text-red-300 text-xs" style={{ fontFamily: 'Crimson Text, serif' }}>爆弾だ！</span>
+                </motion.button>
+                <motion.button
+                  onClick={async () => {
+                    setShowEmoteButtons(false)
+                    await sendEmote('FLOWER')
+                  }}
+                  className="flex-1 py-2 rounded-xl bg-emerald-900/50 border border-emerald-500/30 flex items-center justify-center gap-1.5"
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <span className="text-xl leading-none">🍎</span>
+                  <span className="text-emerald-300 text-xs" style={{ fontFamily: 'Crimson Text, serif' }}>りんごだ！</span>
+                </motion.button>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
