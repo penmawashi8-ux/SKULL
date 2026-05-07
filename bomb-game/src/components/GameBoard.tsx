@@ -110,6 +110,8 @@ export function GameBoard({ onGameEnd }: Props) {
   // showEmoteButtons: true for 3s right after placing a card
   const [showEmoteButtons, setShowEmoteButtons] = useState(false)
   const emoteTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [displayedEmote, setDisplayedEmote] = useState<{ playerId: string; type: string; sentAt: string } | null>(null)
+  const emoteDisplayTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const myPlayer = players.find(p => p.session_id === sessionId)
   const otherPlayers = players.filter(p => p.session_id !== sessionId)
@@ -360,8 +362,18 @@ export function GameBoard({ onGameEnd }: Props) {
   useEffect(() => {
     return () => {
       if (emoteTimerRef.current) clearTimeout(emoteTimerRef.current)
+      if (emoteDisplayTimerRef.current) clearTimeout(emoteDisplayTimerRef.current)
     }
   }, [])
+
+  // Auto-hide emote bubbles after 3 seconds
+  const lastEmoteFromState = gameState?.last_emote ?? null
+  useEffect(() => {
+    if (!lastEmoteFromState) { setDisplayedEmote(null); return }
+    setDisplayedEmote(lastEmoteFromState)
+    if (emoteDisplayTimerRef.current) clearTimeout(emoteDisplayTimerRef.current)
+    emoteDisplayTimerRef.current = setTimeout(() => setDisplayedEmote(null), 3000)
+  }, [lastEmoteFromState?.sentAt])
 
   const myRoundDiscs = publicDiscs.filter(d => d.player_id === myPlayer?.id && d.round_number === round)
   const myUnflipped = myRoundDiscs.filter(d => !d.is_flipped)
@@ -379,9 +391,6 @@ export function GameBoard({ onGameEnd }: Props) {
   }
 
   const canFoldNow = myPlayer && gameState ? canFold(myPlayer, gameState) : false
-
-  // Derive last_emote per player for display
-  const lastEmote = gameState?.last_emote ?? null
 
   if (!gameState || !myPlayer) return null
 
@@ -450,7 +459,7 @@ export function GameBoard({ onGameEnd }: Props) {
               compact
               hasFolded={_foldedPlayerIds.includes(p.id)}
               permCards={_permCards[p.id]}
-              emote={lastEmote?.playerId === p.id ? { type: lastEmote.type, sentAt: lastEmote.sentAt } : null}
+              emote={displayedEmote?.playerId === p.id ? { type: displayedEmote.type as import('../types/game').EmoteType, sentAt: displayedEmote.sentAt } : null}
             />
           ))}
         </div>
@@ -471,7 +480,7 @@ export function GameBoard({ onGameEnd }: Props) {
             isMyTurnToFlip={isMyTurnToFlip}
             challengerId={challengerId}
             onFlip={handleFlip}
-            emote={lastEmote?.playerId === myPlayer.id ? { type: lastEmote.type, sentAt: lastEmote.sentAt } : null}
+            emote={displayedEmote?.playerId === myPlayer.id ? { type: displayedEmote.type as import('../types/game').EmoteType, sentAt: displayedEmote.sentAt } : null}
           />
           <div className="flex-1">
             <p className="text-white/40 text-xs mb-1">手札</p>

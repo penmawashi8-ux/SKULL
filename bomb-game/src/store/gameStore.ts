@@ -543,18 +543,22 @@ export const useGameStore = create<StoreState>()((set, get) => {
           _cpuLog: { id: crypto.randomUUID(), message: `${cpuPlayer.player_name} がカードを置いた`, type: 'place' },
         }))
 
+        const cpuEmote = Math.random() < 0.4
+          ? { playerId: cpuPlayer.id, type: (Math.random() < 0.5 ? 'BOMB' : 'FLOWER') as EmoteType, sentAt: ts() }
+          : null
+
         const updatedPlayers = players.map(p => p.id !== cpuPlayer.id ? p : { ...p, flower_count: newFlower, bomb_count: newBomb })
         if (allHandsEmpty(updatedPlayers)) {
           const first = [...updatedPlayers].filter(p => !p.is_eliminated).sort((a, b) => a.seat_order - b.seat_order)[0]
-          await supabase.from('game_states').update({ phase: 'bid', current_player_id: first?.id ?? null, turn_started_at: ts(), updated_at: ts() }).eq('id', gs2.id)
+          await supabase.from('game_states').update({ phase: 'bid', current_player_id: first?.id ?? null, turn_started_at: ts(), updated_at: ts(), ...(cpuEmote ? { last_emote: cpuEmote } : {}) }).eq('id', gs2.id)
           set({ _foldedPlayerIds: [] })
         } else {
           const next = getNextPlayerWithHand(updatedPlayers, cpuPlayer.id)
           if (next === null) {
-            await supabase.from('game_states').update({ phase: 'bid', current_player_id: cpuPlayer.id, turn_started_at: ts(), updated_at: ts() }).eq('id', gs2.id)
+            await supabase.from('game_states').update({ phase: 'bid', current_player_id: cpuPlayer.id, turn_started_at: ts(), updated_at: ts(), ...(cpuEmote ? { last_emote: cpuEmote } : {}) }).eq('id', gs2.id)
             set({ _foldedPlayerIds: [] })
           } else {
-            await supabase.from('game_states').update({ current_player_id: next.id, turn_started_at: ts(), updated_at: ts() }).eq('id', gs2.id)
+            await supabase.from('game_states').update({ current_player_id: next.id, turn_started_at: ts(), updated_at: ts(), ...(cpuEmote ? { last_emote: cpuEmote } : {}) }).eq('id', gs2.id)
           }
         }
         return
@@ -1656,6 +1660,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
         isReconnecting: false,
         _subscription: null,
         _myPlayerId: null,
+        _cpuLog: null,
       })
     },
   }
