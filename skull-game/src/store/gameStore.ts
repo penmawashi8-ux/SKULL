@@ -1592,7 +1592,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
 
     // ── sendEmote ─────────────────────────────────────────────────────────────
     sendEmote: async (type: EmoteType) => {
-      const { room, gameState, players, sessionId, isCpuGame } = get()
+      const { gameState, players, sessionId, isCpuGame } = get()
       const myPlayer = players.find(p => p.session_id === sessionId)
       if (!myPlayer || !gameState) return
       const emote = { playerId: myPlayer.id, type, sentAt: ts() }
