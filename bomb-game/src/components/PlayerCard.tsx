@@ -73,9 +73,9 @@ export function PlayerCard({
   const highestBid = gameState?.highest_bid ?? 0
   const isHighestBidder = gameState?.highest_bidder_id === player.id
   const phase = gameState?.phase ?? 'place'
-  const totalCards = permCards
-    ? permCards.flowers + permCards.bombs
-    : player.flower_count + player.bomb_count + playerDiscs.length
+  const permTotal = permCards ? permCards.flowers + permCards.bombs : null
+  const liveTotal = player.flower_count + player.bomb_count + playerDiscs.length
+  const totalCards = (permTotal !== null && permTotal > 0) ? permTotal : liveTotal
 
   if (compact) {
     return (
