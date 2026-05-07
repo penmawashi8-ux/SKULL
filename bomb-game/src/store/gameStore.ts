@@ -888,7 +888,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
         const cpuCount = players.filter(p => p.is_cpu).length
         const seatOrder = players.length + 1
         const color = PLAYER_COLORS[(seatOrder - 1) % PLAYER_COLORS.length]
-        const { error } = await supabase.from('players').insert({
+        const { data: newPlayer, error } = await supabase.from('players').insert({
           room_id: room.id,
           session_id: `cpu-${crypto.randomUUID()}`,
           player_name: `CPU ${cpuCount + 1}`,
@@ -899,9 +899,16 @@ export const useGameStore = create<StoreState>()((set, get) => {
           bomb_count: 1,
           win_count: 0,
           is_eliminated: false,
-        })
+        }).select().single()
         if (error) throw error
-        set({ isLoading: false })
+        // Update local state immediately so the next sequential addCpuPlayer
+        // call sees the correct players count before the realtime event arrives
+        set(s => ({
+          isLoading: false,
+          players: s.players.some(x => x.id === newPlayer.id)
+            ? s.players
+            : [...s.players, newPlayer],
+        }))
       } catch (e) {
         set({ error: (e as any)?.message ?? String(e), isLoading: false })
       } finally {
