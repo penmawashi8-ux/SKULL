@@ -91,7 +91,7 @@ export function LobbyScreen() {
 
   return (
     <div
-      className="h-full flex flex-col overflow-hidden"
+      className="h-full flex flex-col"
       style={{ background: 'radial-gradient(ellipse at 50% 0%, #1a0a2e 0%, #030712 70%)' }}
     >
       {/* Header */}
@@ -109,9 +109,9 @@ export function LobbyScreen() {
       </div>
 
       {/* Room code card */}
-      <div className="px-6 mb-4">
+      <div className="px-6 mb-3">
         <motion.div
-          className="rounded-2xl p-6 text-center"
+          className="rounded-2xl px-6 py-3 text-center"
           style={{
             background: 'linear-gradient(135deg, rgba(109,40,217,0.2), rgba(76,29,149,0.15))',
             border: '1px solid rgba(139,92,246,0.3)',
@@ -119,11 +119,11 @@ export function LobbyScreen() {
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <p className="text-white/40 text-xs tracking-widest mb-1" style={{ fontFamily: 'Crimson Text, serif' }}>
+          <p className="text-white/40 text-xs tracking-widest mb-0.5" style={{ fontFamily: 'Crimson Text, serif' }}>
             ROOM CODE
           </p>
           <p
-            className="text-5xl font-bold text-white tracking-[0.25em] mb-3"
+            className="text-4xl font-bold text-white tracking-[0.25em] mb-2"
             style={{
               fontFamily: 'Cinzel, serif',
               textShadow: '0 0 24px rgba(139,92,246,0.7)',
