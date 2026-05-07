@@ -8,7 +8,7 @@ fi
 
 echo '{"async": true, "asyncTimeout": 300000}'
 
-cd "$CLAUDE_PROJECT_DIR/skull-game"
+cd "$CLAUDE_PROJECT_DIR/bomb-game"
 
 # Install dependencies
 npm install
