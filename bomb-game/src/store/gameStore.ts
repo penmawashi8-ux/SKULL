@@ -270,11 +270,20 @@ export const useGameStore = create<StoreState>()((set, get) => {
       }
 
       const next = getNextActivePlayer(updatedPlayers, currentPlayer.id)
+      const cpuEmote = Math.random() < 0.4
+        ? { playerId: currentPlayer.id, type: (Math.random() < 0.5 ? 'BOMB' : 'FLOWER') as EmoteType, sentAt: ts() }
+        : null
       set(prev => ({
         players: updatedPlayers,
         publicDiscs: [...prev.publicDiscs, maskedDisc],
         _cpuDiscs: [...prev._cpuDiscs, realDisc],
-        gameState: { ...prev.gameState!, current_player_id: next?.id ?? null, turn_started_at: ts(), updated_at: ts() },
+        gameState: {
+          ...prev.gameState!,
+          current_player_id: next?.id ?? null,
+          turn_started_at: ts(),
+          updated_at: ts(),
+          ...(cpuEmote ? { last_emote: cpuEmote } : {}),
+        },
         _cpuLog: cpuPlaceLog,
       }))
       await _runCpuLoop()
