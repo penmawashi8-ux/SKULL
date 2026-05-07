@@ -88,7 +88,7 @@ export function PlayerCard({
                     exit={{ opacity: 0, y: -6 }}
                     transition={{ duration: 0.3 }}
                   >
-                    {emote.type === 'BOMB' ? '💣' : '🌸'}
+                    {emote.type === 'BOMB' ? '💣' : '🍎'}
                   </motion.span>
                 )}
               </AnimatePresence>

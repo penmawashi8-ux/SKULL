@@ -95,7 +95,7 @@ export function ResultModal({ show, type, challenger, bombOwner, lostDisc, onClo
             {/* SUCCESS */}
             {type === 'success' && (
               <>
-                <div className="text-6xl mb-3">🌸</div>
+                <div className="text-6xl mb-3">🍎</div>
                 <h2 className="text-2xl font-bold text-emerald-400 mb-2" style={{ fontFamily: 'Cinzel, serif' }}>
                   チャレンジ成功！
                 </h2>
