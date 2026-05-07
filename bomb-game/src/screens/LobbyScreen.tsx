@@ -23,13 +23,11 @@ export function LobbyScreen() {
   } = useGameStore()
 
   const [copied, setCopied] = useState(false)
-  const [isAddingCpu, setIsAddingCpu] = useState(false)
   const [isStarting, setIsStarting] = useState(false)
-  const addingCpuRef = useRef(false)
   const startingRef = useRef(false)
 
-  const isHost   = room?.host_id === sessionId
-  const canStart = players.filter(p => !p.is_eliminated).length >= 3
+  const isHost = room?.host_id === sessionId
+  const emptySlots = room ? Math.max(0, room.max_players - players.length) : 0
 
   // Subscribe for realtime updates
   useEffect(() => {
@@ -50,25 +48,19 @@ export function LobbyScreen() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [room?.status])
 
-  async function handleAddCpu() {
-    if (addingCpuRef.current) return
-    addingCpuRef.current = true
-    flushSync(() => setIsAddingCpu(true))  // immediate DOM disable before any await
-    playButtonPress()
-    try {
-      await addCpuPlayer()
-    } finally {
-      addingCpuRef.current = false
-      setIsAddingCpu(false)
-    }
-  }
-
   async function handleStart() {
     if (startingRef.current) return
     startingRef.current = true
-    flushSync(() => setIsStarting(true))  // immediate DOM disable before any await
+    flushSync(() => setIsStarting(true))
     playButtonPress()
     try {
+      // Fill empty slots with CPUs before starting
+      const currentRoom = useGameStore.getState().room
+      const currentPlayers = useGameStore.getState().players
+      const slots = currentRoom ? Math.max(0, currentRoom.max_players - currentPlayers.length) : 0
+      for (let i = 0; i < slots; i++) {
+        await addCpuPlayer()
+      }
       await startGame()
       if (!useGameStore.getState().error) {
         navigate(`/game/${roomCode}`)
@@ -188,27 +180,16 @@ export function LobbyScreen() {
             ))}
           </AnimatePresence>
 
-          {/* Empty slots */}
-          {Array.from({ length: Math.max(0, room.max_players - players.length) }, (_, i) => (
+          {/* Empty slots — CPU will be auto-added on start */}
+          {Array.from({ length: emptySlots }, (_, i) => (
             <div
               key={`empty-${i}`}
               className="flex items-center gap-3 border border-dashed border-white/10 rounded-xl px-4 py-3"
             >
               <span className="w-3 h-3 rounded-full border border-white/20" />
               <span className="text-white/20 text-sm flex-1" style={{ fontFamily: 'Crimson Text, serif' }}>
-                参加待ち...
+                {isStarting ? `CPU ${players.length + i + 1} を追加中...` : '参加待ち / CPU'}
               </span>
-              {isHost && i === 0 && (
-                <motion.button
-                  onClick={handleAddCpu}
-                  disabled={isLoading || isAddingCpu}
-                  className="text-xs px-2.5 py-1 rounded-lg bg-purple-900/50 border border-purple-500/40 text-purple-300 disabled:opacity-40"
-                  whileTap={!isAddingCpu ? { scale: 0.95 } : {}}
-                  style={{ fontFamily: 'Crimson Text, serif', touchAction: 'manipulation', pointerEvents: (isLoading || isAddingCpu) ? 'none' : 'auto' }}
-                >
-                  CPU追加
-                </motion.button>
-              )}
             </div>
           ))}
         </div>
@@ -218,11 +199,11 @@ export function LobbyScreen() {
           className="text-center text-white/30 text-sm mt-6"
           style={{ fontFamily: 'Crimson Text, serif' }}
         >
-          {canStart
-            ? isHost
-              ? '「ゲーム開始」ボタンを押してください'
-              : 'ホストがゲームを開始するまでお待ちください'
-            : `ゲーム開始には最低3人必要です（あと ${3 - players.length} 人）`}
+          {isHost
+            ? emptySlots > 0
+              ? `空き${emptySlots}枠はCPUで埋めてスタート`
+              : '「ゲーム開始」ボタンを押してください'
+            : 'ホストがゲームを開始するまでお待ちください'}
         </p>
       </div>
 
@@ -240,21 +221,18 @@ export function LobbyScreen() {
         {isHost ? (
           <motion.button
             onClick={handleStart}
-            disabled={isStarting || !canStart}
-            className="w-full py-4 rounded-2xl text-white text-xl font-bold disabled:opacity-40"
+            disabled={isStarting || isLoading}
+            className="w-full py-4 rounded-2xl text-white text-xl font-bold disabled:opacity-60"
             style={{
               fontFamily: 'Cinzel, serif',
-              background: canStart
-                ? 'linear-gradient(135deg, #6d28d9, #4c1d95)'
-                : 'rgba(255,255,255,0.05)',
-              boxShadow: canStart ? '0 0 28px rgba(109,40,217,0.45)' : 'none',
+              background: 'linear-gradient(135deg, #6d28d9, #4c1d95)',
+              boxShadow: '0 0 28px rgba(109,40,217,0.45)',
             }}
-            whileHover={canStart ? { scale: 1.02 } : {}}
-            whileTap={canStart ? { scale: 0.97 } : {}}
-            animate={canStart ? { scale: [1, 1.01, 1] } : {}}
-            transition={{ duration: 2, repeat: canStart ? Infinity : 0 }}
+            whileTap={!isStarting ? { scale: 0.97 } : {}}
+            animate={{ scale: [1, 1.01, 1] }}
+            transition={{ duration: 2, repeat: Infinity }}
           >
-            {isLoading ? '開始中...' : 'ゲーム開始'}
+            {isStarting ? '準備中...' : 'ゲーム開始'}
           </motion.button>
         ) : (
           <div
