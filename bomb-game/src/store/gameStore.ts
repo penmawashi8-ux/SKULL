@@ -703,12 +703,9 @@ export const useGameStore = create<StoreState>()((set, get) => {
       }
     } finally {
       _onlineCpuProcessing = false
-      // If still CPU's turn (e.g. mid-flip), retrigger
-      const s2 = get()
-      const still = s2.players.find(p => p.id === s2.gameState?.current_player_id)
-      if (still?.is_cpu && !s2.isCpuGame && s2.room) {
-        processOnlineCpuTurn(still, s2.gameState!)
-      }
+      // Realtime subscription already triggers the next CPU turn when game_states changes.
+      // Re-triggering here would cause double-processing because local state still shows
+      // the just-finished CPU's id before the Realtime event arrives.
     }
   }
 
