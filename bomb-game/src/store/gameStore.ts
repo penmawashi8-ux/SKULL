@@ -1342,6 +1342,26 @@ export const useGameStore = create<StoreState>()((set, get) => {
               })
             }
 
+            // ゲーム開始時 (prevGs === null) にもプレイヤー一覧を最新化する。
+            // ロビーで追加されたCPUが realtime でまだ届いていない場合に
+            // current_player_id が不明になりフリーズするのを防ぐ。
+            if (prevGs === null) {
+              supabase.from('players').select().eq('room_id', roomId).then(({ data }) => {
+                if (!data || data.length === 0) return
+                const permCards: Record<string, { flowers: number; bombs: number }> = {}
+                for (const p of data) {
+                  if (!p.is_eliminated) permCards[p.id] = { flowers: p.flower_count, bombs: p.bomb_count }
+                }
+                set({ players: data, _permCards: permCards })
+                // プレイヤー一覧更新後、ホストがCPUターンを再チェック
+                const s2 = get()
+                if (!s2.isCpuGame && s2.room?.host_id === s2.sessionId) {
+                  const cp2 = data.find(p => p.id === newGs.current_player_id)
+                  if (cp2?.is_cpu) processOnlineCpuTurn(cp2, newGs)
+                }
+              })
+            }
+
             // Host processes CPU turns and detects empty-hand human players
             const s = get()
             if (!s.isCpuGame && s.room?.host_id === s.sessionId) {
