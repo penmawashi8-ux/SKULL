@@ -34,10 +34,10 @@ ALTER TABLE public.game_states
   ADD COLUMN IF NOT EXISTS last_emote jsonb;
 
 -- 5. 先にデータを更新してから制約を変更（順番重要）
---    既存の 'skull' レコードを 'bomb' に移行
+--    'flower' と 'bomb' 以外の値（'skull' など）を全て 'bomb' に統一
 UPDATE public.placed_discs
   SET disc_type = 'bomb'
-  WHERE disc_type = 'skull';
+  WHERE disc_type IS NULL OR disc_type NOT IN ('flower', 'bomb');
 
 -- 6. placed_discs: disc_type チェック制約を 'flower'/'bomb' に更新
 ALTER TABLE public.placed_discs
