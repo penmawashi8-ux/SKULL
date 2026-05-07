@@ -1,25 +1,56 @@
--- Migration: Skull → BOMB theme + timer + emote features
--- Run this in Supabase SQL Editor if you have an existing database.
--- For a fresh install, use schema.sql instead.
+-- ============================================================
+-- BOMB Game — Full Migration (既存DBを最新スキーマに更新)
+-- Supabase ダッシュボード → SQL Editor で全体を貼り付けて実行
+-- 何度実行しても安全（idempotent）
+-- ============================================================
 
--- 1. Rename skull_count → bomb_count in players
-alter table public.players rename column skull_count to bomb_count;
+-- 1. players: skull_count → bomb_count にリネーム
+--    ※ すでに bomb_count が存在する場合はスキップ
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public'
+      AND table_name   = 'players'
+      AND column_name  = 'skull_count'
+  ) THEN
+    ALTER TABLE public.players RENAME COLUMN skull_count TO bomb_count;
+    RAISE NOTICE 'players.skull_count → bomb_count renamed';
+  ELSE
+    RAISE NOTICE 'players.bomb_count already exists, skipping rename';
+  END IF;
+END $$;
 
--- 2. Update disc_type check constraint: 'skull' → 'bomb'
-alter table public.placed_discs
-  drop constraint if exists placed_discs_disc_type_check;
-alter table public.placed_discs
-  add constraint placed_discs_disc_type_check
-  check (disc_type in ('flower', 'bomb'));
+-- 2. players: bomb_count が存在しない場合は追加（完全新規DBへの安全策）
+ALTER TABLE public.players
+  ADD COLUMN IF NOT EXISTS bomb_count int NOT NULL DEFAULT 1;
 
--- 3. Add turn_started_at to game_states
-alter table public.game_states
-  add column if not exists turn_started_at timestamptz;
+-- 3. game_states: turn_started_at カラムを追加
+ALTER TABLE public.game_states
+  ADD COLUMN IF NOT EXISTS turn_started_at timestamptz;
 
--- 4. Add last_emote (JSONB) to game_states
-alter table public.game_states
-  add column if not exists last_emote jsonb;
+-- 4. game_states: last_emote カラムを追加
+ALTER TABLE public.game_states
+  ADD COLUMN IF NOT EXISTS last_emote jsonb;
 
--- 5. (Optional) Migrate existing 'skull' disc_type values to 'bomb'
---    Uncomment if you have live data to preserve:
--- update public.placed_discs set disc_type = 'bomb' where disc_type = 'skull';
+-- 5. placed_discs: disc_type チェック制約を 'flower'/'bomb' に更新
+ALTER TABLE public.placed_discs
+  DROP CONSTRAINT IF EXISTS placed_discs_disc_type_check;
+ALTER TABLE public.placed_discs
+  ADD CONSTRAINT placed_discs_disc_type_check
+  CHECK (disc_type IN ('flower', 'bomb'));
+
+-- 6. 既存の 'skull' レコードを 'bomb' に移行（データがある場合）
+UPDATE public.placed_discs
+  SET disc_type = 'bomb'
+  WHERE disc_type = 'skull';
+
+-- ============================================================
+-- 確認クエリ（別で実行するとカラム一覧を確認できます）
+-- SELECT column_name, data_type FROM information_schema.columns
+--   WHERE table_schema = 'public' AND table_name = 'players'
+--   ORDER BY ordinal_position;
+-- SELECT column_name, data_type FROM information_schema.columns
+--   WHERE table_schema = 'public' AND table_name = 'game_states'
+--   ORDER BY ordinal_position;
+-- ============================================================
