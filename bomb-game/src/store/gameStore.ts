@@ -1283,6 +1283,8 @@ export const useGameStore = create<StoreState>()((set, get) => {
 
       supabase.from('players').select().eq('room_id', roomId).then(({ data }) => {
         if (!data || data.length === 0) return
+        // 別ルームへ移動済みの場合は古いフェッチ結果を捨てる
+        if (get().room?.id !== roomId) return
         set({ players: data })
       })
 
@@ -1334,6 +1336,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
             if (roundChanged) {
               supabase.from('players').select().eq('room_id', roomId).then(({ data }) => {
                 if (!data || data.length === 0) return
+                if (get().room?.id !== roomId) return
                 const permCards: Record<string, { flowers: number; bombs: number }> = {}
                 for (const p of data) {
                   if (!p.is_eliminated) permCards[p.id] = { flowers: p.flower_count, bombs: p.bomb_count }
@@ -1348,6 +1351,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
             if (prevGs === null) {
               supabase.from('players').select().eq('room_id', roomId).then(({ data }) => {
                 if (!data || data.length === 0) return
+                if (get().room?.id !== roomId) return
                 const permCards: Record<string, { flowers: number; bombs: number }> = {}
                 for (const p of data) {
                   if (!p.is_eliminated) permCards[p.id] = { flowers: p.flower_count, bombs: p.bomb_count }
@@ -1414,6 +1418,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
               set({ isReconnecting: false })
               supabase.from('players').select().eq('room_id', roomId).then(({ data }) => {
                 if (!data || data.length === 0) return
+                if (get().room?.id !== roomId) return
                 set({ players: data })
               })
               const currentRound = get().gameState?.round_number
@@ -1422,6 +1427,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
                 supabase.from('placed_discs').select()
                   .eq('room_id', roomId).eq('round_number', currentRound)
                   .then(({ data: placed }) => {
+                    if (get().room?.id !== roomId) return
                     set(s => {
                       let permUpdate: Partial<StoreState> = {}
                       if (Object.keys(s._permCards).length === 0) {
