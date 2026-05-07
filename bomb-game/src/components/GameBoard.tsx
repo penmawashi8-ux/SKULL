@@ -94,6 +94,9 @@ export function GameBoard({ onGameEnd }: Props) {
   const placedRef = useRef(false)
   const timerIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const autoActedRef = useRef(false)
+  // Tracks 'current_player_id:phase' captured before an online action fires.
+  // Released when gameState advances (turn or phase changes).
+  const pendingOnlineTurnRef = useRef<string | null>(null)
 
   const [isActing, setIsActing] = useState(false)
   const [log, setLog] = useState<LogEntry[]>([])
@@ -154,14 +157,17 @@ export function GameBoard({ onGameEnd }: Props) {
     return () => document.removeEventListener('visibilitychange', handleVisibility)
   }, [resumeCpuTurns])
 
-  // Release place-action lock once the turn or phase moves away from place
+  // Release online action lock when the game state advances (turn or phase changed).
+  // For CPU games the lock is released immediately in the handler's finally block.
   useEffect(() => {
-    if (placedRef.current && (!isMyTurn || phase !== 'place')) {
-      placedRef.current = false
+    if (!pendingOnlineTurnRef.current) return
+    const currentKey = `${gameState?.current_player_id}:${phase}`
+    if (currentKey !== pendingOnlineTurnRef.current) {
+      pendingOnlineTurnRef.current = null
       actionLockRef.current = false
       setIsActing(false)
     }
-  }, [isMyTurn, phase])
+  }, [gameState?.current_player_id, phase])
 
   // Detect CPU win (by 2 rounds or last-player-standing) and show modal
   useEffect(() => {
@@ -228,6 +234,9 @@ export function GameBoard({ onGameEnd }: Props) {
     if (actionLockRef.current) return
     actionLockRef.current = true
     placedRef.current = true
+    const { isCpuGame: cpuGame, gameState: gs } = useGameStore.getState()
+    const turnKey = `${gs?.current_player_id}:${gs?.phase}`
+    let succeeded = false
     try {
       flushSync(() => setIsActing(true))
       playCardPlace()
@@ -236,10 +245,15 @@ export function GameBoard({ onGameEnd }: Props) {
       setShowEmoteButtons(true)
       if (emoteTimerRef.current) clearTimeout(emoteTimerRef.current)
       emoteTimerRef.current = setTimeout(() => setShowEmoteButtons(false), 3000)
+      succeeded = true
     } finally {
       placedRef.current = false
-      actionLockRef.current = false
-      setIsActing(false)
+      if (cpuGame || !succeeded) {
+        actionLockRef.current = false
+        setIsActing(false)
+      } else {
+        pendingOnlineTurnRef.current = turnKey
+      }
     }
   }, [placeDisc, myPlayer])
 
@@ -247,6 +261,9 @@ export function GameBoard({ onGameEnd }: Props) {
     if (actionLockRef.current) return
     actionLockRef.current = true
     placedRef.current = true
+    const { isCpuGame: cpuGame, gameState: gs } = useGameStore.getState()
+    const turnKey = `${gs?.current_player_id}:${gs?.phase}`
+    let succeeded = false
     try {
       flushSync(() => setIsActing(true))
       playCardPlace()
@@ -255,63 +272,93 @@ export function GameBoard({ onGameEnd }: Props) {
       setShowEmoteButtons(true)
       if (emoteTimerRef.current) clearTimeout(emoteTimerRef.current)
       emoteTimerRef.current = setTimeout(() => setShowEmoteButtons(false), 3000)
+      succeeded = true
     } finally {
       placedRef.current = false
-      actionLockRef.current = false
-      setIsActing(false)
+      if (cpuGame || !succeeded) {
+        actionLockRef.current = false
+        setIsActing(false)
+      } else {
+        pendingOnlineTurnRef.current = turnKey
+      }
     }
   }, [placeDisc, myPlayer])
 
   const handleBid = useCallback(async (amount: number) => {
     if (actionLockRef.current) return
     actionLockRef.current = true
+    const { isCpuGame: cpuGame, gameState: gs } = useGameStore.getState()
+    const turnKey = `${gs?.current_player_id}:${gs?.phase}`
+    let succeeded = false
     try {
       flushSync(() => setIsActing(true))
       playButtonPress()
       await placeBid(amount)
       addLog(`${myPlayer?.player_name} が ${amount} 枚と宣言`, 'bid')
+      succeeded = true
     } finally {
-      actionLockRef.current = false
-      setIsActing(false)
+      if (cpuGame || !succeeded) {
+        actionLockRef.current = false
+        setIsActing(false)
+      } else {
+        pendingOnlineTurnRef.current = turnKey
+      }
     }
   }, [placeBid, myPlayer])
 
   const handleFold = useCallback(async () => {
     if (actionLockRef.current) return
     actionLockRef.current = true
+    const { isCpuGame: cpuGame, gameState: gs } = useGameStore.getState()
+    const turnKey = `${gs?.current_player_id}:${gs?.phase}`
+    let succeeded = false
     try {
       flushSync(() => setIsActing(true))
       playButtonPress()
       await fold()
       addLog(`${myPlayer?.player_name} がパス`, 'fold')
+      succeeded = true
     } finally {
-      actionLockRef.current = false
-      setIsActing(false)
+      if (cpuGame || !succeeded) {
+        actionLockRef.current = false
+        setIsActing(false)
+      } else {
+        pendingOnlineTurnRef.current = turnKey
+      }
     }
   }, [fold, myPlayer])
 
   // ── Auto-action on timeout ────────────────────────────────────────────────
   const triggerAutoAction = useCallback(async () => {
-    if (!myPlayer || !gameState || actionLockRef.current) return
+    // Always read fresh state to guard against stale-closure / Supabase race conditions.
+    const { gameState: gs, players: ps, sessionId: sid, publicDiscs: pd } = useGameStore.getState()
+    const freshMe = ps.find(p => p.session_id === sid)
+    if (!freshMe || !gs) return
+    // Abort if it's no longer actually my turn (race condition guard)
+    if (gs.current_player_id !== freshMe.id) return
+    if (gs.phase === 'flip') return
+    if (actionLockRef.current) return
+
     setShowTimeoutToast(true)
     setTimeout(() => setShowTimeoutToast(false), 3000)
 
-    if (phase === 'place') {
-      const canFlower = myPlayer.flower_count > 0
-      const canBomb = myPlayer.bomb_count > 0
+    if (gs.phase === 'place') {
+      const canFlower = freshMe.flower_count > 0
+      const canBomb = freshMe.bomb_count > 0
       if (!canFlower && !canBomb) return
       if (!canFlower) { await handlePlaceBomb(); return }
       if (!canBomb) { await handlePlaceFlower(); return }
       if (Math.random() < 0.5) await handlePlaceFlower()
       else await handlePlaceBomb()
-    } else if (phase === 'bid') {
-      const canBidMore = highestBid < totalDiscs
-      const canFoldNow = myPlayer && gameState ? canFold(myPlayer, gameState) : false
+    } else if (gs.phase === 'bid') {
+      const freshTotal = getTotalDiscsInPlay(ps, pd, gs.round_number)
+      const canBidMore = gs.highest_bid < freshTotal
+      const canFoldNow = canFold(freshMe, gs)
       if (!canBidMore) { await handleFold(); return }
       if (canFoldNow && Math.random() < 0.5) await handleFold()
-      else await handleBid(highestBid + 1)
+      else await handleBid(gs.highest_bid + 1)
     }
-  }, [myPlayer, gameState, phase, highestBid, totalDiscs, handlePlaceFlower, handlePlaceBomb, handleBid, handleFold])
+  }, [handlePlaceFlower, handlePlaceBomb, handleBid, handleFold])
 
   const handleFlip = useCallback(async (discId: string) => {
     if (!myPlayer || !gameState) return
