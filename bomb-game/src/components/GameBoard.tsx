@@ -87,7 +87,7 @@ export function GameBoard({ onGameEnd }: Props) {
     room, players, gameState, myDiscs, publicDiscs,
     sessionId, isLoading, placeDisc, placeBid, fold, flipDisc,
     advanceAfterChallenge, resetGame, resumeCpuTurns, _foldedPlayerIds, _permCards, _cpuLog,
-    isCpuGame, sendEmote,
+    sendEmote,
   } = useGameStore()
 
   const actionLockRef = useRef(false)
