@@ -1,5 +1,4 @@
 {
-  "rootDirectory": "bomb-game",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "headers": [
