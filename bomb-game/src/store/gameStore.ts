@@ -371,7 +371,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
 
       const flipLog = realDisc.disc_type === 'bomb'
         ? { id: crypto.randomUUID(), message: `💣 ${currentPlayer.player_name} が爆弾を踏んだ！`, type: 'result' as const }
-        : { id: crypto.randomUUID(), message: `🌸 ${currentPlayer.player_name} がカードをめくった`, type: 'flip' as const }
+        : { id: crypto.randomUUID(), message: `🍎 ${currentPlayer.player_name} がカードをめくった`, type: 'flip' as const }
 
       set(prev => ({
         publicDiscs: prev.publicDiscs.map(d =>
@@ -435,7 +435,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
         const winner = getWinner(updatedPlayers)
         set({
           players: updatedPlayers,
-          _cpuLog: { id: crypto.randomUUID(), message: `🌸 ${currentPlayer.player_name} がチャレンジ成功！`, type: 'result' },
+          _cpuLog: { id: crypto.randomUUID(), message: `🍎 ${currentPlayer.player_name} がチャレンジ成功！`, type: 'result' },
         })
         if (!winner) {
           await new Promise(r => setTimeout(r, 1500))
@@ -605,7 +605,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
 
         const flipLog = realDisc.disc_type === 'bomb'
           ? { id: crypto.randomUUID(), message: `💣 ${cpuPlayer.player_name} が爆弾を踏んだ！`, type: 'result' as const }
-          : { id: crypto.randomUUID(), message: `🌸 ${cpuPlayer.player_name} がカードをめくった`, type: 'flip' as const }
+          : { id: crypto.randomUUID(), message: `🍎 ${cpuPlayer.player_name} がカードをめくった`, type: 'flip' as const }
 
         set(prev => ({
           publicDiscs: prev.publicDiscs.map(d => d.id === targetId ? { ...d, disc_type: realDisc.disc_type, is_flipped: true } : d),
@@ -664,7 +664,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
           const updatedPlayers = freshS.players.map(p => p.id !== cpuPlayer.id ? p : { ...p, win_count: p.win_count + 1 })
           set({
             players: updatedPlayers,
-            _cpuLog: { id: crypto.randomUUID(), message: `🌸 ${cpuPlayer.player_name} がチャレンジ成功！`, type: 'result' },
+            _cpuLog: { id: crypto.randomUUID(), message: `🍎 ${cpuPlayer.player_name} がチャレンジ成功！`, type: 'result' },
           })
           const winner = getWinner(updatedPlayers)
           if (!winner) {

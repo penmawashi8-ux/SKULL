@@ -230,7 +230,7 @@ export function GameBoard({ onGameEnd }: Props) {
       flushSync(() => setIsActing(true))
       playCardPlace()
       await placeDisc('flower')
-      addLog(`${myPlayer?.player_name} が花を置いた`, 'place')
+      addLog(`${myPlayer?.player_name} が🍎を置いた`, 'place')
       // Show emote buttons for 3 seconds
       setShowEmoteButtons(true)
       if (emoteTimerRef.current) clearTimeout(emoteTimerRef.current)
@@ -337,7 +337,7 @@ export function GameBoard({ onGameEnd }: Props) {
       // lock + isActing stay set until onClose
     } else {
       playFlowerFlip()
-      addLog(`🌸 ${myPlayer.player_name} が花をめくった`, 'flip')
+      addLog(`🍎 ${myPlayer.player_name} が🍎をめくった`, 'flip')
       if (freshFlipCount >= freshHighestBid) {
         addLog(`🎉 チャレンジ成功！`, 'result')
         playSuccess()
@@ -476,7 +476,7 @@ export function GameBoard({ onGameEnd }: Props) {
             <p className="text-white/40 text-xs mb-1">手札</p>
             <div className="flex gap-1 flex-wrap">
               {Array.from({ length: myPlayer.flower_count }).map((_, i) => (
-                <span key={`f-${i}`} className="text-xl leading-none">🌸</span>
+                <span key={`f-${i}`} className="text-xl leading-none">🍎</span>
               ))}
               {Array.from({ length: myPlayer.bomb_count }).map((_, i) => (
                 <span key={`b-${i}`} className="text-xl leading-none">💣</span>
@@ -519,7 +519,7 @@ export function GameBoard({ onGameEnd }: Props) {
                 className="flex-1 py-2 rounded-xl bg-emerald-900/50 border border-emerald-500/30 text-xl"
                 whileTap={{ scale: 0.95 }}
               >
-                🌸
+                🍎
               </motion.button>
             </motion.div>
           )}
@@ -544,7 +544,7 @@ export function GameBoard({ onGameEnd }: Props) {
                     whileTap={!isActing ? { scale: 0.96 } : {}}
                     style={{ fontFamily: 'Cinzel, serif', touchAction: 'manipulation', pointerEvents: (isLoading || isActing) ? 'none' : 'auto' }}
                   >
-                    🌸 花を置く
+                    🍎 🍎を置く
                   </motion.button>
                   <motion.button
                     onClick={handlePlaceBomb}
