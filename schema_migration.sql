@@ -33,17 +33,18 @@ ALTER TABLE public.game_states
 ALTER TABLE public.game_states
   ADD COLUMN IF NOT EXISTS last_emote jsonb;
 
--- 5. placed_discs: disc_type チェック制約を 'flower'/'bomb' に更新
+-- 5. 先にデータを更新してから制約を変更（順番重要）
+--    既存の 'skull' レコードを 'bomb' に移行
+UPDATE public.placed_discs
+  SET disc_type = 'bomb'
+  WHERE disc_type = 'skull';
+
+-- 6. placed_discs: disc_type チェック制約を 'flower'/'bomb' に更新
 ALTER TABLE public.placed_discs
   DROP CONSTRAINT IF EXISTS placed_discs_disc_type_check;
 ALTER TABLE public.placed_discs
   ADD CONSTRAINT placed_discs_disc_type_check
   CHECK (disc_type IN ('flower', 'bomb'));
-
--- 6. 既存の 'skull' レコードを 'bomb' に移行（データがある場合）
-UPDATE public.placed_discs
-  SET disc_type = 'bomb'
-  WHERE disc_type = 'skull';
 
 -- ============================================================
 -- 確認クエリ（別で実行するとカラム一覧を確認できます）
