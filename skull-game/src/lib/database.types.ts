@@ -1,7 +1,8 @@
 export type RoomStatus = 'waiting' | 'playing' | 'finished'
 export type GamePhase = 'place' | 'bid' | 'flip'
-export type DiscType = 'flower' | 'skull'
+export type DiscType = 'flower' | 'bomb'
 export type PlayerColor = 'red' | 'blue' | 'green' | 'yellow' | 'purple' | 'pink'
+export type EmoteType = 'BOMB' | 'FLOWER'
 
 export type Database = {
   public: {
@@ -49,7 +50,7 @@ export type Database = {
           is_cpu: boolean
           session_id: string
           flower_count: number
-          skull_count: number
+          bomb_count: number
           win_count: number
           is_eliminated: boolean
           created_at: string
@@ -63,7 +64,7 @@ export type Database = {
           is_cpu?: boolean
           session_id: string
           flower_count?: number
-          skull_count?: number
+          bomb_count?: number
           win_count?: number
           is_eliminated?: boolean
           created_at?: string
@@ -77,7 +78,7 @@ export type Database = {
           is_cpu?: boolean
           session_id?: string
           flower_count?: number
-          skull_count?: number
+          bomb_count?: number
           win_count?: number
           is_eliminated?: boolean
           created_at?: string
@@ -95,6 +96,8 @@ export type Database = {
           highest_bidder_id: string | null
           pass_count: number
           flip_count: number
+          turn_started_at: string | null
+          last_emote: { playerId: string; type: EmoteType; sentAt: string } | null
           created_at: string
           updated_at: string
         }
@@ -108,6 +111,8 @@ export type Database = {
           highest_bidder_id?: string | null
           pass_count?: number
           flip_count?: number
+          turn_started_at?: string | null
+          last_emote?: { playerId: string; type: EmoteType; sentAt: string } | null
           created_at?: string
           updated_at?: string
         }
@@ -121,6 +126,8 @@ export type Database = {
           highest_bidder_id?: string | null
           pass_count?: number
           flip_count?: number
+          turn_started_at?: string | null
+          last_emote?: { playerId: string; type: EmoteType; sentAt: string } | null
           created_at?: string
           updated_at?: string
         }

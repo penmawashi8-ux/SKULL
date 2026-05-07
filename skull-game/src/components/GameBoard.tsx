@@ -7,7 +7,7 @@ import { BidController } from './BidController'
 import { ActionLog } from './ActionLog'
 import { ResultModal } from './ResultModal'
 import { canFold, getTotalDiscsInPlay, getWinner } from '../lib/gameEngine'
-import { playButtonPress, playFlowerFlip, playSkullFlip, playCardPlace, playSuccess, playFailure } from '../lib/sounds'
+import { playButtonPress, playFlowerFlip, playBombFlip, playCardPlace, playSuccess, playFailure } from '../lib/sounds'
 import type { LogEntry } from './ActionLog'
 import type { Player, PlacedDisc } from '../types/game'
 
@@ -17,8 +17,69 @@ const PHASE_LABEL: Record<string, string> = {
   flip:  'めくり',
 }
 
+const TURN_TIME_LIMIT_SEC = 30
+
 interface Props {
   onGameEnd?: () => void
+}
+
+// ── TurnTimer ────────────────────────────────────────────────────────────────
+function TurnTimer({ timeLeft }: { timeLeft: number }) {
+  const radius = 18
+  const circumference = 2 * Math.PI * radius
+  const progress = timeLeft / TURN_TIME_LIMIT_SEC
+  const dashOffset = circumference * (1 - progress)
+  const isUrgent = timeLeft <= 10
+
+  return (
+    <div className={`relative w-12 h-12 flex items-center justify-center ${isUrgent ? 'animate-pulse' : ''}`}>
+      <svg className="absolute inset-0 -rotate-90" width="48" height="48" viewBox="0 0 48 48">
+        {/* Background track */}
+        <circle
+          cx="24" cy="24" r={radius}
+          fill="none"
+          stroke="rgba(255,255,255,0.1)"
+          strokeWidth="3"
+        />
+        {/* Progress arc */}
+        <circle
+          cx="24" cy="24" r={radius}
+          fill="none"
+          stroke={isUrgent ? '#ef4444' : '#a78bfa'}
+          strokeWidth="3"
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          strokeDashoffset={dashOffset}
+          style={{ transition: 'stroke-dashoffset 0.9s linear, stroke 0.3s' }}
+        />
+      </svg>
+      <span
+        className={`text-sm font-bold z-10 ${isUrgent ? 'text-red-400' : 'text-white/70'}`}
+        style={{ fontFamily: 'Cinzel, serif' }}
+      >
+        {timeLeft}
+      </span>
+    </div>
+  )
+}
+
+// ── TimeoutToast ─────────────────────────────────────────────────────────────
+function TimeoutToast({ show }: { show: boolean }) {
+  return (
+    <AnimatePresence>
+      {show && (
+        <motion.div
+          className="fixed left-1/2 -translate-x-1/2 z-50 bg-red-900/90 border border-red-500/50 backdrop-blur-sm px-4 py-2 rounded-xl text-sm text-red-200 shadow-xl"
+          style={{ top: 'calc(env(safe-area-inset-top) + 56px)', fontFamily: 'Crimson Text, serif' }}
+          initial={{ opacity: 0, y: -12 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -8 }}
+        >
+          ⏰ 時間切れ！ランダム行動が実行されました
+        </motion.div>
+      )}
+    </AnimatePresence>
+  )
 }
 
 export function GameBoard({ onGameEnd }: Props) {
@@ -26,21 +87,29 @@ export function GameBoard({ onGameEnd }: Props) {
     room, players, gameState, myDiscs, publicDiscs,
     sessionId, isLoading, placeDisc, placeBid, fold, flipDisc,
     advanceAfterChallenge, resetGame, resumeCpuTurns, _foldedPlayerIds, _permCards, _cpuLog,
+    isCpuGame, sendEmote,
   } = useGameStore()
 
   const actionLockRef = useRef(false)
-  const placedRef = useRef(false)  // true while waiting for turn-change after a place action
+  const placedRef = useRef(false)
+  const timerIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const autoActedRef = useRef(false)
 
   const [isActing, setIsActing] = useState(false)
   const [log, setLog] = useState<LogEntry[]>([])
   const [modal, setModal] = useState<{
     show: boolean
-    type: 'success' | 'skull' | 'win' | 'lose' | null
+    type: 'success' | 'bomb' | 'win' | 'lose' | null
     challenger?: Player
-    skullOwner?: Player
+    bombOwner?: Player
     lostDisc?: PlacedDisc
   }>({ show: false, type: null })
   const [showExitConfirm, setShowExitConfirm] = useState(false)
+  const [timeLeft, setTimeLeft] = useState(TURN_TIME_LIMIT_SEC)
+  const [showTimeoutToast, setShowTimeoutToast] = useState(false)
+  // showEmoteButtons: true for 3s right after placing a card
+  const [showEmoteButtons, setShowEmoteButtons] = useState(false)
+  const emoteTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const myPlayer = players.find(p => p.session_id === sessionId)
   const otherPlayers = players.filter(p => p.session_id !== sessionId)
@@ -69,7 +138,7 @@ export function GameBoard({ onGameEnd }: Props) {
     if (_cpuLog.type === 'place') playCardPlace()
     else if (_cpuLog.type === 'flip') playFlowerFlip()
     else if (_cpuLog.type === 'result') {
-      if (_cpuLog.message.includes('💀')) playFailure()
+      if (_cpuLog.message.includes('💣')) playFailure()
       else if (_cpuLog.message.includes('成功')) playSuccess()
     }
   }, [_cpuLog?.id])
@@ -84,7 +153,6 @@ export function GameBoard({ onGameEnd }: Props) {
   }, [resumeCpuTurns])
 
   // Release place-action lock once the turn or phase moves away from place
-  // This prevents double-placement during the subscription propagation window
   useEffect(() => {
     if (placedRef.current && (!isMyTurn || phase !== 'place')) {
       placedRef.current = false
@@ -105,15 +173,68 @@ export function GameBoard({ onGameEnd }: Props) {
     }
   }, [players, modal.show])
 
+  // ── Turn timer ────────────────────────────────────────────────────────────
+  useEffect(() => {
+    // Only run timer during place/bid phase when it's my turn
+    if (!isMyTurn || phase === 'flip' || modal.show) {
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current)
+        timerIntervalRef.current = null
+      }
+      setTimeLeft(TURN_TIME_LIMIT_SEC)
+      autoActedRef.current = false
+      return
+    }
+
+    autoActedRef.current = false
+
+    // Use turn_started_at from DB if available (online reconnect recovery),
+    // otherwise fall back to now
+    const startTime = gameState?.turn_started_at
+      ? new Date(gameState.turn_started_at).getTime()
+      : Date.now()
+
+    const tick = () => {
+      const elapsed = Math.floor((Date.now() - startTime) / 1000)
+      const remaining = Math.max(0, TURN_TIME_LIMIT_SEC - elapsed)
+      setTimeLeft(remaining)
+      if (remaining === 0 && !autoActedRef.current) {
+        autoActedRef.current = true
+        if (timerIntervalRef.current) {
+          clearInterval(timerIntervalRef.current)
+          timerIntervalRef.current = null
+        }
+        triggerAutoAction()
+      }
+    }
+
+    tick()
+    timerIntervalRef.current = setInterval(tick, 1000)
+
+    return () => {
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current)
+        timerIntervalRef.current = null
+      }
+    }
+    // Only reset when the current turn changes (not on every render)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gameState?.current_player_id, gameState?.turn_started_at, isMyTurn, phase, modal.show])
+
+  // Expose action handlers before defining triggerAutoAction
   const handlePlaceFlower = useCallback(async () => {
     if (actionLockRef.current) return
     actionLockRef.current = true
-    placedRef.current = true  // set BEFORE await so the subscription can release the lock
+    placedRef.current = true
     try {
       flushSync(() => setIsActing(true))
       playCardPlace()
       await placeDisc('flower')
       addLog(`${myPlayer?.player_name} が花を置いた`, 'place')
+      // Show emote buttons for 3 seconds
+      setShowEmoteButtons(true)
+      if (emoteTimerRef.current) clearTimeout(emoteTimerRef.current)
+      emoteTimerRef.current = setTimeout(() => setShowEmoteButtons(false), 3000)
     } catch {
       placedRef.current = false
       actionLockRef.current = false
@@ -121,15 +242,19 @@ export function GameBoard({ onGameEnd }: Props) {
     }
   }, [placeDisc, myPlayer])
 
-  const handlePlaceSkull = useCallback(async () => {
+  const handlePlaceBomb = useCallback(async () => {
     if (actionLockRef.current) return
     actionLockRef.current = true
-    placedRef.current = true  // set BEFORE await so the subscription can release the lock
+    placedRef.current = true
     try {
       flushSync(() => setIsActing(true))
       playCardPlace()
-      await placeDisc('skull')
+      await placeDisc('bomb')
       addLog(`${myPlayer?.player_name} がカードを置いた`, 'place')
+      // Show emote buttons for 3 seconds
+      setShowEmoteButtons(true)
+      if (emoteTimerRef.current) clearTimeout(emoteTimerRef.current)
+      emoteTimerRef.current = setTimeout(() => setShowEmoteButtons(false), 3000)
     } catch {
       placedRef.current = false
       actionLockRef.current = false
@@ -165,6 +290,29 @@ export function GameBoard({ onGameEnd }: Props) {
     }
   }, [fold, myPlayer])
 
+  // ── Auto-action on timeout ────────────────────────────────────────────────
+  const triggerAutoAction = useCallback(async () => {
+    if (!myPlayer || !gameState || actionLockRef.current) return
+    setShowTimeoutToast(true)
+    setTimeout(() => setShowTimeoutToast(false), 3000)
+
+    if (phase === 'place') {
+      const canFlower = myPlayer.flower_count > 0
+      const canBomb = myPlayer.bomb_count > 0
+      if (!canFlower && !canBomb) return
+      if (!canFlower) { await handlePlaceBomb(); return }
+      if (!canBomb) { await handlePlaceFlower(); return }
+      if (Math.random() < 0.5) await handlePlaceFlower()
+      else await handlePlaceBomb()
+    } else if (phase === 'bid') {
+      const canBidMore = highestBid < totalDiscs
+      const canFoldNow = myPlayer && gameState ? canFold(myPlayer, gameState) : false
+      if (!canBidMore) { await handleFold(); return }
+      if (canFoldNow && Math.random() < 0.5) await handleFold()
+      else await handleBid(highestBid + 1)
+    }
+  }, [myPlayer, gameState, phase, highestBid, totalDiscs, handlePlaceFlower, handlePlaceBomb, handleBid, handleFold])
+
   const handleFlip = useCallback(async (discId: string) => {
     if (!myPlayer || !gameState) return
     if (actionLockRef.current) return
@@ -179,13 +327,13 @@ export function GameBoard({ onGameEnd }: Props) {
     const freshFlipCount = freshState.gameState?.flip_count ?? 0
     const freshHighestBid = freshState.gameState?.highest_bid ?? highestBid
 
-    if (realType === 'skull') {
-      playSkullFlip()
+    if (realType === 'bomb') {
+      playBombFlip()
       playFailure()
-      addLog(`💀 ${myPlayer.player_name} が ${owner?.player_name} のドクロを踏んだ！`, 'result')
+      addLog(`💣 ${myPlayer.player_name} が ${owner?.player_name} の爆弾を踏んだ！`, 'result')
       const freshDisc = [...freshState.myDiscs, ...freshState.publicDiscs].find(d => d.id === discId)
       await new Promise(r => setTimeout(r, 500))
-      setModal({ show: true, type: 'skull', challenger: myPlayer, skullOwner: owner, lostDisc: freshDisc })
+      setModal({ show: true, type: 'bomb', challenger: myPlayer, bombOwner: owner, lostDisc: freshDisc })
       // lock + isActing stay set until onClose
     } else {
       playFlowerFlip()
@@ -203,10 +351,17 @@ export function GameBoard({ onGameEnd }: Props) {
         // lock + isActing stay set until onClose
       } else {
         actionLockRef.current = false
-        setIsActing(false)  // normal flower, next tap allowed
+        setIsActing(false)
       }
     }
   }, [myPlayer, gameState, flipDisc, myDiscs, publicDiscs, players, highestBid])
+
+  // Cleanup emote timer on unmount
+  useEffect(() => {
+    return () => {
+      if (emoteTimerRef.current) clearTimeout(emoteTimerRef.current)
+    }
+  }, [])
 
   const myRoundDiscs = publicDiscs.filter(d => d.player_id === myPlayer?.id && d.round_number === round)
   const myUnflipped = myRoundDiscs.filter(d => !d.is_flipped)
@@ -217,13 +372,16 @@ export function GameBoard({ onGameEnd }: Props) {
       const current = players.find(p => p.id === gameState?.current_player_id)
       return `${current?.player_name ?? '...'} の手番`
     }
-    if (phase === 'place') return '花かドクロを置いてください'
+    if (phase === 'place') return '花か爆弾を置いてください'
     if (phase === 'bid') return highestBid === 0 ? '入札を開始' : '入札かパス'
     if (phase === 'flip') return myUnflipped.length > 0 ? '自分のスタックから先にめくる' : 'スタックをめくる'
     return ''
   }
 
   const canFoldNow = myPlayer && gameState ? canFold(myPlayer, gameState) : false
+
+  // Derive last_emote per player for display
+  const lastEmote = gameState?.last_emote ?? null
 
   if (!gameState || !myPlayer) return null
 
@@ -233,6 +391,7 @@ export function GameBoard({ onGameEnd }: Props) {
       style={{ fontFamily: 'Crimson Text, serif' }}
     >
       <ActionLog entries={log} />
+      <TimeoutToast show={showTimeoutToast} />
 
       {/* ── Header ── */}
       <header className="flex-shrink-0 bg-gray-900/90 backdrop-blur border-b border-white/10 px-3 py-2 flex items-center justify-between">
@@ -291,6 +450,7 @@ export function GameBoard({ onGameEnd }: Props) {
               compact
               hasFolded={_foldedPlayerIds.includes(p.id)}
               permCards={_permCards[p.id]}
+              emote={lastEmote?.playerId === p.id ? { type: lastEmote.type, sentAt: lastEmote.sentAt } : null}
             />
           ))}
         </div>
@@ -318,15 +478,52 @@ export function GameBoard({ onGameEnd }: Props) {
               {Array.from({ length: myPlayer.flower_count }).map((_, i) => (
                 <span key={`f-${i}`} className="text-xl leading-none">🌸</span>
               ))}
-              {Array.from({ length: myPlayer.skull_count }).map((_, i) => (
-                <span key={`s-${i}`} className="text-xl leading-none">💀</span>
+              {Array.from({ length: myPlayer.bomb_count }).map((_, i) => (
+                <span key={`b-${i}`} className="text-xl leading-none">💣</span>
               ))}
             </div>
             <p className="text-white/30 text-xs mt-0.5">
-              {myPlayer.flower_count + myPlayer.skull_count}枚残り
+              {myPlayer.flower_count + myPlayer.bomb_count}枚残り
             </p>
           </div>
+          {/* Timer — shown during place/bid phase when it's my turn */}
+          {isMyTurn && phase !== 'flip' && (
+            <TurnTimer timeLeft={timeLeft} />
+          )}
         </div>
+
+        {/* Emote buttons — shown 3s after placing */}
+        <AnimatePresence>
+          {showEmoteButtons && phase === 'place' && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="flex gap-2 overflow-hidden"
+            >
+              <motion.button
+                onClick={async () => {
+                  setShowEmoteButtons(false)
+                  await sendEmote('BOMB')
+                }}
+                className="flex-1 py-2 rounded-xl bg-red-900/50 border border-red-500/30 text-xl"
+                whileTap={{ scale: 0.95 }}
+              >
+                💣
+              </motion.button>
+              <motion.button
+                onClick={async () => {
+                  setShowEmoteButtons(false)
+                  await sendEmote('FLOWER')
+                }}
+                className="flex-1 py-2 rounded-xl bg-emerald-900/50 border border-emerald-500/30 text-xl"
+                whileTap={{ scale: 0.95 }}
+              >
+                🌸
+              </motion.button>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Action buttons */}
         <AnimatePresence mode="wait">
@@ -350,13 +547,13 @@ export function GameBoard({ onGameEnd }: Props) {
                     🌸 花を置く
                   </motion.button>
                   <motion.button
-                    onClick={handlePlaceSkull}
-                    disabled={isLoading || isActing || myPlayer.skull_count === 0}
+                    onClick={handlePlaceBomb}
+                    disabled={isLoading || isActing || myPlayer.bomb_count === 0}
                     className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-gray-700 to-gray-600 text-white font-bold disabled:opacity-40 text-sm"
                     whileTap={!isActing ? { scale: 0.96 } : {}}
                     style={{ fontFamily: 'Cinzel, serif', touchAction: 'manipulation', pointerEvents: (isLoading || isActing) ? 'none' : 'auto' }}
                   >
-                    💀 ドクロ
+                    💣 爆弾
                   </motion.button>
                 </div>
               )}
@@ -431,11 +628,11 @@ export function GameBoard({ onGameEnd }: Props) {
         show={modal.show}
         type={modal.type}
         challenger={modal.challenger}
-        skullOwner={modal.skullOwner}
+        bombOwner={modal.bombOwner}
         lostDisc={modal.lostDisc}
         onClose={async () => {
           const type = modal.type
-          const skullOwnerId = modal.skullOwner?.id
+          const bombOwnerId = modal.bombOwner?.id
           actionLockRef.current = false
           setIsActing(false)
           setModal({ show: false, type: null })
@@ -444,8 +641,8 @@ export function GameBoard({ onGameEnd }: Props) {
             onGameEnd?.()
           } else if (type === 'success') {
             await advanceAfterChallenge('win')
-          } else if (type === 'skull') {
-            await advanceAfterChallenge('loss', skullOwnerId)
+          } else if (type === 'bomb') {
+            await advanceAfterChallenge('loss', bombOwnerId)
           }
         }}
       />

@@ -89,12 +89,12 @@ export function DiscStack({ player, discs, isFlipPhase, isMyTurnToFlip, myOwnSta
             initial={{ rotateY: 90, opacity: 0 }}
             animate={{ rotateY: 0, opacity: 1 }}
             className={`w-12 h-16 rounded-lg border-2 flex flex-col items-center justify-center text-2xl shadow-lg ${
-              disc.disc_type === 'skull'
+              disc.disc_type === 'bomb'
                 ? 'bg-red-950 border-red-400 shadow-red-500/50'
                 : 'bg-emerald-950 border-emerald-400 shadow-emerald-500/50'
             }`}
           >
-            {disc.disc_type === 'skull' ? '💀' : '🌸'}
+            {disc.disc_type === 'bomb' ? '💣' : '🌸'}
           </motion.div>
         ))}
       </AnimatePresence>
