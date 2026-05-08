@@ -39,7 +39,6 @@ const RULES = [
 
 const MODES = [
   {
-    icon: '🤖',
     label: 'CPU対戦',
     sub: '1人でCPUと対戦',
     path: '/cpu',
@@ -48,7 +47,6 @@ const MODES = [
     glow: 'shadow-blue-500/20',
   },
   {
-    icon: '👥',
     label: 'オンライン対戦',
     sub: 'ルームコードで友達と',
     path: null,
@@ -57,7 +55,6 @@ const MODES = [
     glow: 'shadow-purple-500/20',
   },
   {
-    icon: '📖',
     label: 'ルール確認',
     sub: 'BOMBの遊び方',
     path: null,
@@ -114,7 +111,6 @@ export function ModeSelectScreen() {
             whileTap={{ scale: 0.98 }}
           >
             <div className="flex items-center gap-4">
-              <span className="text-4xl">{mode.icon}</span>
               <div>
                 <p
                   className="text-white text-xl font-bold"
