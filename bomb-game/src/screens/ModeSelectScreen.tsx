@@ -4,35 +4,35 @@ import { motion, AnimatePresence } from 'framer-motion'
 
 const RULES = [
   {
-    title: '🎯 ゲームの目的',
+    title: 'ゲームの目的',
     body: '2回のチャレンジ成功で勝利。最後の1人になっても勝利。',
   },
   {
-    title: '🃏 手札',
+    title: '手札',
     body: '各プレイヤーはりんご3枚・爆弾1枚の計4枚でスタート。',
   },
   {
-    title: '1️⃣ 配置フェーズ',
+    title: '配置フェーズ',
     body: '手番順にカードを1枚伏せて場に置く。好きなカードを選べる（相手には見えない）。',
   },
   {
-    title: '2️⃣ 入札フェーズ',
+    title: '入札フェーズ',
     body: '「○枚の🍎をめくれる」と宣言してチャレンジ開始。他のプレイヤーはより高く宣言するかパス（フォールド）。',
   },
   {
-    title: '3️⃣ めくりフェーズ',
+    title: 'めくりフェーズ',
     body: '最高入札者が自分の山を全部めくった後、他の山を自由な順でめくる。宣言枚数の🍎をめくれたら勝利点！',
   },
   {
     title: '💣 爆弾を踏んだら',
-    body: '自分の手札からランダムに1枚を失う（相手に捨て先を決められる場合も）。手札が0になると脱落。',
+    body: '自分の手札からランダムに1枚を失う。手札が0になると脱落。',
   },
   {
-    title: '⏰ タイムリミット',
+    title: 'タイムリミット',
     body: '各ターン30秒の制限時間あり。時間切れになると自動でランダムな行動が実行される。',
   },
   {
-    title: '😎 エモート',
+    title: 'エモート',
     body: 'カードを置いた直後に💣か🍎のエモートを送れる。相手をブラフで惑わせよう！',
   },
 ]
@@ -185,7 +185,7 @@ export function ModeSelectScreen() {
                 className="text-2xl font-bold text-white mb-6 text-center"
                 style={{ fontFamily: 'Cinzel, serif' }}
               >
-                📖 ゲームルール
+                ゲームルール
               </h2>
               <div className="space-y-4">
                 {RULES.map(rule => (
