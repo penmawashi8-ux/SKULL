@@ -553,8 +553,8 @@ export const useGameStore = create<StoreState>()((set, get) => {
 
         const updatedPlayers = players.map(p => p.id !== cpuPlayer.id ? p : { ...p, flower_count: newFlower, bomb_count: newBomb })
         if (allHandsEmpty(updatedPlayers)) {
-          const first = [...updatedPlayers].filter(p => !p.is_eliminated).sort((a, b) => a.seat_order - b.seat_order)[0]
-          await supabase.from('game_states').update({ phase: 'bid', current_player_id: first?.id ?? null, turn_started_at: ts(), updated_at: ts(), ...(cpuEmote ? { last_emote: cpuEmote } : {}) }).eq('id', gs2.id)
+          const nextBidder = getNextActivePlayer(updatedPlayers, cpuPlayer.id)
+          await supabase.from('game_states').update({ phase: 'bid', current_player_id: nextBidder?.id ?? cpuPlayer.id, turn_started_at: ts(), updated_at: ts(), ...(cpuEmote ? { last_emote: cpuEmote } : {}) }).eq('id', gs2.id)
           set({ _foldedPlayerIds: [] })
         } else {
           const next = getNextPlayerWithHand(updatedPlayers, cpuPlayer.id)
@@ -664,14 +664,14 @@ export const useGameStore = create<StoreState>()((set, get) => {
             })
             await new Promise(r => setTimeout(r, 1500))
             await supabase.from('placed_discs').delete().eq('room_id', room.id).eq('round_number', gs2.round_number)
+            await Promise.all(resetPlayers.filter(p => !p.is_eliminated).map(p =>
+              supabase.from('players').update({ flower_count: p.flower_count, bomb_count: p.bomb_count }).eq('id', p.id)
+            ))
             await supabase.from('game_states').update({
               round_number: newRound, phase: 'place', current_player_id: starterId,
               highest_bid: 0, highest_bidder_id: null, pass_count: 0, flip_count: 0,
               turn_started_at: ts(), last_emote: null, updated_at: ts(),
             }).eq('id', gs2.id)
-            for (const p of resetPlayers.filter(p => !p.is_eliminated)) {
-              await supabase.from('players').update({ flower_count: p.flower_count, bomb_count: p.bomb_count }).eq('id', p.id)
-            }
             set({ players: resetPlayers, publicDiscs: [], myDiscs: [], _cpuDiscs: [], _foldedPlayerIds: [] })
           }
         } else if (newFlipCount >= gs2.highest_bid) {
@@ -693,14 +693,14 @@ export const useGameStore = create<StoreState>()((set, get) => {
             })
             await new Promise(r => setTimeout(r, 1500))
             await supabase.from('placed_discs').delete().eq('room_id', room.id).eq('round_number', gs2.round_number)
+            await Promise.all(resetPlayers.filter(p => !p.is_eliminated).map(p =>
+              supabase.from('players').update({ flower_count: p.flower_count, bomb_count: p.bomb_count }).eq('id', p.id)
+            ))
             await supabase.from('game_states').update({
               round_number: newRound, phase: 'place', current_player_id: cpuPlayer.id,
               highest_bid: 0, highest_bidder_id: null, pass_count: 0, flip_count: 0,
               turn_started_at: ts(), last_emote: null, updated_at: ts(),
             }).eq('id', gs2.id)
-            for (const p of resetPlayers.filter(p => !p.is_eliminated)) {
-              await supabase.from('players').update({ flower_count: p.flower_count, bomb_count: p.bomb_count }).eq('id', p.id)
-            }
             set({ players: resetPlayers, publicDiscs: [], myDiscs: [], _cpuDiscs: [], _foldedPlayerIds: [] })
           }
         }
@@ -1021,12 +1021,10 @@ export const useGameStore = create<StoreState>()((set, get) => {
           },
         )
         if (allHandsEmpty(updatedPlayers)) {
-          const firstActive = [...updatedPlayers]
-            .filter(p => !p.is_eliminated)
-            .sort((a, b) => a.seat_order - b.seat_order)[0]
+          const nextBidder = getNextActivePlayer(updatedPlayers, myPlayer.id)
           await supabase.from('game_states').update({
             phase: 'bid',
-            current_player_id: firstActive?.id ?? null,
+            current_player_id: nextBidder?.id ?? myPlayer.id,
             turn_started_at: ts(),
             updated_at: ts(),
           }).eq('id', gameState.id)
