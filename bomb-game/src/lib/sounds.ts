@@ -33,6 +33,43 @@ export function playButtonPress() {
   playTone(600, 0.08, 'square', 0.12)
 }
 
+// Bid declaration — two ascending punchy notes
+export function playBid() {
+  try {
+    const c = ctx()
+    const notes = [440, 660]
+    notes.forEach((freq, i) => {
+      const osc = c.createOscillator()
+      const g = c.createGain()
+      osc.connect(g); g.connect(c.destination)
+      osc.type = 'sine'
+      osc.frequency.setValueAtTime(freq, c.currentTime + i * 0.08)
+      g.gain.setValueAtTime(0.0, c.currentTime + i * 0.08)
+      g.gain.linearRampToValueAtTime(0.22, c.currentTime + i * 0.08 + 0.01)
+      g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + i * 0.08 + 0.18)
+      osc.start(c.currentTime + i * 0.08)
+      osc.stop(c.currentTime + i * 0.08 + 0.18)
+    })
+  } catch { /* ignore */ }
+}
+
+// Fold / pass — soft descending tone
+export function playFold() {
+  try {
+    const c = ctx()
+    const osc = c.createOscillator()
+    const g = c.createGain()
+    osc.connect(g); g.connect(c.destination)
+    osc.type = 'sine'
+    osc.frequency.setValueAtTime(440, c.currentTime)
+    osc.frequency.exponentialRampToValueAtTime(260, c.currentTime + 0.22)
+    g.gain.setValueAtTime(0.18, c.currentTime)
+    g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.28)
+    osc.start(c.currentTime)
+    osc.stop(c.currentTime + 0.28)
+  } catch { /* ignore */ }
+}
+
 export function playFlowerFlip() {
   try {
     const c = ctx()

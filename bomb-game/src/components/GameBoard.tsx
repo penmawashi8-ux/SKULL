@@ -7,274 +7,93 @@ import { BidController } from './BidController'
 import { ActionLog } from './ActionLog'
 import { ResultModal } from './ResultModal'
 import { canFold, getTotalDiscsInPlay, getWinner } from '../lib/gameEngine'
-import { playButtonPress, playFlowerFlip, playBombFlip, playCardPlace, playSuccess, playFailure } from '../lib/sounds'
+import { playButtonPress, playFlowerFlip, playBombFlip, playCardPlace, playSuccess, playFailure, playBid, playFold } from '../lib/sounds'
 import type { LogEntry } from './ActionLog'
 import type { Player, PlacedDisc } from '../types/game'
 
 const PHASE_LABEL: Record<string, string> = {
   place: '配置',
-  bid:   '入札',
-  flip:  'めくり',
+  bid: '入札',
+  flip: 'めくり',
 }
 
-const TURN_TIME_LIMIT_SEC = 30
+const MAX_LOG = 12
 
-interface Props {
-  onGameEnd?: () => void
-}
+type ActionLockState = boolean
 
-// ── TurnTimer ────────────────────────────────────────────────────────────────
-function TurnTimer({ timeLeft }: { timeLeft: number }) {
-  const radius = 18
-  const circumference = 2 * Math.PI * radius
-  const progress = timeLeft / TURN_TIME_LIMIT_SEC
-  const dashOffset = circumference * (1 - progress)
-  const isUrgent = timeLeft <= 10
-
-  return (
-    <div className={`relative w-12 h-12 flex items-center justify-center ${isUrgent ? 'animate-pulse' : ''}`}>
-      <svg className="absolute inset-0 -rotate-90" width="48" height="48" viewBox="0 0 48 48">
-        {/* Background track */}
-        <circle
-          cx="24" cy="24" r={radius}
-          fill="none"
-          stroke="rgba(255,255,255,0.1)"
-          strokeWidth="3"
-        />
-        {/* Progress arc */}
-        <circle
-          cx="24" cy="24" r={radius}
-          fill="none"
-          stroke={isUrgent ? '#ef4444' : '#a78bfa'}
-          strokeWidth="3"
-          strokeLinecap="round"
-          strokeDasharray={circumference}
-          strokeDashoffset={dashOffset}
-          style={{ transition: 'stroke-dashoffset 0.9s linear, stroke 0.3s' }}
-        />
-      </svg>
-      <span
-        className={`text-sm font-bold z-10 ${isUrgent ? 'text-red-400' : 'text-white/70'}`}
-        style={{ fontFamily: 'Cinzel, serif' }}
-      >
-        {timeLeft}
-      </span>
-    </div>
-  )
-}
-
-// ── TimeoutToast ─────────────────────────────────────────────────────────────
-function TimeoutToast({ show }: { show: boolean }) {
-  return (
-    <AnimatePresence>
-      {show && (
-        <motion.div
-          className="fixed left-1/2 -translate-x-1/2 z-50 bg-red-900/90 border border-red-500/50 backdrop-blur-sm px-4 py-2 rounded-xl text-sm text-red-200 shadow-xl"
-          style={{ top: 'calc(env(safe-area-inset-top) + 56px)', fontFamily: 'Crimson Text, serif' }}
-          initial={{ opacity: 0, y: -12 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -8 }}
-        >
-          ⏰ 時間切れ！ランダム行動が実行されました
-        </motion.div>
-      )}
-    </AnimatePresence>
-  )
-}
-
-export function GameBoard({ onGameEnd }: Props) {
+export function GameBoard() {
   const {
     room, players, gameState, myDiscs, publicDiscs,
-    sessionId, isLoading, placeDisc, placeBid, fold, flipDisc,
-    advanceAfterChallenge, resetGame, resumeCpuTurns, _foldedPlayerIds, _permCards, _cpuLog,
-    sendEmote,
+    sessionId, isCpuGame, _foldedPlayerIds,
+    placeDisc, placeBid, fold, flipDisc, advanceAfterChallenge,
+    _cpuLog,
   } = useGameStore()
 
-  const actionLockRef = useRef(false)
-  const placedRef = useRef(false)
-  const timerIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
-  const autoActedRef = useRef(false)
-  // Tracks 'current_player_id:phase' captured before an online action fires.
-  // Released when gameState advances (turn or phase changes).
-  const pendingOnlineTurnRef = useRef<string | null>(null)
-
+  const myPlayer = players.find(p => p.session_id === sessionId) ?? null
+  const [logs, setLogs] = useState<LogEntry[]>([])
   const [isActing, setIsActing] = useState(false)
-  const [log, setLog] = useState<LogEntry[]>([])
-  const [modal, setModal] = useState<{
-    show: boolean
-    type: 'success' | 'bomb' | 'win' | 'lose' | null
-    challenger?: Player
-    bombOwner?: Player
-    lostDisc?: PlacedDisc
-  }>({ show: false, type: null })
-  const [showExitConfirm, setShowExitConfirm] = useState(false)
-  const [timeLeft, setTimeLeft] = useState(TURN_TIME_LIMIT_SEC)
-  const [showTimeoutToast, setShowTimeoutToast] = useState(false)
-  // showEmoteButtons: true for 3s right after placing a card
-  const [showEmoteButtons, setShowEmoteButtons] = useState(false)
-  const emoteTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const [displayedEmote, setDisplayedEmote] = useState<{ playerId: string; type: string; sentAt: string } | null>(null)
-  const emoteDisplayTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [flipResult, setFlipResult] = useState<{ type: 'flower' | 'bomb'; discId: string } | null>(null)
+  const [showResult, setShowResult] = useState<{ outcome: 'win' | 'loss'; bombOwnerId?: string } | null>(null)
+  const actionLockRef = useRef<ActionLockState>(false)
+  const pendingOnlineTurnRef = useRef<string | null>(null)
+  const prevCpuLogRef = useRef<string | null>(null)
 
-  const myPlayer = players.find(p => p.session_id === sessionId)
-  const otherPlayers = players.filter(p => p.session_id !== sessionId)
-  const isMyTurn = gameState?.current_player_id === myPlayer?.id
-  const phase = gameState?.phase ?? 'place'
-  const round = gameState?.round_number ?? 1
-  const highestBid = gameState?.highest_bid ?? 0
-  const challengerId = gameState?.highest_bidder_id ?? null
-  const isChallenger = myPlayer?.id === challengerId
-  const totalDiscs = getTotalDiscsInPlay(players, publicDiscs, round)
-  const allPlaced = players.filter(p => !p.is_eliminated).every(p =>
-    publicDiscs.some(d => d.player_id === p.id && d.round_number === round)
-  )
-  const iHaveFolded = !!myPlayer && _foldedPlayerIds.includes(myPlayer.id)
+  const addLog = useCallback((message: string, type: LogEntry['type']) => {
+    const entry: LogEntry = { id: crypto.randomUUID(), message, type }
+    setLogs(prev => [entry, ...prev].slice(0, MAX_LOG))
+  }, [])
 
-  function addLog(message: string, type: LogEntry['type']) {
-    setLog(prev => [
-      { id: crypto.randomUUID(), message, type, timestamp: Date.now() },
-      ...prev,
-    ].slice(0, 20))
-  }
-
+  // ── Listen for CPU action logs ────────────────────────────────────────────
   useEffect(() => {
     if (!_cpuLog) return
+    if (_cpuLog.id === prevCpuLogRef.current) return
+    prevCpuLogRef.current = _cpuLog.id
     addLog(_cpuLog.message, _cpuLog.type)
+
+    if (!isCpuGame) return
     if (_cpuLog.type === 'place') playCardPlace()
-    else if (_cpuLog.type === 'flip') playFlowerFlip()
+    else if (_cpuLog.type === 'bid') playBid()
+    else if (_cpuLog.type === 'fold') playFold()
     else if (_cpuLog.type === 'result') {
-      if (_cpuLog.message.includes('💣')) playFailure()
-      else if (_cpuLog.message.includes('成功')) playSuccess()
+      if (_cpuLog.message.includes('爆弾')) { playBombFlip(); playFailure() }
+      else playSuccess()
     }
-  }, [_cpuLog?.id])
+    else if (_cpuLog.type === 'flip') playFlowerFlip()
+  }, [_cpuLog, isCpuGame, addLog])
 
-  // Re-trigger CPU turns when page comes back from background
+  // ── Unlock action after online realtime confirms turn change ─────────────
   useEffect(() => {
-    function handleVisibility() {
-      if (!document.hidden) resumeCpuTurns()
-    }
-    document.addEventListener('visibilitychange', handleVisibility)
-    return () => document.removeEventListener('visibilitychange', handleVisibility)
-  }, [resumeCpuTurns])
-
-  // Release online action lock when the game state advances (turn or phase changed).
-  // For CPU games the lock is released immediately in the handler's finally block.
-  useEffect(() => {
-    if (!pendingOnlineTurnRef.current) return
-    const currentKey = `${gameState?.current_player_id}:${phase}`
-    if (currentKey !== pendingOnlineTurnRef.current) {
+    const pending = pendingOnlineTurnRef.current
+    if (!pending || !gameState) return
+    const currentKey = `${gameState.current_player_id}:${gameState.phase}`
+    if (currentKey !== pending) {
       pendingOnlineTurnRef.current = null
       actionLockRef.current = false
       setIsActing(false)
     }
-  }, [gameState?.current_player_id, phase])
+  }, [gameState])
 
-  // Detect CPU win (by 2 rounds or last-player-standing) and show modal
-  useEffect(() => {
-    if (!gameState || modal.show) return
-    const winner = getWinner(players)
-    if (!winner) return
-    if (winner.session_id === sessionId) {
-      setModal({ show: true, type: 'win', challenger: winner })
-    } else {
-      setModal({ show: true, type: 'lose', challenger: winner })
-    }
-  }, [players, modal.show])
+  const isMyTurn = gameState?.current_player_id === myPlayer?.id
+  const round = gameState?.round_number ?? 1
 
-  // ── Turn timer ────────────────────────────────────────────────────────────
-  useEffect(() => {
-    // Only run timer during place/bid phase when it's my turn
-    if (!isMyTurn || phase === 'flip' || modal.show) {
-      if (timerIntervalRef.current) {
-        clearInterval(timerIntervalRef.current)
-        timerIntervalRef.current = null
-      }
-      setTimeLeft(TURN_TIME_LIMIT_SEC)
-      autoActedRef.current = false
-      return
-    }
+  const myStackCount = publicDiscs.filter(
+    d => d.player_id === myPlayer?.id && d.round_number === round,
+  ).length
 
-    autoActedRef.current = false
-
-    // Use turn_started_at from DB if available (online reconnect recovery),
-    // otherwise fall back to now
-    const startTime = gameState?.turn_started_at
-      ? new Date(gameState.turn_started_at).getTime()
-      : Date.now()
-
-    const tick = () => {
-      const elapsed = Math.floor((Date.now() - startTime) / 1000)
-      const remaining = Math.max(0, TURN_TIME_LIMIT_SEC - elapsed)
-      setTimeLeft(remaining)
-      if (remaining === 0 && !autoActedRef.current) {
-        autoActedRef.current = true
-        if (timerIntervalRef.current) {
-          clearInterval(timerIntervalRef.current)
-          timerIntervalRef.current = null
-        }
-        triggerAutoAction()
-      }
-    }
-
-    tick()
-    timerIntervalRef.current = setInterval(tick, 1000)
-
-    return () => {
-      if (timerIntervalRef.current) {
-        clearInterval(timerIntervalRef.current)
-        timerIntervalRef.current = null
-      }
-    }
-    // Only reset when the current turn changes (not on every render)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gameState?.current_player_id, gameState?.turn_started_at, isMyTurn, phase, modal.show])
-
-  // Expose action handlers before defining triggerAutoAction
-  const handlePlaceFlower = useCallback(async () => {
+  // ── Place disc ───────────────────────────────────────────────────────────
+  const handlePlace = useCallback(async (type: 'flower' | 'bomb') => {
     if (actionLockRef.current) return
     actionLockRef.current = true
-    placedRef.current = true
     const { isCpuGame: cpuGame, gameState: gs } = useGameStore.getState()
     const turnKey = `${gs?.current_player_id}:${gs?.phase}`
     let succeeded = false
     try {
       flushSync(() => setIsActing(true))
       playCardPlace()
-      await placeDisc('flower')
-      addLog(`${myPlayer?.player_name} が🍎を置いた`, 'place')
-      setShowEmoteButtons(true)
-      if (emoteTimerRef.current) clearTimeout(emoteTimerRef.current)
-      emoteTimerRef.current = setTimeout(() => setShowEmoteButtons(false), 3000)
-      succeeded = true
-    } finally {
-      placedRef.current = false
-      if (cpuGame || !succeeded) {
-        actionLockRef.current = false
-        setIsActing(false)
-      } else {
-        pendingOnlineTurnRef.current = turnKey
-      }
-    }
-  }, [placeDisc, myPlayer])
-
-  const handlePlaceBomb = useCallback(async () => {
-    if (actionLockRef.current) return
-    actionLockRef.current = true
-    placedRef.current = true
-    const { isCpuGame: cpuGame, gameState: gs } = useGameStore.getState()
-    const turnKey = `${gs?.current_player_id}:${gs?.phase}`
-    let succeeded = false
-    try {
-      flushSync(() => setIsActing(true))
-      playCardPlace()
-      await placeDisc('bomb')
+      await placeDisc(type)
       addLog(`${myPlayer?.player_name} がカードを置いた`, 'place')
-      setShowEmoteButtons(true)
-      if (emoteTimerRef.current) clearTimeout(emoteTimerRef.current)
-      emoteTimerRef.current = setTimeout(() => setShowEmoteButtons(false), 3000)
       succeeded = true
     } finally {
-      placedRef.current = false
       if (cpuGame || !succeeded) {
         actionLockRef.current = false
         setIsActing(false)
@@ -292,7 +111,7 @@ export function GameBoard({ onGameEnd }: Props) {
     let succeeded = false
     try {
       flushSync(() => setIsActing(true))
-      playButtonPress()
+      playBid()
       await placeBid(amount)
       addLog(`${myPlayer?.player_name} が ${amount} 枚と宣言`, 'bid')
       succeeded = true
@@ -314,7 +133,7 @@ export function GameBoard({ onGameEnd }: Props) {
     let succeeded = false
     try {
       flushSync(() => setIsActing(true))
-      playButtonPress()
+      playFold()
       await fold()
       addLog(`${myPlayer?.player_name} がパス`, 'fold')
       succeeded = true
@@ -337,376 +156,200 @@ export function GameBoard({ onGameEnd }: Props) {
     // Abort if it's no longer actually my turn (race condition guard)
     if (gs.current_player_id !== freshMe.id) return
     if (gs.phase === 'flip') return
-    if (actionLockRef.current) return
-
-    setShowTimeoutToast(true)
-    setTimeout(() => setShowTimeoutToast(false), 3000)
 
     if (gs.phase === 'place') {
-      const canFlower = freshMe.flower_count > 0
-      const canBomb = freshMe.bomb_count > 0
-      if (!canFlower && !canBomb) return
-      if (!canFlower) { await handlePlaceBomb(); return }
-      if (!canBomb) { await handlePlaceFlower(); return }
-      if (Math.random() < 0.5) await handlePlaceFlower()
-      else await handlePlaceBomb()
+      const hasFlower = freshMe.flower_count > 0
+      await handlePlace(hasFlower ? 'flower' : 'bomb')
     } else if (gs.phase === 'bid') {
-      const freshTotal = getTotalDiscsInPlay(ps, pd, gs.round_number)
-      const canBidMore = gs.highest_bid < freshTotal
-      const canFoldNow = canFold(freshMe, gs)
-      if (!canBidMore) { await handleFold(); return }
-      if (canFoldNow && Math.random() < 0.5) await handleFold()
-      else await handleBid(gs.highest_bid + 1)
-    }
-  }, [handlePlaceFlower, handlePlaceBomb, handleBid, handleFold])
-
-  const handleFlip = useCallback(async (discId: string) => {
-    if (!myPlayer || !gameState) return
-    if (actionLockRef.current) return
-    actionLockRef.current = true
-    setIsActing(true)
-
-    const disc = [...myDiscs, ...publicDiscs].find(d => d.id === discId)
-    const owner = players.find(p => disc && p.id === disc.player_id)
-
-    const realType = await flipDisc(discId)
-    const freshState = useGameStore.getState()
-    const freshFlipCount = freshState.gameState?.flip_count ?? 0
-    const freshHighestBid = freshState.gameState?.highest_bid ?? highestBid
-
-    if (realType === 'bomb') {
-      playBombFlip()
-      playFailure()
-      addLog(`💣 ${myPlayer.player_name} が ${owner?.player_name} の爆弾を踏んだ！`, 'result')
-      const freshDisc = [...freshState.myDiscs, ...freshState.publicDiscs].find(d => d.id === discId)
-      await new Promise(r => setTimeout(r, 500))
-      setModal({ show: true, type: 'bomb', challenger: myPlayer, bombOwner: owner, lostDisc: freshDisc })
-      // lock + isActing stay set until onClose
-    } else {
-      playFlowerFlip()
-      addLog(`🍎 ${myPlayer.player_name} が🍎をめくった`, 'flip')
-      if (freshFlipCount >= freshHighestBid) {
-        addLog(`🎉 チャレンジ成功！`, 'result')
-        playSuccess()
-        await new Promise(r => setTimeout(r, 700))
-        const freshPlayer = freshState.players.find(p => p.id === myPlayer.id)
-        if (freshPlayer && freshPlayer.win_count + 1 >= 2) {
-          setModal({ show: true, type: 'win', challenger: myPlayer })
-        } else {
-          setModal({ show: true, type: 'success', challenger: myPlayer })
-        }
-        // lock + isActing stay set until onClose
+      const totalDiscs = pd.filter(d => d.round_number === gs.round_number).length
+      const minBid = gs.highest_bid + 1
+      const canBidMore = minBid <= totalDiscs
+      if (!canBidMore || canFold(gs, ps)) {
+        await handleFold()
       } else {
-        actionLockRef.current = false
-        setIsActing(false)
+        await handleBid(minBid)
       }
     }
-  }, [myPlayer, gameState, flipDisc, myDiscs, publicDiscs, players, highestBid])
+  }, [handlePlace, handleBid, handleFold])
 
-  // Cleanup emote timer on unmount
-  useEffect(() => {
-    return () => {
-      if (emoteTimerRef.current) clearTimeout(emoteTimerRef.current)
-      if (emoteDisplayTimerRef.current) clearTimeout(emoteDisplayTimerRef.current)
+  // ── Flip a disc ──────────────────────────────────────────────────────────
+  const handleFlip = useCallback(async (discId: string) => {
+    if (actionLockRef.current) return
+    actionLockRef.current = true
+    try {
+      const result = await flipDisc(discId)
+      setFlipResult({ type: result, discId })
+      if (result === 'bomb') {
+        playBombFlip()
+      } else {
+        playFlowerFlip()
+      }
+    } finally {
+      actionLockRef.current = false
     }
-  }, [])
+  }, [flipDisc])
 
-  // Auto-hide emote bubbles after 3 seconds
-  const lastEmoteFromState = gameState?.last_emote ?? null
-  useEffect(() => {
-    if (!lastEmoteFromState) { setDisplayedEmote(null); return }
-    setDisplayedEmote(lastEmoteFromState)
-    if (emoteDisplayTimerRef.current) clearTimeout(emoteDisplayTimerRef.current)
-    emoteDisplayTimerRef.current = setTimeout(() => setDisplayedEmote(null), 3000)
-  }, [lastEmoteFromState?.sentAt])
-
-  const myRoundDiscs = publicDiscs.filter(d => d.player_id === myPlayer?.id && d.round_number === round)
-  const myUnflipped = myRoundDiscs.filter(d => !d.is_flipped)
-  const isMyTurnToFlip = isMyTurn && phase === 'flip' && isChallenger
-
-  function getGuideText() {
-    if (!isMyTurn) {
-      const current = players.find(p => p.id === gameState?.current_player_id)
-      return `${current?.player_name ?? '...'} の手番`
+  // ── Advance after flip result ─────────────────────────────────────────────
+  const handleAdvance = useCallback(async (outcome: 'win' | 'loss', bombOwnerId?: string) => {
+    setFlipResult(null)
+    actionLockRef.current = true
+    try {
+      if (outcome === 'win') { playSuccess() }
+      else { playFailure() }
+      await advanceAfterChallenge(outcome, bombOwnerId)
+    } finally {
+      actionLockRef.current = false
+      setIsActing(false)
     }
-    if (phase === 'place') return 'りんごか爆弾を置いてください'
-    if (phase === 'bid') return highestBid === 0 ? '入札を開始' : '入札かパス'
-    if (phase === 'flip') return myUnflipped.length > 0 ? '自分のスタックから先にめくる' : 'スタックをめくる'
-    return ''
-  }
+  }, [advanceAfterChallenge])
 
-  const canFoldNow = myPlayer && gameState ? canFold(myPlayer, gameState) : false
+  if (!gameState || !room) return null
 
-  if (!gameState || !myPlayer) return null
+  const winner = getWinner(players)
+
+  const activePlayers = players.filter(p => !p.is_eliminated)
+  const isFlipPhase = gameState.phase === 'flip'
+  const isBidPhase = gameState.phase === 'bid'
+  const isPlacePhase = gameState.phase === 'place'
+  const challenger = isFlipPhase
+    ? players.find(p => p.id === gameState.highest_bidder_id) ?? null
+    : null
+  const isMyFlip = isFlipPhase && gameState.highest_bidder_id === myPlayer?.id
+
+  const totalInPlay = getTotalDiscsInPlay(publicDiscs, gameState.round_number)
+  const flippedCount = publicDiscs.filter(d => d.is_flipped && d.round_number === round).length
+  const remaining = gameState.highest_bid - flippedCount
+
+  const myHandCount = (myPlayer?.flower_count ?? 0) + (myPlayer?.bomb_count ?? 0)
+  const canPlaceMore = isPlacePhase && isMyTurn && myHandCount > 0 && !isActing
+
+  const foldable = canFold(gameState, players)
 
   return (
-    <div
-      className="h-full flex flex-col overflow-hidden bg-gray-950 text-white"
-      style={{ fontFamily: 'Crimson Text, serif' }}
-    >
-      <ActionLog entries={log} />
-      <TimeoutToast show={showTimeoutToast} />
+    <div className="h-full flex flex-col select-none" style={{ background: 'radial-gradient(ellipse at 50% 0%, #1a0a2e 0%, #030712 70%)' }}>
 
-      {/* ── Header ── */}
-      <header className="flex-shrink-0 bg-gray-900/90 backdrop-blur border-b border-white/10 px-3 py-2 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setShowExitConfirm(true)}
-            className="text-white/40 hover:text-white/70 transition-colors text-xs px-1.5 py-1 rounded"
-            style={{ fontFamily: 'Crimson Text, serif' }}
-          >
-            ✕
-          </button>
-          <span className="text-white/40 text-xs">R{round}</span>
-          <span className="text-amber-400 text-sm font-semibold" style={{ fontFamily: 'Cinzel, serif' }}>
-            {PHASE_LABEL[phase]}
+      {/* ── Top bar ────────────────────────────────────────────────────── */}
+      <div className="flex items-center justify-between px-4 pt-safe pt-3 pb-2">
+        <span className="text-white/40 text-xs" style={{ fontFamily: 'Cinzel, serif' }}>
+          Round {round} · {PHASE_LABEL[gameState.phase] ?? gameState.phase}
+        </span>
+        {isFlipPhase && challenger && (
+          <span className="text-amber-400 text-xs font-semibold" style={{ fontFamily: 'Cinzel, serif' }}>
+            {challenger.player_name} が {gameState.highest_bid} 枚に挑戦中
           </span>
-        </div>
-        <div className="text-xs text-white/30 tracking-widest" style={{ fontFamily: 'Cinzel, serif' }}>
-          {room?.room_code}
-        </div>
-        <div>
-          {highestBid > 0 && (
-            <span className="text-amber-400 font-bold text-sm" style={{ fontFamily: 'Cinzel, serif' }}>
-              最高 {highestBid}枚
-            </span>
-          )}
-        </div>
-      </header>
+        )}
+        {isFlipPhase && remaining > 0 && (
+          <span className="text-white/50 text-xs">
+            あと {remaining} 枚
+          </span>
+        )}
+      </div>
 
-      {/* ── Center: guide text + opponents ── */}
-      <div className="flex-1 flex flex-col justify-center px-2 gap-3 min-h-0">
-        {/* Guide text */}
-        <AnimatePresence mode="wait">
-          <motion.p
-            key={getGuideText()}
-            className="text-white/50 text-center text-sm italic"
-            initial={{ opacity: 0, y: 3 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -3 }}
-          >
-            {getGuideText()}
-          </motion.p>
-        </AnimatePresence>
-
-        {/* Opponents */}
-        <div className="grid grid-cols-2 gap-1.5">
-          {otherPlayers.map(p => (
+      {/* ── Player grid ────────────────────────────────────────────────── */}
+      <div className="flex-1 overflow-auto px-3 pb-2">
+        <div className="grid gap-2"
+          style={{ gridTemplateColumns: `repeat(${Math.min(activePlayers.length, 3)}, 1fr)` }}
+        >
+          {players.map(player => (
             <PlayerCard
-              key={p.id}
-              player={p}
-              gameState={gameState}
-              discs={publicDiscs.filter(d => d.player_id === p.id && d.round_number === round)}
-              isCurrentTurn={gameState.current_player_id === p.id}
-              isMyTurnToFlip={isMyTurnToFlip && myUnflipped.length === 0}
-              challengerId={challengerId}
+              key={player.id}
+              player={player}
+              isCurrentTurn={gameState.current_player_id === player.id}
+              isMe={player.id === myPlayer?.id}
+              isFolded={_foldedPlayerIds.includes(player.id)}
+              discs={publicDiscs.filter(d => d.player_id === player.id && d.round_number === round)}
+              canFlip={
+                isMyFlip &&
+                !actionLockRef.current &&
+                player.id !== myPlayer?.id
+                  ? publicDiscs.some(d =>
+                      d.player_id === player.id &&
+                      d.round_number === round &&
+                      !d.is_flipped
+                    )
+                  : false
+              }
+              canFlipOwn={
+                isMyFlip &&
+                !actionLockRef.current &&
+                player.id === myPlayer?.id
+                  ? publicDiscs.some(d =>
+                      d.player_id === player.id &&
+                      d.round_number === round &&
+                      !d.is_flipped
+                    )
+                  : false
+              }
+              flipResult={flipResult?.discId && publicDiscs.find(d => d.id === flipResult.discId)?.player_id === player.id ? flipResult : null}
               onFlip={handleFlip}
-              compact
-              hasFolded={_foldedPlayerIds.includes(p.id)}
-              permCards={_permCards[p.id]}
-              emote={displayedEmote?.playerId === p.id ? { type: displayedEmote.type as import('../types/game').EmoteType, sentAt: displayedEmote.sentAt } : null}
+              onAdvance={handleAdvance}
+              gameState={gameState}
+              myPlayer={myPlayer}
+              isCpuGame={isCpuGame}
+              triggerAutoAction={triggerAutoAction}
             />
           ))}
         </div>
       </div>
 
-      {/* ── My area ── */}
-      <div
-        className="flex-shrink-0 bg-gray-900/70 backdrop-blur border-t border-white/10 px-3 pt-2 space-y-2"
-        style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
-      >
-        {/* My card + hand */}
-        <div className="flex items-center gap-3">
-          <PlayerCard
-            player={myPlayer}
-            gameState={gameState}
-            discs={myDiscs.filter(d => d.round_number === round)}
-            isCurrentTurn={isMyTurn}
-            isMyTurnToFlip={isMyTurnToFlip}
-            challengerId={challengerId}
-            onFlip={handleFlip}
-            emote={displayedEmote?.playerId === myPlayer.id ? { type: displayedEmote.type as import('../types/game').EmoteType, sentAt: displayedEmote.sentAt } : null}
-          />
-          <div className="flex-1">
-            <p className="text-white/40 text-xs mb-1">手札</p>
-            <div className="flex gap-1 flex-wrap">
-              {Array.from({ length: myPlayer.flower_count }).map((_, i) => (
-                <span key={`f-${i}`} className="text-xl leading-none">🍎</span>
-              ))}
-              {Array.from({ length: myPlayer.bomb_count }).map((_, i) => (
-                <span key={`b-${i}`} className="text-xl leading-none">💣</span>
-              ))}
-            </div>
-            <p className="text-white/30 text-xs mt-0.5">
-              {myPlayer.flower_count + myPlayer.bomb_count}枚残り
-            </p>
-          </div>
-          {/* Timer — shown during place/bid phase when it's my turn */}
-          {isMyTurn && phase !== 'flip' && (
-            <TurnTimer timeLeft={timeLeft} />
-          )}
-        </div>
-
-        {/* Emote buttons — shown 3s after placing, only while waiting for others */}
-        <AnimatePresence>
-          {showEmoteButtons && phase === 'place' && !isMyTurn && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="overflow-hidden"
-            >
-              <p className="text-white/40 text-xs text-center mb-1.5" style={{ fontFamily: 'Crimson Text, serif' }}>
-                💬 エモートを送る
-              </p>
-              <div className="flex gap-2">
+      {/* ── My hand & actions ──────────────────────────────────────────── */}
+      {myPlayer && !myPlayer.is_eliminated && (
+        <div className="px-4 pb-safe pb-4 space-y-3">
+          {/* Place phase — show hand */}
+          {canPlaceMore && (
+            <div className="flex gap-3 justify-center">
+              {myPlayer.flower_count > 0 && (
                 <motion.button
-                  onClick={async () => {
-                    setShowEmoteButtons(false)
-                    await sendEmote('BOMB')
-                  }}
-                  className="flex-1 py-2 rounded-xl bg-red-900/50 border border-red-500/30 flex items-center justify-center gap-1.5"
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <span className="text-xl leading-none">💣</span>
-                  <span className="text-red-300 text-xs" style={{ fontFamily: 'Crimson Text, serif' }}>爆弾だ！</span>
-                </motion.button>
-                <motion.button
-                  onClick={async () => {
-                    setShowEmoteButtons(false)
-                    await sendEmote('FLOWER')
-                  }}
-                  className="flex-1 py-2 rounded-xl bg-emerald-900/50 border border-emerald-500/30 flex items-center justify-center gap-1.5"
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <span className="text-xl leading-none">🍎</span>
-                  <span className="text-emerald-300 text-xs" style={{ fontFamily: 'Crimson Text, serif' }}>りんごだ！</span>
-                </motion.button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Action buttons */}
-        <AnimatePresence mode="wait">
-          {isMyTurn && (
-            <motion.div
-              key={phase}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 8 }}
-              className="space-y-1.5"
-            >
-              {phase === 'place' && (
-                <div className="flex gap-2">
-                  <motion.button
-                    onClick={handlePlaceFlower}
-                    disabled={isLoading || isActing || myPlayer.flower_count === 0}
-                    className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-emerald-800 to-emerald-600 text-white font-bold disabled:opacity-40 text-sm"
-                    whileTap={!isActing ? { scale: 0.96 } : {}}
-                    style={{ fontFamily: 'Cinzel, serif', touchAction: 'manipulation', pointerEvents: (isLoading || isActing) ? 'none' : 'auto' }}
-                  >
-                    🍎を置く
-                  </motion.button>
-                  <motion.button
-                    onClick={handlePlaceBomb}
-                    disabled={isLoading || isActing || myPlayer.bomb_count === 0}
-                    className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-gray-700 to-gray-600 text-white font-bold disabled:opacity-40 text-sm"
-                    whileTap={!isActing ? { scale: 0.96 } : {}}
-                    style={{ fontFamily: 'Cinzel, serif', touchAction: 'manipulation', pointerEvents: (isLoading || isActing) ? 'none' : 'auto' }}
-                  >
-                    💣 爆弾
-                  </motion.button>
-                </div>
-              )}
-
-              {(phase === 'bid' || (phase === 'place' && myRoundDiscs.length > 0 && allPlaced))
-                && !iHaveFolded && (
-                <BidController
-                  currentHighest={highestBid}
-                  totalDiscs={totalDiscs}
-                  onBid={handleBid}
-                  onFold={handleFold}
-                  canFold={canFoldNow}
-                  isLoading={isLoading || isActing}
-                />
-              )}
-
-              {phase === 'flip' && myUnflipped.length > 0 && (
-                <div className="text-center text-amber-400/80 text-xs py-1.5 border border-amber-500/20 rounded-xl bg-amber-950/30">
-                  ⬆ 自分のスタックをタップしてめくる
-                </div>
-              )}
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-
-      {/* ── Exit confirmation dialog ── */}
-      <AnimatePresence>
-        {showExitConfirm && (
-          <motion.div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-6"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <motion.div
-              className="bg-gray-900 border border-white/10 rounded-2xl p-6 w-full max-w-xs text-center shadow-2xl"
-              initial={{ scale: 0.85, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.85, opacity: 0 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 24 }}
-            >
-              <div className="text-4xl mb-3">🚪</div>
-              <h2 className="text-lg font-bold text-white mb-2" style={{ fontFamily: 'Cinzel, serif' }}>
-                ゲームを終了しますか？
-              </h2>
-              <p className="text-white/50 text-sm mb-5" style={{ fontFamily: 'Crimson Text, serif' }}>
-                進行中のゲームが終了します
-              </p>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setShowExitConfirm(false)}
-                  className="flex-1 py-3 rounded-xl border border-white/20 text-white/70 text-sm"
-                  style={{ fontFamily: 'Crimson Text, serif' }}
-                >
-                  キャンセル
-                </button>
-                <button
-                  onClick={() => { resetGame(); onGameEnd?.() }}
-                  className="flex-1 py-3 rounded-xl bg-red-900/60 border border-red-500/40 text-red-300 text-sm font-bold"
+                  onClick={() => handlePlace('flower')}
+                  className="flex-1 max-w-[160px] py-3 rounded-2xl bg-green-800/50 border border-green-500/40 text-white font-semibold text-sm"
+                  whileTap={{ scale: 0.96 }}
                   style={{ fontFamily: 'Cinzel, serif' }}
                 >
-                  終了する
-                </button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+                  🍎 りんご ({myPlayer.flower_count})
+                </motion.button>
+              )}
+              {myPlayer.bomb_count > 0 && (
+                <motion.button
+                  onClick={() => handlePlace('bomb')}
+                  className="flex-1 max-w-[160px] py-3 rounded-2xl bg-red-900/50 border border-red-500/40 text-white font-semibold text-sm"
+                  whileTap={{ scale: 0.96 }}
+                  style={{ fontFamily: 'Cinzel, serif' }}
+                >
+                  💣 爆弾 ({myPlayer.bomb_count})
+                </motion.button>
+              )}
+            </div>
+          )}
 
+          {/* Bid phase */}
+          {isBidPhase && isMyTurn && !isActing && (
+            <BidController
+              gameState={gameState}
+              players={players}
+              publicDiscs={publicDiscs}
+              foldable={foldable}
+              onBid={handleBid}
+              onFold={handleFold}
+            />
+          )}
+
+          {/* Waiting indicator */}
+          {!isMyTurn && !isFlipPhase && !winner && (
+            <div className="text-center text-white/30 text-sm py-2" style={{ fontFamily: 'Crimson Text, serif' }}>
+              {players.find(p => p.id === gameState.current_player_id)?.player_name ?? '？'} のターン
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Action log ─────────────────────────────────────────────────── */}
+      <ActionLog logs={logs} />
+
+      {/* ── Win/loss result modal ───────────────────────────────────────── */}
       <ResultModal
-        show={modal.show}
-        type={modal.type}
-        challenger={modal.challenger}
-        bombOwner={modal.bombOwner}
-        lostDisc={modal.lostDisc}
-        onClose={async () => {
-          const type = modal.type
-          const bombOwnerId = modal.bombOwner?.id
-          actionLockRef.current = false
-          setIsActing(false)
-          setModal({ show: false, type: null })
-          if (type === 'win' || type === 'lose') {
-            resetGame()
-            onGameEnd?.()
-          } else if (type === 'success') {
-            await advanceAfterChallenge('win')
-          } else if (type === 'bomb') {
-            await advanceAfterChallenge('loss', bombOwnerId)
-          }
-        }}
+        show={showResult !== null}
+        outcome={showResult?.outcome ?? 'win'}
+        onClose={() => setShowResult(null)}
       />
     </div>
   )
