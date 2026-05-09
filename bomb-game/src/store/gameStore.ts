@@ -80,6 +80,8 @@ export interface StoreState {
 
 // Mutex to prevent concurrent online CPU turn processing
 let _onlineCpuProcessing = false
+// When realtime fires while _onlineCpuProcessing is true, store the pending trigger here
+let _pendingCpuRetrigger: { player: Player; gs: GameState } | null = null
 // Mutex to prevent concurrent local CPU turn processing
 let _cpuRunning = false
 // Mutex to prevent concurrent addCpuPlayer calls (module-level for synchronous block)
@@ -705,9 +707,22 @@ export const useGameStore = create<StoreState>()((set, get) => {
       }
     } finally {
       _onlineCpuProcessing = false
-      // Realtime subscription already triggers the next CPU turn when game_states changes.
-      // Re-triggering here would cause double-processing because local state still shows
-      // the just-finished CPU's id before the Realtime event arrives.
+      // If the realtime event arrived while we were processing, it was blocked by
+      // _onlineCpuProcessing. Re-fire it now so the next CPU turn isn't dropped.
+      const retrigger = _pendingCpuRetrigger
+      _pendingCpuRetrigger = null
+      if (retrigger) {
+        const freshGs = get().gameState
+        const freshPlayer = get().players.find(p => p.id === retrigger.player.id)
+        if (
+          freshGs &&
+          freshPlayer &&
+          freshGs.current_player_id === retrigger.gs.current_player_id &&
+          freshGs.round_number === retrigger.gs.round_number
+        ) {
+          processOnlineCpuTurn(freshPlayer, freshGs)
+        }
+      }
     }
   }
 
@@ -1371,7 +1386,12 @@ export const useGameStore = create<StoreState>()((set, get) => {
             if (!s.isCpuGame && s.room?.host_id === s.sessionId) {
               const cp = s.players.find(p => p.id === newGs.current_player_id)
               if (cp?.is_cpu) {
-                processOnlineCpuTurn(cp, newGs)
+                if (_onlineCpuProcessing) {
+                  // Still finishing the previous turn — store so finally can re-fire
+                  _pendingCpuRetrigger = { player: cp, gs: newGs }
+                } else {
+                  processOnlineCpuTurn(cp, newGs)
+                }
               } else if (cp && !cp.is_eliminated && newGs.phase === 'place') {
                 const check = () => {
                   const s2 = get()
