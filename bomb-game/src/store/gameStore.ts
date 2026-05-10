@@ -944,7 +944,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
 
     // ── placeDisc ─────────────────────────────────────────────────────────────
     placeDisc: async (discType) => {
-      const { room, gameState, players, sessionId, isCpuGame, myDiscs, publicDiscs, _foldedPlayerIds } = get()
+      const { room, gameState, players, sessionId, isCpuGame, myDiscs, publicDiscs } = get()
       const myPlayer = players.find(p => p.session_id === sessionId)
       if (!myPlayer || !gameState || !room) return
 
@@ -1048,7 +1048,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
             await supabase.from('game_states').update({
               current_player_id: next.id, turn_started_at: ts(), updated_at: ts(),
             }).eq('id', gameState.id)
-            set({ isLoading: false, _foldedPlayerIds })
+            set({ isLoading: false, _foldedPlayerIds: [] })
           }
         }
       } catch (e) {
@@ -1479,13 +1479,17 @@ export const useGameStore = create<StoreState>()((set, get) => {
                     set(s => {
                       let permUpdate: Partial<StoreState> = {}
                       if (Object.keys(s._permCards).length === 0) {
-                        const counts: Record<string, number> = {}
-                        for (const d of (placed ?? [])) counts[d.player_id] = (counts[d.player_id] ?? 0) + 1
+                        const counts: Record<string, { flowers: number; bombs: number }> = {}
+                        for (const d of (placed ?? [])) {
+                          if (!counts[d.player_id]) counts[d.player_id] = { flowers: 0, bombs: 0 }
+                          if (d.disc_type === 'bomb') counts[d.player_id].bombs++
+                          else counts[d.player_id].flowers++
+                        }
                         const perm: Record<string, { flowers: number; bombs: number }> = {}
                         for (const p of s.players) {
                           if (!p.is_eliminated) {
-                            const total = p.flower_count + p.bomb_count + (counts[p.id] ?? 0)
-                            perm[p.id] = { flowers: total, bombs: 0 }
+                            const c = counts[p.id] ?? { flowers: 0, bombs: 0 }
+                            perm[p.id] = { flowers: p.flower_count + c.flowers, bombs: p.bomb_count + c.bombs }
                           }
                         }
                         permUpdate = { _permCards: perm }
