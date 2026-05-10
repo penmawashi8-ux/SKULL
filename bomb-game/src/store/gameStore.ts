@@ -145,30 +145,8 @@ export const useGameStore = create<StoreState>()((set, get) => {
       const hasHand = currentPlayer.flower_count + currentPlayer.bomb_count > 0
       const placed = allPlacedAtLeastOnce(players, publicDiscs, round)
 
-      // If no hand left: if all have placed ≥1, this CPU must bid minimum; else skip turn
+      // If no hand left: skip turn so the human can bid on their own turn
       if (!hasHand) {
-        if (placed) {
-          const totalDiscs = publicDiscs.filter(d => d.round_number === round).length
-          const minBid = gameState.highest_bid + 1
-          if (minBid <= totalDiscs) {
-            const next = getNextActivePlayer(players, currentPlayer.id, _foldedPlayerIds)
-            set(prev => ({
-              gameState: {
-                ...prev.gameState!,
-                phase: 'bid',
-                highest_bid: minBid,
-                highest_bidder_id: currentPlayer.id,
-                current_player_id: next?.id ?? null,
-                turn_started_at: ts(),
-                updated_at: ts(),
-              },
-              _foldedPlayerIds: [],
-              _cpuLog: { id: crypto.randomUUID(), message: `${currentPlayer.player_name} が ${minBid} 枚と宣言`, type: 'bid' },
-            }))
-            await _runCpuLoop()
-            return
-          }
-        }
         const next = getNextActivePlayer(players, currentPlayer.id)
         set(prev => ({
           gameState: { ...prev.gameState!, current_player_id: next?.id ?? null, turn_started_at: ts(), updated_at: ts() },
@@ -471,19 +449,6 @@ export const useGameStore = create<StoreState>()((set, get) => {
         const placed = allPlacedAtLeastOnce(players, publicDiscs, round)
 
         if (!hasHand) {
-          if (placed) {
-            const totalDiscs = publicDiscs.filter(d => d.round_number === round).length
-            const minBid = gs2.highest_bid + 1
-            if (minBid <= totalDiscs) {
-              const nextBidder = getNextActivePlayer(players, cpuPlayer.id, _foldedPlayerIds)
-              await supabase.from('game_states').update({
-                phase: 'bid', highest_bid: minBid, highest_bidder_id: cpuPlayer.id,
-                current_player_id: nextBidder?.id ?? cpuPlayer.id, turn_started_at: ts(), updated_at: ts(),
-              }).eq('id', gs2.id)
-              set({ _foldedPlayerIds: [], _cpuLog: { id: crypto.randomUUID(), message: `${cpuPlayer.player_name} が ${minBid} 枚と宣言`, type: 'bid' } })
-              return
-            }
-          }
           const next = getNextActivePlayer(players, cpuPlayer.id)
           await supabase.from('game_states').update({ current_player_id: next?.id ?? null, turn_started_at: ts(), updated_at: ts() }).eq('id', gs2.id)
           return
