@@ -6,10 +6,10 @@ import { PlayerCard } from './PlayerCard'
 import { BidController } from './BidController'
 import { ActionLog } from './ActionLog'
 import { ResultModal } from './ResultModal'
-import { canFold, getTotalDiscsInPlay, getWinner } from '../lib/gameEngine'
-import { playButtonPress, playFlowerFlip, playBombFlip, playCardPlace, playSuccess, playFailure, playBid, playFold } from '../lib/sounds'
+import { canFold, getWinner } from '../lib/gameEngine'
+import { playFlowerFlip, playBombFlip, playCardPlace, playSuccess, playFailure, playBid, playFold } from '../lib/sounds'
 import type { LogEntry } from './ActionLog'
-import type { Player, PlacedDisc } from '../types/game'
+import type { Player } from '../types/game'
 
 const PHASE_LABEL: Record<string, string> = {
   place: '配置',
@@ -19,27 +19,28 @@ const PHASE_LABEL: Record<string, string> = {
 
 const MAX_LOG = 12
 
-type ActionLockState = boolean
-
-export function GameBoard() {
+export function GameBoard(_props: { onGameEnd?: () => void } = {}) {
   const {
-    room, players, gameState, myDiscs, publicDiscs,
-    sessionId, isCpuGame, _foldedPlayerIds,
+    room, players, gameState, publicDiscs,
+    sessionId, isCpuGame, _foldedPlayerIds, _permCards,
     placeDisc, placeBid, fold, flipDisc, advanceAfterChallenge,
-    _cpuLog,
+    _cpuLog, resetGame,
   } = useGameStore()
 
   const myPlayer = players.find(p => p.session_id === sessionId) ?? null
   const [logs, setLogs] = useState<LogEntry[]>([])
   const [isActing, setIsActing] = useState(false)
-  const [flipResult, setFlipResult] = useState<{ type: 'flower' | 'bomb'; discId: string } | null>(null)
-  const [showResult, setShowResult] = useState<{ outcome: 'win' | 'loss'; bombOwnerId?: string } | null>(null)
-  const actionLockRef = useRef<ActionLockState>(false)
+  const [showResult, setShowResult] = useState<{
+    type: 'success' | 'bomb' | 'win' | 'lose'
+    challengerPlayer?: Player
+    bombOwnerPlayer?: Player
+  } | null>(null)
+  const actionLockRef = useRef<boolean>(false)
   const pendingOnlineTurnRef = useRef<string | null>(null)
   const prevCpuLogRef = useRef<string | null>(null)
 
   const addLog = useCallback((message: string, type: LogEntry['type']) => {
-    const entry: LogEntry = { id: crypto.randomUUID(), message, type }
+    const entry: LogEntry = { id: crypto.randomUUID(), message, type, timestamp: Date.now() }
     setLogs(prev => [entry, ...prev].slice(0, MAX_LOG))
   }, [])
 
@@ -76,9 +77,7 @@ export function GameBoard() {
   const isMyTurn = gameState?.current_player_id === myPlayer?.id
   const round = gameState?.round_number ?? 1
 
-  const myStackCount = publicDiscs.filter(
-    d => d.player_id === myPlayer?.id && d.round_number === round,
-  ).length
+  const myHandCount = (myPlayer?.flower_count ?? 0) + (myPlayer?.bomb_count ?? 0)
 
   // ── Place disc ───────────────────────────────────────────────────────────
   const handlePlace = useCallback(async (type: 'flower' | 'bomb') => {
@@ -101,7 +100,7 @@ export function GameBoard() {
         pendingOnlineTurnRef.current = turnKey
       }
     }
-  }, [placeDisc, myPlayer])
+  }, [placeDisc, myPlayer, addLog])
 
   const handleBid = useCallback(async (amount: number) => {
     if (actionLockRef.current) return
@@ -123,7 +122,7 @@ export function GameBoard() {
         pendingOnlineTurnRef.current = turnKey
       }
     }
-  }, [placeBid, myPlayer])
+  }, [placeBid, myPlayer, addLog])
 
   const handleFold = useCallback(async () => {
     if (actionLockRef.current) return
@@ -145,32 +144,7 @@ export function GameBoard() {
         pendingOnlineTurnRef.current = turnKey
       }
     }
-  }, [fold, myPlayer])
-
-  // ── Auto-action on timeout ────────────────────────────────────────────────
-  const triggerAutoAction = useCallback(async () => {
-    // Always read fresh state to guard against stale-closure / Supabase race conditions.
-    const { gameState: gs, players: ps, sessionId: sid, publicDiscs: pd } = useGameStore.getState()
-    const freshMe = ps.find(p => p.session_id === sid)
-    if (!freshMe || !gs) return
-    // Abort if it's no longer actually my turn (race condition guard)
-    if (gs.current_player_id !== freshMe.id) return
-    if (gs.phase === 'flip') return
-
-    if (gs.phase === 'place') {
-      const hasFlower = freshMe.flower_count > 0
-      await handlePlace(hasFlower ? 'flower' : 'bomb')
-    } else if (gs.phase === 'bid') {
-      const totalDiscs = pd.filter(d => d.round_number === gs.round_number).length
-      const minBid = gs.highest_bid + 1
-      const canBidMore = minBid <= totalDiscs
-      if (!canBidMore || canFold(gs, ps)) {
-        await handleFold()
-      } else {
-        await handleBid(minBid)
-      }
-    }
-  }, [handlePlace, handleBid, handleFold])
+  }, [fold, myPlayer, addLog])
 
   // ── Flip a disc ──────────────────────────────────────────────────────────
   const handleFlip = useCallback(async (discId: string) => {
@@ -178,30 +152,47 @@ export function GameBoard() {
     actionLockRef.current = true
     try {
       const result = await flipDisc(discId)
-      setFlipResult({ type: result, discId })
       if (result === 'bomb') {
         playBombFlip()
+        const { publicDiscs: pd, players: ps } = useGameStore.getState()
+        const bombDisc = pd.find(d => d.id === discId)
+        const bombOwner = bombDisc ? ps.find(p => p.id === bombDisc.player_id) : undefined
+        addLog(`💣 ${myPlayer?.player_name} が爆弾を踏んだ！`, 'result')
+        setShowResult({ type: 'bomb', challengerPlayer: myPlayer ?? undefined, bombOwnerPlayer: bombOwner })
       } else {
         playFlowerFlip()
+        addLog(`🍎 ${myPlayer?.player_name} がカードをめくった`, 'flip')
+        const { gameState: freshGs } = useGameStore.getState()
+        if (freshGs && freshGs.flip_count >= freshGs.highest_bid) {
+          setShowResult({ type: 'success', challengerPlayer: myPlayer ?? undefined })
+        }
       }
     } finally {
       actionLockRef.current = false
     }
-  }, [flipDisc])
+  }, [flipDisc, myPlayer, addLog])
 
-  // ── Advance after flip result ─────────────────────────────────────────────
-  const handleAdvance = useCallback(async (outcome: 'win' | 'loss', bombOwnerId?: string) => {
-    setFlipResult(null)
+  // ── Advance after challenge result ────────────────────────────────────────
+  const handleAdvance = useCallback(async (outcome: 'win' | 'loss') => {
     actionLockRef.current = true
+    setIsActing(true)
     try {
       if (outcome === 'win') { playSuccess() }
       else { playFailure() }
-      await advanceAfterChallenge(outcome, bombOwnerId)
+      await advanceAfterChallenge(outcome)
+      const { players: freshPs } = useGameStore.getState()
+      const winner = getWinner(freshPs)
+      if (winner) {
+        const isMyWin = winner.id === myPlayer?.id
+        setShowResult({ type: isMyWin ? 'win' : 'lose', challengerPlayer: winner })
+      } else {
+        setShowResult(null)
+      }
     } finally {
       actionLockRef.current = false
       setIsActing(false)
     }
-  }, [advanceAfterChallenge])
+  }, [advanceAfterChallenge, myPlayer])
 
   if (!gameState || !room) return null
 
@@ -216,14 +207,12 @@ export function GameBoard() {
     : null
   const isMyFlip = isFlipPhase && gameState.highest_bidder_id === myPlayer?.id
 
-  const totalInPlay = getTotalDiscsInPlay(publicDiscs, gameState.round_number)
   const flippedCount = publicDiscs.filter(d => d.is_flipped && d.round_number === round).length
   const remaining = gameState.highest_bid - flippedCount
 
-  const myHandCount = (myPlayer?.flower_count ?? 0) + (myPlayer?.bomb_count ?? 0)
   const canPlaceMore = isPlacePhase && isMyTurn && myHandCount > 0 && !isActing
-
-  const foldable = canFold(gameState, players)
+  const foldable = myPlayer ? canFold(myPlayer, gameState) : false
+  const totalDiscs = publicDiscs.filter(d => d.round_number === round).length
 
   return (
     <div className="h-full flex flex-col select-none" style={{ background: 'radial-gradient(ellipse at 50% 0%, #1a0a2e 0%, #030712 70%)' }}>
@@ -254,39 +243,19 @@ export function GameBoard() {
             <PlayerCard
               key={player.id}
               player={player}
-              isCurrentTurn={gameState.current_player_id === player.id}
-              isMe={player.id === myPlayer?.id}
-              isFolded={_foldedPlayerIds.includes(player.id)}
-              discs={publicDiscs.filter(d => d.player_id === player.id && d.round_number === round)}
-              canFlip={
-                isMyFlip &&
-                !actionLockRef.current &&
-                player.id !== myPlayer?.id
-                  ? publicDiscs.some(d =>
-                      d.player_id === player.id &&
-                      d.round_number === round &&
-                      !d.is_flipped
-                    )
-                  : false
-              }
-              canFlipOwn={
-                isMyFlip &&
-                !actionLockRef.current &&
-                player.id === myPlayer?.id
-                  ? publicDiscs.some(d =>
-                      d.player_id === player.id &&
-                      d.round_number === round &&
-                      !d.is_flipped
-                    )
-                  : false
-              }
-              flipResult={flipResult?.discId && publicDiscs.find(d => d.id === flipResult.discId)?.player_id === player.id ? flipResult : null}
-              onFlip={handleFlip}
-              onAdvance={handleAdvance}
               gameState={gameState}
-              myPlayer={myPlayer}
-              isCpuGame={isCpuGame}
-              triggerAutoAction={triggerAutoAction}
+              isCurrentTurn={gameState.current_player_id === player.id}
+              isMyTurnToFlip={isMyFlip && !actionLockRef.current}
+              challengerId={gameState.highest_bidder_id ?? null}
+              hasFolded={_foldedPlayerIds.includes(player.id)}
+              discs={publicDiscs.filter(d => d.player_id === player.id && d.round_number === round)}
+              permCards={_permCards[player.id]}
+              emote={
+                gameState.last_emote?.playerId === player.id
+                  ? { type: gameState.last_emote.type, sentAt: gameState.last_emote.sentAt }
+                  : null
+              }
+              onFlip={handleFlip}
             />
           ))}
         </div>
@@ -324,10 +293,10 @@ export function GameBoard() {
           {/* Bid phase */}
           {isBidPhase && isMyTurn && !isActing && (
             <BidController
-              gameState={gameState}
-              players={players}
-              publicDiscs={publicDiscs}
-              foldable={foldable}
+              currentHighest={gameState.highest_bid}
+              totalDiscs={totalDiscs}
+              canFold={foldable}
+              isLoading={false}
               onBid={handleBid}
               onFold={handleFold}
             />
@@ -343,14 +312,55 @@ export function GameBoard() {
       )}
 
       {/* ── Action log ─────────────────────────────────────────────────── */}
-      <ActionLog logs={logs} />
+      <ActionLog entries={logs} />
 
-      {/* ── Win/loss result modal ───────────────────────────────────────── */}
+      {/* ── Result modal ───────────────────────────────────────────────── */}
       <ResultModal
         show={showResult !== null}
-        outcome={showResult?.outcome ?? 'win'}
-        onClose={() => setShowResult(null)}
+        type={showResult?.type ?? null}
+        challenger={showResult?.challengerPlayer}
+        bombOwner={showResult?.bombOwnerPlayer}
+        onClose={() => {
+          const type = showResult?.type
+          if (type === 'win' || type === 'lose') {
+            setShowResult(null)
+            resetGame()
+          } else if (type === 'success') {
+            setShowResult(null)
+            handleAdvance('win')
+          } else if (type === 'bomb') {
+            setShowResult(null)
+            handleAdvance('loss')
+          } else {
+            setShowResult(null)
+          }
+        }}
       />
+
+      {/* ── Winner overlay (CPU game) ───────────────────────────────────── */}
+      <AnimatePresence>
+        {winner && !showResult && (
+          <motion.div
+            className="fixed inset-0 z-40 flex items-center justify-center bg-black/60"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+          >
+            <div className="text-center px-8">
+              <div className="text-5xl mb-4">{winner.id === myPlayer?.id ? '👑' : '💔'}</div>
+              <p className="text-white text-2xl font-bold mb-2" style={{ fontFamily: 'Cinzel, serif' }}>
+                {winner.player_name} の勝利！
+              </p>
+              <motion.button
+                onClick={() => resetGame()}
+                className="mt-4 px-8 py-3 bg-white/10 border border-white/20 rounded-xl text-white"
+                whileTap={{ scale: 0.97 }}
+              >
+                ホームへ
+              </motion.button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

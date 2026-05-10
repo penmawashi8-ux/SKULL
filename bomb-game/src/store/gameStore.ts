@@ -1361,7 +1361,16 @@ export const useGameStore = create<StoreState>()((set, get) => {
             // ゲーム開始時 (prevGs === null) にもプレイヤー一覧を最新化する。
             // ロビーで追加されたCPUが realtime でまだ届いていない場合に
             // current_player_id が不明になりフリーズするのを防ぐ。
-            if (prevGs === null) {
+            // また、再接続直後など prevGs が存在しても current_player_id が
+            // ローカルの players に見つからない場合も再フェッチする。
+            const needsPlayerRefetch = (() => {
+              if (prevGs === null) return true
+              if (!newGs.current_player_id) return false
+              const freshState = get()
+              return freshState.players.length > 0 &&
+                !freshState.players.some(p => p.id === newGs.current_player_id)
+            })()
+            if (needsPlayerRefetch) {
               supabase.from('players').select().eq('room_id', roomId).then(({ data }) => {
                 if (!data || data.length === 0) return
                 if (get().room?.id !== roomId) return
@@ -1369,12 +1378,15 @@ export const useGameStore = create<StoreState>()((set, get) => {
                 for (const p of data) {
                   if (!p.is_eliminated) permCards[p.id] = { flowers: p.flower_count, bombs: p.bomb_count }
                 }
-                set({ players: data, _permCards: permCards })
+                set(s => ({
+                  players: data,
+                  _permCards: Object.keys(s._permCards).length === 0 ? permCards : s._permCards,
+                }))
                 // プレイヤー一覧更新後、ホストがCPUターンを再チェック
                 const s2 = get()
                 if (!s2.isCpuGame && s2.room?.host_id === s2.sessionId) {
                   const cp2 = data.find(p => p.id === newGs.current_player_id)
-                  if (cp2?.is_cpu) processOnlineCpuTurn(cp2, newGs)
+                  if (cp2?.is_cpu && !_onlineCpuProcessing) processOnlineCpuTurn(cp2, newGs)
                 }
               })
             }
@@ -1482,6 +1494,23 @@ export const useGameStore = create<StoreState>()((set, get) => {
                     })
                   })
               }
+              // 再接続後にゲーム状態が変わっていた場合に備えて最新を取得する
+              supabase.from('game_states').select().eq('room_id', roomId).maybeSingle().then(({ data: freshGs }) => {
+                if (!freshGs || get().room?.id !== roomId) return
+                const localGs = get().gameState
+                if (!localGs || freshGs.updated_at !== localGs.updated_at) {
+                  const roundChanged = localGs != null && freshGs.round_number !== localGs.round_number
+                  set({
+                    gameState: freshGs,
+                    ...(roundChanged ? { publicDiscs: [], myDiscs: [], _cpuDiscs: [], _foldedPlayerIds: [] } : {}),
+                  })
+                  const s2 = get()
+                  if (!s2.isCpuGame && s2.room?.host_id === s2.sessionId) {
+                    const cp = s2.players.find(p => p.id === freshGs.current_player_id)
+                    if (cp?.is_cpu && !_onlineCpuProcessing) processOnlineCpuTurn(cp, freshGs)
+                  }
+                }
+              })
             } else if (evt.status === 'CHANNEL_ERROR' || evt.status === 'TIMED_OUT') {
               set({ isReconnecting: true })
               reconnectTimer = setTimeout(() => {
