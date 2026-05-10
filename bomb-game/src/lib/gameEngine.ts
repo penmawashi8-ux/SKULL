@@ -55,6 +55,8 @@ export function canFold(player: Player, gameState: GameState): boolean {
   if (gameState.phase !== 'bid') return false
   if (gameState.current_player_id !== player.id) return false
   if (player.is_eliminated) return false
+  // 誰も入札していない場合はフォールド不可（チャレンジャー不在のフリーズを防ぐ）
+  if (gameState.highest_bidder_id === null) return false
   // 最高入札者はフォールドできない
   return gameState.highest_bidder_id !== player.id
 }
