@@ -106,7 +106,9 @@ export function GameBoard({ onGameEnd }: Props) {
   const emoteDisplayTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const myPlayer = players.find(p => p.session_id === sessionId)
-  const otherPlayers = players.filter(p => p.session_id !== sessionId)
+  const otherPlayers = players
+    .filter(p => p.session_id !== sessionId)
+    .sort((a, b) => a.seat_order - b.seat_order)
   const isMyTurn = gameState?.current_player_id === myPlayer?.id
   const phase = gameState?.phase ?? 'place'
   const round = gameState?.round_number ?? 1
@@ -202,11 +204,24 @@ export function GameBoard({ onGameEnd }: Props) {
     tick()
     timerIntervalRef.current = setInterval(tick, 1000)
 
+    // ページ復帰時にタイマーが止まっていたら再評価
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') {
+        autoActedRef.current = false
+        tick()
+        if (!timerIntervalRef.current) {
+          timerIntervalRef.current = setInterval(tick, 1000)
+        }
+      }
+    }
+    document.addEventListener('visibilitychange', onVisible)
+
     return () => {
       if (timerIntervalRef.current) {
         clearInterval(timerIntervalRef.current)
         timerIntervalRef.current = null
       }
+      document.removeEventListener('visibilitychange', onVisible)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gameState?.current_player_id, gameState?.turn_started_at, isMyTurn, phase, modal.show])
@@ -294,6 +309,7 @@ export function GameBoard({ onGameEnd }: Props) {
     } else if (phase === 'bid') {
       const canBidMore = highestBid < totalDiscs
       const canFoldNow = myPlayer && gameState ? canFold(myPlayer, gameState) : false
+      if (!canBidMore && !canFoldNow) return
       if (!canBidMore) { await handleFold(); return }
       if (canFoldNow && Math.random() < 0.5) await handleFold()
       else await handleBid(highestBid + 1)
