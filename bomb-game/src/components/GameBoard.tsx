@@ -349,7 +349,10 @@ export function GameBoard({ onGameEnd }: Props) {
     if (phase === 'place') {
       const canFlower = myPlayer.flower_count > 0
       const canBomb = myPlayer.bomb_count > 0
-      if (!canFlower && !canBomb) return
+      if (!canFlower && !canBomb) {
+        if (allPlaced) await handleBid(highestBid + 1)
+        return
+      }
       if (!canFlower) { await handlePlaceBomb(); return }
       if (!canBomb) { await handlePlaceFlower(); return }
       if (Math.random() < 0.5) await handlePlaceFlower()

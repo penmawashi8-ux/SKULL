@@ -26,17 +26,6 @@ function getNextActivePlayer(
 
 // Like getNextActivePlayer but also skips players with empty hands.
 // Returns null when no other active player has cards — caller should force bid.
-function getNextPlayerWithHand(players: Player[], currentPlayerId: string): Player | null {
-  const all = [...players]
-    .filter(p => !p.is_eliminated)
-    .sort((a, b) => a.seat_order - b.seat_order)
-  const idx = all.findIndex(p => p.id === currentPlayerId)
-  for (let i = 1; i < all.length; i++) {
-    const candidate = all[(idx + i) % all.length]
-    if (candidate.flower_count + candidate.bomb_count > 0) return candidate
-  }
-  return null
-}
 
 function ts(): string {
   return new Date().toISOString()
@@ -98,10 +87,6 @@ export const useGameStore = create<StoreState>()((set, get) => {
     return active.every(p => discs.some(d => d.player_id === p.id && d.round_number === round))
   }
 
-  function allHandsEmpty(players: Player[]): boolean {
-    return players.filter(p => !p.is_eliminated).every(p => p.flower_count + p.bomb_count === 0)
-  }
-
   // ── startNextRound (CPU game) ─────────────────────────────────────────────
   function startNextRound(
     startingPlayerId: string,
@@ -160,28 +145,33 @@ export const useGameStore = create<StoreState>()((set, get) => {
       const hasHand = currentPlayer.flower_count + currentPlayer.bomb_count > 0
       const placed = allPlacedAtLeastOnce(players, publicDiscs, round)
 
-      // If no hand left, skip to next player with cards (or force bid if none)
+      // If no hand left: if all have placed ≥1, this CPU must bid minimum; else skip turn
       if (!hasHand) {
-        const nextWithCards = getNextPlayerWithHand(players, currentPlayer.id)
-        if (nextWithCards === null) {
-          const firstActive = [...players]
-            .filter(p => !p.is_eliminated)
-            .sort((a, b) => a.seat_order - b.seat_order)[0]
-          set(prev => ({
-            gameState: {
-              ...prev.gameState!,
-              phase: 'bid',
-              current_player_id: firstActive?.id ?? null,
-              turn_started_at: ts(),
-              updated_at: ts(),
-            },
-            _foldedPlayerIds: [],
-          }))
-          await _runCpuLoop()
-          return
+        if (placed) {
+          const totalDiscs = publicDiscs.filter(d => d.round_number === round).length
+          const minBid = gameState.highest_bid + 1
+          if (minBid <= totalDiscs) {
+            const next = getNextActivePlayer(players, currentPlayer.id, _foldedPlayerIds)
+            set(prev => ({
+              gameState: {
+                ...prev.gameState!,
+                phase: 'bid',
+                highest_bid: minBid,
+                highest_bidder_id: currentPlayer.id,
+                current_player_id: next?.id ?? null,
+                turn_started_at: ts(),
+                updated_at: ts(),
+              },
+              _foldedPlayerIds: [],
+              _cpuLog: { id: crypto.randomUUID(), message: `${currentPlayer.player_name} が ${minBid} 枚と宣言`, type: 'bid' },
+            }))
+            await _runCpuLoop()
+            return
+          }
         }
+        const next = getNextActivePlayer(players, currentPlayer.id)
         set(prev => ({
-          gameState: { ...prev.gameState!, current_player_id: nextWithCards.id, turn_started_at: ts(), updated_at: ts() },
+          gameState: { ...prev.gameState!, current_player_id: next?.id ?? null, turn_started_at: ts(), updated_at: ts() },
         }))
         await _runCpuLoop()
         return
@@ -247,32 +237,10 @@ export const useGameStore = create<StoreState>()((set, get) => {
 
       const cpuPlaceLog = { id: crypto.randomUUID(), message: `${currentPlayer.player_name} がカードを置いた`, type: 'place' as const }
 
-      const nextWithCards = getNextPlayerWithHand(updatedPlayers, currentPlayer.id)
+      const next = getNextActivePlayer(updatedPlayers, currentPlayer.id)
       const cpuEmote = Math.random() < 0.4
         ? { playerId: currentPlayer.id, type: (Math.random() < 0.5 ? 'BOMB' : 'FLOWER') as EmoteType, sentAt: ts() }
         : null
-
-      if (nextWithCards === null) {
-        const firstActive = [...updatedPlayers]
-          .filter(p => !p.is_eliminated)
-          .sort((a, b) => a.seat_order - b.seat_order)[0]
-        set(prev => ({
-          players: updatedPlayers,
-          publicDiscs: [...prev.publicDiscs, maskedDisc],
-          _cpuDiscs: [...prev._cpuDiscs, realDisc],
-          gameState: {
-            ...prev.gameState!,
-            phase: 'bid',
-            current_player_id: firstActive?.id ?? null,
-            turn_started_at: ts(),
-            updated_at: ts(),
-          },
-          _foldedPlayerIds: [],
-          _cpuLog: cpuPlaceLog,
-        }))
-        await _runCpuLoop()
-        return
-      }
 
       set(prev => ({
         players: updatedPlayers,
@@ -280,7 +248,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
         _cpuDiscs: [...prev._cpuDiscs, realDisc],
         gameState: {
           ...prev.gameState!,
-          current_player_id: nextWithCards.id,
+          current_player_id: next?.id ?? null,
           turn_started_at: ts(),
           updated_at: ts(),
           ...(cpuEmote ? { last_emote: cpuEmote } : {}),
@@ -503,19 +471,21 @@ export const useGameStore = create<StoreState>()((set, get) => {
         const placed = allPlacedAtLeastOnce(players, publicDiscs, round)
 
         if (!hasHand) {
-          if (allHandsEmpty(players)) {
-            const first = [...players].filter(p => !p.is_eliminated).sort((a, b) => a.seat_order - b.seat_order)[0]
-            await supabase.from('game_states').update({ phase: 'bid', current_player_id: first?.id ?? null, turn_started_at: ts(), updated_at: ts() }).eq('id', gs2.id)
-            set({ _foldedPlayerIds: [] })
-          } else {
-            const next = getNextPlayerWithHand(players, cpuPlayer.id)
-            if (next === null) {
-              await supabase.from('game_states').update({ phase: 'bid', current_player_id: cpuPlayer.id, turn_started_at: ts(), updated_at: ts() }).eq('id', gs2.id)
-              set({ _foldedPlayerIds: [] })
-            } else {
-              await supabase.from('game_states').update({ current_player_id: next.id, turn_started_at: ts(), updated_at: ts() }).eq('id', gs2.id)
+          if (placed) {
+            const totalDiscs = publicDiscs.filter(d => d.round_number === round).length
+            const minBid = gs2.highest_bid + 1
+            if (minBid <= totalDiscs) {
+              const nextBidder = getNextActivePlayer(players, cpuPlayer.id, _foldedPlayerIds)
+              await supabase.from('game_states').update({
+                phase: 'bid', highest_bid: minBid, highest_bidder_id: cpuPlayer.id,
+                current_player_id: nextBidder?.id ?? cpuPlayer.id, turn_started_at: ts(), updated_at: ts(),
+              }).eq('id', gs2.id)
+              set({ _foldedPlayerIds: [], _cpuLog: { id: crypto.randomUUID(), message: `${cpuPlayer.player_name} が ${minBid} 枚と宣言`, type: 'bid' } })
+              return
             }
           }
+          const next = getNextActivePlayer(players, cpuPlayer.id)
+          await supabase.from('game_states').update({ current_player_id: next?.id ?? null, turn_started_at: ts(), updated_at: ts() }).eq('id', gs2.id)
           return
         }
 
@@ -559,19 +529,8 @@ export const useGameStore = create<StoreState>()((set, get) => {
           : null
 
         const updatedPlayers = players.map(p => p.id !== cpuPlayer.id ? p : { ...p, flower_count: newFlower, bomb_count: newBomb })
-        if (allHandsEmpty(updatedPlayers)) {
-          const nextBidder = getNextActivePlayer(updatedPlayers, cpuPlayer.id)
-          await supabase.from('game_states').update({ phase: 'bid', current_player_id: nextBidder?.id ?? cpuPlayer.id, turn_started_at: ts(), updated_at: ts(), ...(cpuEmote ? { last_emote: cpuEmote } : {}) }).eq('id', gs2.id)
-          set({ _foldedPlayerIds: [] })
-        } else {
-          const next = getNextPlayerWithHand(updatedPlayers, cpuPlayer.id)
-          if (next === null) {
-            await supabase.from('game_states').update({ phase: 'bid', current_player_id: cpuPlayer.id, turn_started_at: ts(), updated_at: ts(), ...(cpuEmote ? { last_emote: cpuEmote } : {}) }).eq('id', gs2.id)
-            set({ _foldedPlayerIds: [] })
-          } else {
-            await supabase.from('game_states').update({ current_player_id: next.id, turn_started_at: ts(), updated_at: ts(), ...(cpuEmote ? { last_emote: cpuEmote } : {}) }).eq('id', gs2.id)
-          }
-        }
+        const next = getNextActivePlayer(updatedPlayers, cpuPlayer.id)
+        await supabase.from('game_states').update({ current_player_id: next?.id ?? null, turn_started_at: ts(), updated_at: ts(), ...(cpuEmote ? { last_emote: cpuEmote } : {}) }).eq('id', gs2.id)
         return
       }
 
@@ -751,27 +710,28 @@ export const useGameStore = create<StoreState>()((set, get) => {
       const freshPlayer = freshPlayers.find(p => p.id === player.id)
       if (!freshPlayer || freshPlayer.flower_count + freshPlayer.bomb_count > 0) return
 
-      const active = freshPlayers.filter(p => !p.is_eliminated)
-      const allEmpty = active.every(p => p.flower_count + p.bomb_count === 0)
-      if (allEmpty) {
-        const first = [...active].sort((a, b) => a.seat_order - b.seat_order)[0]
-        await supabase.from('game_states').update({
-          phase: 'bid', current_player_id: first?.id ?? null, turn_started_at: ts(), updated_at: ts(),
-        }).eq('id', gs.id)
-        set({ _foldedPlayerIds: [] })
-      } else {
-        const next = getNextPlayerWithHand(freshPlayers, freshPlayer.id)
-        if (next === null) {
+      const { data: freshDiscs } = await supabase.from('placed_discs').select().eq('room_id', s.room!.id)
+      const placed = allPlacedAtLeastOnce(freshPlayers, freshDiscs ?? [], gs.round_number)
+
+      if (placed) {
+        const totalDiscs = (freshDiscs ?? []).filter(d => d.round_number === gs.round_number).length
+        const minBid = gs.highest_bid + 1
+        if (minBid <= totalDiscs) {
+          const { _foldedPlayerIds } = get()
+          const nextBidder = getNextActivePlayer(freshPlayers, freshPlayer.id, _foldedPlayerIds)
           await supabase.from('game_states').update({
-            phase: 'bid', current_player_id: freshPlayer.id, turn_started_at: ts(), updated_at: ts(),
+            phase: 'bid', highest_bid: minBid, highest_bidder_id: freshPlayer.id,
+            current_player_id: nextBidder?.id ?? freshPlayer.id, turn_started_at: ts(), updated_at: ts(),
           }).eq('id', gs.id)
           set({ _foldedPlayerIds: [] })
-        } else {
-          await supabase.from('game_states').update({
-            current_player_id: next.id, turn_started_at: ts(), updated_at: ts(),
-          }).eq('id', gs.id)
+          return
         }
       }
+
+      const next = getNextActivePlayer(freshPlayers, freshPlayer.id)
+      await supabase.from('game_states').update({
+        current_player_id: next?.id ?? null, turn_started_at: ts(), updated_at: ts(),
+      }).eq('id', gs.id)
     } finally {
       _onlineCpuProcessing = false
     }
@@ -973,33 +933,12 @@ export const useGameStore = create<StoreState>()((set, get) => {
         )
         const newPublicDiscs = [...publicDiscs, newDisc]
 
-        const nextWithCards = getNextPlayerWithHand(updatedPlayers, myPlayer.id)
-        if (nextWithCards === null) {
-          const firstActive = [...updatedPlayers]
-            .filter(p => !p.is_eliminated)
-            .sort((a, b) => a.seat_order - b.seat_order)[0]
-          set({
-            myDiscs: [...myDiscs, newDisc],
-            publicDiscs: newPublicDiscs,
-            players: updatedPlayers,
-            gameState: {
-              ...gameState,
-              phase: 'bid',
-              current_player_id: firstActive?.id ?? null,
-              turn_started_at: ts(),
-              updated_at: ts(),
-            },
-            _foldedPlayerIds: [],
-          })
-          await processCpuTurns()
-          return
-        }
-
+        const next = getNextActivePlayer(updatedPlayers, myPlayer.id)
         set({
           myDiscs: [...myDiscs, newDisc],
           publicDiscs: newPublicDiscs,
           players: updatedPlayers,
-          gameState: { ...gameState, current_player_id: nextWithCards.id, turn_started_at: ts(), updated_at: ts() },
+          gameState: { ...gameState, current_player_id: next?.id ?? null, turn_started_at: ts(), updated_at: ts() },
         })
         await processCpuTurns()
         return
@@ -1026,29 +965,11 @@ export const useGameStore = create<StoreState>()((set, get) => {
             bomb_count:   discType === 'bomb'   ? p.bomb_count   - 1 : p.bomb_count,
           },
         )
-        if (allHandsEmpty(updatedPlayers)) {
-          const nextBidder = getNextActivePlayer(updatedPlayers, myPlayer.id)
-          await supabase.from('game_states').update({
-            phase: 'bid',
-            current_player_id: nextBidder?.id ?? myPlayer.id,
-            turn_started_at: ts(),
-            updated_at: ts(),
-          }).eq('id', gameState.id)
-          set({ isLoading: false, _foldedPlayerIds: [] })
-        } else {
-          const next = getNextPlayerWithHand(updatedPlayers, myPlayer.id)
-          if (next === null) {
-            await supabase.from('game_states').update({
-              phase: 'bid', current_player_id: myPlayer.id, turn_started_at: ts(), updated_at: ts(),
-            }).eq('id', gameState.id)
-            set({ isLoading: false, _foldedPlayerIds: [] })
-          } else {
-            await supabase.from('game_states').update({
-              current_player_id: next.id, turn_started_at: ts(), updated_at: ts(),
-            }).eq('id', gameState.id)
-            set({ isLoading: false, _foldedPlayerIds: [] })
-          }
-        }
+        const next = getNextActivePlayer(updatedPlayers, myPlayer.id)
+        await supabase.from('game_states').update({
+          current_player_id: next?.id ?? null, turn_started_at: ts(), updated_at: ts(),
+        }).eq('id', gameState.id)
+        set({ isLoading: false, _foldedPlayerIds: [] })
       } catch (e) {
         set({ error: (e as any)?.message ?? String(e), isLoading: false })
       } finally {
