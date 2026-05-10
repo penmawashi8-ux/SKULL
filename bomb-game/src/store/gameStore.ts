@@ -127,10 +127,8 @@ export const useGameStore = create<StoreState>()((set, get) => {
     const { _permCards } = get()
     const resetPlayers = playersIn.map(p => {
       if (p.is_eliminated) return p
-      const perm = _permCards[p.id]
-      return perm
-        ? { ...p, flower_count: perm.flowers, bomb_count: perm.bombs }
-        : { ...p, flower_count: Math.min(3, p.flower_count + 3), bomb_count: Math.min(1, p.bomb_count + 1) }
+      const perm = _permCards[p.id] ?? { flowers: 3, bombs: 1 }
+      return { ...p, flower_count: Math.min(3, perm.flowers), bomb_count: Math.min(1, perm.bombs) }
     })
     set({
       gameState: newGs,
@@ -669,8 +667,8 @@ export const useGameStore = create<StoreState>()((set, get) => {
             const newRound = gs2.round_number + 1
             const resetPlayers = updatedPlayers.map(p => {
               if (p.is_eliminated) return p
-              const perm = updatedPerm[p.id]
-              return perm ? { ...p, flower_count: perm.flowers, bomb_count: perm.bombs } : p
+              const perm = updatedPerm[p.id] ?? { flowers: 3, bombs: 1 }
+              return { ...p, flower_count: Math.min(3, perm.flowers), bomb_count: Math.min(1, perm.bombs) }
             })
             await new Promise(r => setTimeout(r, 1500))
             await supabase.from('placed_discs').delete().eq('room_id', room.id).eq('round_number', gs2.round_number)
@@ -698,8 +696,8 @@ export const useGameStore = create<StoreState>()((set, get) => {
             const newRound = gs2.round_number + 1
             const resetPlayers = updatedPlayers.map(p => {
               if (p.is_eliminated) return p
-              const perm = freshS._permCards[p.id]
-              return perm ? { ...p, flower_count: perm.flowers, bomb_count: perm.bombs } : p
+              const perm = freshS._permCards[p.id] ?? { flowers: 3, bombs: 1 }
+              return { ...p, flower_count: Math.min(3, perm.flowers), bomb_count: Math.min(1, perm.bombs) }
             })
             await new Promise(r => setTimeout(r, 1500))
             await supabase.from('placed_discs').delete().eq('room_id', room.id).eq('round_number', gs2.round_number)
