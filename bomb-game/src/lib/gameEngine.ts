@@ -61,47 +61,6 @@ export function canFold(player: Player, gameState: GameState): boolean {
   return gameState.highest_bidder_id !== player.id
 }
 
-export function resolveChallenge(
-  challenger: Player,
-  discs: PlacedDisc[],
-  players: Player[],
-  bid: number
-): { success: boolean; hitBomb: boolean; bombOwner?: Player } {
-  // めくる順: チャレンジャー自身の積みから先にめくり、次に他プレイヤーを任意順でめくる
-  const myDiscs = discs
-    .filter((d) => d.player_id === challenger.id && !d.is_flipped)
-    .sort((a, b) => b.position - a.position)
-
-  const othersDiscs = discs
-    .filter((d) => d.player_id !== challenger.id && !d.is_flipped)
-    .sort((a, b) => b.position - a.position)
-
-  const flipOrder = [...myDiscs, ...othersDiscs]
-
-  let flipped = 0
-  for (const disc of flipOrder) {
-    if (disc.disc_type === 'bomb') {
-      const bombOwner = players.find((p) => p.id === disc.player_id)
-      return { success: false, hitBomb: true, bombOwner }
-    }
-    flipped++
-    if (flipped >= bid) {
-      return { success: true, hitBomb: false }
-    }
-  }
-
-  return { success: flipped >= bid, hitBomb: false }
-}
-
-export function shouldAdvanceToNextRound(
-  gameState: GameState,
-  players: Player[]
-): boolean {
-  const activePlayers = players.filter((p) => !p.is_eliminated)
-  // フォールドした人数 + 1（チャレンジャー）= 全アクティブプレイヤーなら次ラウンドへ
-  return gameState.pass_count >= activePlayers.length - 1
-}
-
 export function getWinner(players: Player[]): Player | null {
   const byWins = players.find((p) => p.win_count >= 2)
   if (byWins) return byWins
@@ -123,30 +82,3 @@ export function getTotalDiscsInPlay(
   ).length
 }
 
-export function getMustBidPlayer(
-  players: Player[],
-  gameState: GameState,
-  discs: PlacedDisc[]
-): Player | null {
-  if (gameState.phase !== 'place') return null
-
-  const activePlayers = players.filter((p) => !p.is_eliminated)
-  const round = gameState.round_number
-
-  // 全アクティブプレイヤーが少なくとも1枚置いているか確認
-  const allPlaced = activePlayers.every((p) =>
-    discs.some((d) => d.player_id === p.id && d.round_number === round)
-  )
-  if (!allPlaced) return null
-
-  // 全員が手札を使い切った or フェーズを進めるべき状態
-  const allHandsEmpty = activePlayers.every(
-    (p) => p.flower_count + p.bomb_count === 0
-  )
-  if (allHandsEmpty) {
-    // 最初に置いたプレイヤー（seat_order最小）からビッドを開始
-    return activePlayers.sort((a, b) => a.seat_order - b.seat_order)[0]
-  }
-
-  return null
-}
