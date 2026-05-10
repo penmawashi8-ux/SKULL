@@ -312,12 +312,22 @@ export const useGameStore = create<StoreState>()((set, get) => {
         const foldLog = { id: crypto.randomUUID(), message: `${currentPlayer.player_name} がパス`, type: 'fold' as const }
         if (isChallenge) {
           const challenger = players.find(p => p.id === gameState.highest_bidder_id) ?? null
+          if (!challenger) {
+            // highest_bidder_id が null のまま flip 移行するとフリーズするので bid を継続
+            const next = getNextActivePlayer(players, currentPlayer.id, newFoldedIds)
+            set(prev => ({
+              gameState: { ...prev.gameState!, current_player_id: next?.id ?? currentPlayer.id, turn_started_at: ts(), updated_at: ts() },
+              _cpuLog: foldLog,
+            }))
+            await _runCpuLoop()
+            return
+          }
           set(prev => ({
             gameState: {
               ...prev.gameState!,
               pass_count: prev.gameState!.pass_count + 1,
               phase: 'flip',
-              current_player_id: challenger?.id ?? null,
+              current_player_id: challenger.id,
               updated_at: ts(),
             },
             _foldedPlayerIds: newFoldedIds,
@@ -1110,12 +1120,22 @@ export const useGameStore = create<StoreState>()((set, get) => {
       if (isCpuGame) {
         if (isChallenge) {
           const challenger = players.find(p => p.id === gameState.highest_bidder_id) ?? null
+          if (!challenger) {
+            // highest_bidder_id が null → フリーズ防止のため次プレイヤーへ継続
+            const next = getNextActivePlayer(players, myPlayer.id, newFoldedIds)
+            set(s => ({
+              gameState: { ...s.gameState!, current_player_id: next?.id ?? myPlayer.id, turn_started_at: ts(), updated_at: ts() },
+              _foldedPlayerIds: newFoldedIds,
+            }))
+            await processCpuTurns()
+            return
+          }
           set(s => ({
             gameState: {
               ...s.gameState!,
               pass_count: s.gameState!.pass_count + 1,
               phase: 'flip',
-              current_player_id: challenger?.id ?? null,
+              current_player_id: challenger.id,
               updated_at: ts(),
             },
             _foldedPlayerIds: newFoldedIds,

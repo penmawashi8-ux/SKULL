@@ -57,6 +57,8 @@ export async function cpuDecideBidOrFold(
 
   // これ以上入札できない場合は必ずフォールド
   if (currentBid >= totalDiscs) return { action: 'fold' }
+  // 誰も入札していない場合は必ず入札（フォールドするとチャレンジャー不在でフリーズ）
+  if (gameState.highest_bidder_id === null) return { action: 'bid', amount: currentBid + 1 }
 
   if (difficulty === 'easy') {
     if (Math.random() < 0.6) return { action: 'fold' }
