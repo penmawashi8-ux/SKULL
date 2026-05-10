@@ -178,7 +178,7 @@ export function GameBoard({ onGameEnd }: Props) {
 
   // ── Turn timer ────────────────────────────────────────────────────────────
   useEffect(() => {
-    if (!isMyTurn || phase === 'flip' || modal.show) {
+    if (!isMyTurn || (phase === 'flip' && !isChallenger) || modal.show) {
       if (timerIntervalRef.current) {
         clearInterval(timerIntervalRef.current)
         timerIntervalRef.current = null
@@ -300,29 +300,6 @@ export function GameBoard({ onGameEnd }: Props) {
   }, [fold, myPlayer])
 
   // ── Auto-action on timeout ────────────────────────────────────────────────
-  const triggerAutoAction = useCallback(async () => {
-    if (!myPlayer || !gameState || actionLockRef.current) return
-    setShowTimeoutToast(true)
-    setTimeout(() => setShowTimeoutToast(false), 3000)
-
-    if (phase === 'place') {
-      const canFlower = myPlayer.flower_count > 0
-      const canBomb = myPlayer.bomb_count > 0
-      if (!canFlower && !canBomb) return
-      if (!canFlower) { await handlePlaceBomb(); return }
-      if (!canBomb) { await handlePlaceFlower(); return }
-      if (Math.random() < 0.5) await handlePlaceFlower()
-      else await handlePlaceBomb()
-    } else if (phase === 'bid') {
-      const canBidMore = highestBid < totalDiscs
-      const canFoldNow = myPlayer && gameState ? canFold(myPlayer, gameState) : false
-      if (!canBidMore && !canFoldNow) return
-      if (!canBidMore) { await handleFold(); return }
-      if (canFoldNow && Math.random() < 0.5) await handleFold()
-      else await handleBid(highestBid + 1)
-    }
-  }, [myPlayer, gameState, phase, highestBid, totalDiscs, handlePlaceFlower, handlePlaceBomb, handleBid, handleFold])
-
   const handleFlip = useCallback(async (discId: string) => {
     if (!myPlayer || !gameState) return
     if (actionLockRef.current) return
@@ -363,6 +340,38 @@ export function GameBoard({ onGameEnd }: Props) {
       }
     }
   }, [myPlayer, gameState, flipDisc, myDiscs, publicDiscs, players, highestBid])
+
+  const triggerAutoAction = useCallback(async () => {
+    if (!myPlayer || !gameState || actionLockRef.current) return
+    setShowTimeoutToast(true)
+    setTimeout(() => setShowTimeoutToast(false), 3000)
+
+    if (phase === 'place') {
+      const canFlower = myPlayer.flower_count > 0
+      const canBomb = myPlayer.bomb_count > 0
+      if (!canFlower && !canBomb) return
+      if (!canFlower) { await handlePlaceBomb(); return }
+      if (!canBomb) { await handlePlaceFlower(); return }
+      if (Math.random() < 0.5) await handlePlaceFlower()
+      else await handlePlaceBomb()
+    } else if (phase === 'bid') {
+      const canBidMore = highestBid < totalDiscs
+      const canFoldNow = myPlayer && gameState ? canFold(myPlayer, gameState) : false
+      if (!canBidMore && !canFoldNow) return
+      if (!canBidMore) { await handleFold(); return }
+      if (canFoldNow && Math.random() < 0.5) await handleFold()
+      else await handleBid(highestBid + 1)
+    } else if (phase === 'flip' && isChallenger) {
+      const ownUnflipped = myDiscs
+        .filter(d => d.round_number === round && !d.is_flipped)
+        .sort((a, b) => b.position - a.position)
+      if (ownUnflipped.length > 0) { await handleFlip(ownUnflipped[0].id); return }
+      const othersUnflipped = publicDiscs
+        .filter(d => d.player_id !== myPlayer.id && d.round_number === round && !d.is_flipped)
+        .sort((a, b) => b.position - a.position)
+      if (othersUnflipped.length > 0) await handleFlip(othersUnflipped[0].id)
+    }
+  }, [myPlayer, gameState, phase, highestBid, totalDiscs, isChallenger, round, myDiscs, publicDiscs, handlePlaceFlower, handlePlaceBomb, handleBid, handleFold, handleFlip])
 
   useEffect(() => {
     return () => {
