@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
+import { playButtonPress } from '../lib/sounds'
 
 const RULES = [
   {
@@ -70,6 +71,7 @@ export function ModeSelectScreen() {
   const [showOnline, setShowOnline] = useState(false)
 
   function handleMode(idx: number) {
+    playButtonPress()
     if (idx === 0) navigate('/cpu')
     else if (idx === 1) setShowOnline(v => !v)
     else setShowRules(true)
@@ -83,7 +85,7 @@ export function ModeSelectScreen() {
       {/* Header */}
       <div className="flex items-center gap-3 px-4 pt-safe pt-6 pb-4">
         <button
-          onClick={() => navigate('/')}
+          onClick={() => { playButtonPress(); navigate('/') }}
           className="text-white/50 hover:text-white transition-colors text-sm"
           style={{ fontFamily: 'Crimson Text, serif' }}
         >
@@ -141,7 +143,7 @@ export function ModeSelectScreen() {
             >
               <div className="flex gap-3 pt-1">
                 <motion.button
-                  onClick={() => navigate('/online/create')}
+                  onClick={() => { playButtonPress(); navigate('/online/create') }}
                   className="flex-1 py-3 rounded-xl bg-purple-800/60 border border-purple-500/30 text-white text-sm font-semibold"
                   whileTap={{ scale: 0.97 }}
                   style={{ fontFamily: 'Cinzel, serif' }}
@@ -149,7 +151,7 @@ export function ModeSelectScreen() {
                   ＋ ルームを作る
                 </motion.button>
                 <motion.button
-                  onClick={() => navigate('/online/join')}
+                  onClick={() => { playButtonPress(); navigate('/online/join') }}
                   className="flex-1 py-3 rounded-xl bg-purple-800/60 border border-purple-500/30 text-white text-sm font-semibold"
                   whileTap={{ scale: 0.97 }}
                   style={{ fontFamily: 'Cinzel, serif' }}
@@ -206,7 +208,7 @@ export function ModeSelectScreen() {
                 ))}
               </div>
               <button
-                onClick={() => setShowRules(false)}
+                onClick={() => { playButtonPress(); setShowRules(false) }}
                 className="mt-6 w-full py-3 rounded-xl border border-white/20 text-white/70 text-sm"
               >
                 閉じる
