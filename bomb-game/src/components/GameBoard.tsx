@@ -89,6 +89,7 @@ export function GameBoard({ onGameEnd }: Props) {
   const autoActedRef = useRef(false)
 
   const [isActing, setIsActing] = useState(false)
+  const [hasPlacedThisTurn, setHasPlacedThisTurn] = useState(false)
   const [log, setLog] = useState<LogEntry[]>([])
   const [modal, setModal] = useState<{
     show: boolean
@@ -127,6 +128,10 @@ export function GameBoard({ onGameEnd }: Props) {
       ...prev,
     ].slice(0, 20))
   }
+
+  useEffect(() => {
+    setHasPlacedThisTurn(false)
+  }, [gameState?.current_player_id, gameState?.round_number])
 
   useEffect(() => {
     if (!_cpuLog) return
@@ -231,7 +236,7 @@ export function GameBoard({ onGameEnd }: Props) {
     actionLockRef.current = true
     placedRef.current = true
     try {
-      flushSync(() => setIsActing(true))
+      flushSync(() => { setIsActing(true); setHasPlacedThisTurn(true) })
       playCardPlace()
       await placeDisc('flower')
       addLog(`${myPlayer?.player_name} が🍎を置いた`, 'place')
@@ -250,7 +255,7 @@ export function GameBoard({ onGameEnd }: Props) {
     actionLockRef.current = true
     placedRef.current = true
     try {
-      flushSync(() => setIsActing(true))
+      flushSync(() => { setIsActing(true); setHasPlacedThisTurn(true) })
       playCardPlace()
       await placeDisc('bomb')
       addLog(`${myPlayer?.player_name} がカードを置いた`, 'place')
@@ -545,19 +550,19 @@ export function GameBoard({ onGameEnd }: Props) {
                 <div className="flex gap-2">
                   <motion.button
                     onClick={handlePlaceFlower}
-                    disabled={isLoading || isActing || myPlayer.flower_count === 0}
+                    disabled={isLoading || isActing || hasPlacedThisTurn || myPlayer.flower_count === 0}
                     className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-emerald-800 to-emerald-600 text-white font-bold disabled:opacity-40 text-sm"
-                    whileTap={!isActing ? { scale: 0.96 } : {}}
-                    style={{ fontFamily: 'Cinzel, serif', touchAction: 'manipulation', pointerEvents: (isLoading || isActing) ? 'none' : 'auto' }}
+                    whileTap={!isActing && !hasPlacedThisTurn ? { scale: 0.96 } : {}}
+                    style={{ fontFamily: 'Cinzel, serif', touchAction: 'manipulation', pointerEvents: (isLoading || isActing || hasPlacedThisTurn) ? 'none' : 'auto' }}
                   >
                     🍎を置く
                   </motion.button>
                   <motion.button
                     onClick={handlePlaceBomb}
-                    disabled={isLoading || isActing || myPlayer.bomb_count === 0}
+                    disabled={isLoading || isActing || hasPlacedThisTurn || myPlayer.bomb_count === 0}
                     className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-gray-700 to-gray-600 text-white font-bold disabled:opacity-40 text-sm"
-                    whileTap={!isActing ? { scale: 0.96 } : {}}
-                    style={{ fontFamily: 'Cinzel, serif', touchAction: 'manipulation', pointerEvents: (isLoading || isActing) ? 'none' : 'auto' }}
+                    whileTap={!isActing && !hasPlacedThisTurn ? { scale: 0.96 } : {}}
+                    style={{ fontFamily: 'Cinzel, serif', touchAction: 'manipulation', pointerEvents: (isLoading || isActing || hasPlacedThisTurn) ? 'none' : 'auto' }}
                   >
                     💣 爆弾
                   </motion.button>
