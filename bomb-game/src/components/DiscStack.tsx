@@ -58,17 +58,19 @@ export function DiscStack({ player, discs, isFlipPhase, isMyTurnToFlip, myOwnSta
 
         {unflippedCount > 0 && (
           <motion.div
-            className={`relative w-12 h-16 rounded-lg bg-gradient-to-br ${colorClass} border-2 flex items-center justify-center shadow-lg`}
+            className={`relative w-12 h-16 rounded-lg bg-gradient-to-br ${colorClass} border-2 flex items-center justify-center shadow-lg
+              ${canTap && !myOwnStack ? 'border-amber-400 shadow-amber-400/60' : ''}
+            `}
             whileTap={canTap ? { scale: 0.95 } : {}}
-            animate={canTap && myOwnStack ? { y: [0, -3, 0] } : {}}
-            transition={{ repeat: canTap && myOwnStack ? Infinity : 0, duration: 1.2 }}
+            animate={canTap && myOwnStack ? { y: [0, -3, 0] } : canTap && !myOwnStack ? { scale: [1, 1.06, 1] } : {}}
+            transition={{ repeat: canTap ? Infinity : 0, duration: 1.0 }}
           >
             {/* Card back pattern */}
             <div className="w-8 h-12 rounded border border-white/20 flex items-center justify-center">
-              <span className="text-white/40 text-lg">✦</span>
+              <span className={`text-lg ${canTap && !myOwnStack ? 'text-amber-300' : 'text-white/40'}`}>✦</span>
             </div>
             {canTap && (
-              <div className="absolute inset-0 rounded-lg bg-white/10 animate-pulse" />
+              <div className={`absolute inset-0 rounded-lg animate-pulse ${canTap && !myOwnStack ? 'bg-amber-400/25' : 'bg-white/10'}`} />
             )}
           </motion.div>
         )}
