@@ -131,7 +131,7 @@ export function GameBoard({ onGameEnd }: Props) {
 
   useEffect(() => {
     setHasPlacedThisTurn(false)
-  }, [gameState?.current_player_id, gameState?.round_number])
+  }, [gameState?.current_player_id, gameState?.round_number, gameState?.phase])
 
   useEffect(() => {
     if (!_cpuLog) return
@@ -275,7 +275,7 @@ export function GameBoard({ onGameEnd }: Props) {
     if (actionLockRef.current) return
     actionLockRef.current = true
     try {
-      flushSync(() => setIsActing(true))
+      flushSync(() => { setIsActing(true); setHasPlacedThisTurn(true) })
       playBid()
       await placeBid(amount)
       addLog(`${myPlayer?.player_name} が ${amount} 枚と宣言`, 'bid')
@@ -289,7 +289,7 @@ export function GameBoard({ onGameEnd }: Props) {
     if (actionLockRef.current) return
     actionLockRef.current = true
     try {
-      flushSync(() => setIsActing(true))
+      flushSync(() => { setIsActing(true); setHasPlacedThisTurn(true) })
       playFold()
       await fold()
       addLog(`${myPlayer?.player_name} がパス`, 'fold')
@@ -579,7 +579,7 @@ export function GameBoard({ onGameEnd }: Props) {
                   onBid={handleBid}
                   onFold={handleFold}
                   canFold={canFoldNow}
-                  isLoading={isLoading || isActing}
+                  isLoading={isLoading || isActing || hasPlacedThisTurn}
                 />
               )}
 
