@@ -713,20 +713,8 @@ export const useGameStore = create<StoreState>()((set, get) => {
       const { data: freshDiscs } = await supabase.from('placed_discs').select().eq('room_id', s.room!.id)
       const placed = allPlacedAtLeastOnce(freshPlayers, freshDiscs ?? [], gs.round_number)
 
-      if (placed) {
-        const totalDiscs = (freshDiscs ?? []).filter(d => d.round_number === gs.round_number).length
-        const minBid = gs.highest_bid + 1
-        if (minBid <= totalDiscs) {
-          const { _foldedPlayerIds } = get()
-          const nextBidder = getNextActivePlayer(freshPlayers, freshPlayer.id, _foldedPlayerIds)
-          await supabase.from('game_states').update({
-            phase: 'bid', highest_bid: minBid, highest_bidder_id: freshPlayer.id,
-            current_player_id: nextBidder?.id ?? freshPlayer.id, turn_started_at: ts(), updated_at: ts(),
-          }).eq('id', gs.id)
-          set({ _foldedPlayerIds: [] })
-          return
-        }
-      }
+      // If allPlaced, the human player must bid — leave the turn as-is and let them use the BidController
+      if (placed) return
 
       const next = getNextActivePlayer(freshPlayers, freshPlayer.id)
       await supabase.from('game_states').update({

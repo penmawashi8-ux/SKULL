@@ -400,7 +400,11 @@ export function GameBoard({ onGameEnd }: Props) {
       const current = players.find(p => p.id === gameState?.current_player_id)
       return `${current?.player_name ?? '...'} の手番`
     }
-    if (phase === 'place') return 'りんごか爆弾を置いてください'
+    if (phase === 'place') {
+      const myCards = (myPlayer?.flower_count ?? 0) + (myPlayer?.bomb_count ?? 0)
+      if (myCards === 0 && allPlaced) return '宣言してください'
+      return 'りんごか爆弾を置いてください'
+    }
     if (phase === 'bid') return highestBid === 0 ? '入札を開始' : '入札かパス'
     if (phase === 'flip') return myUnflipped.length > 0 ? '自分のスタックから先にめくる' : 'スタックをめくる'
     return ''
