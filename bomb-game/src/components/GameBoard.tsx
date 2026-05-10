@@ -137,6 +137,8 @@ export function GameBoard({ onGameEnd }: Props) {
     if (!_cpuLog) return
     addLog(_cpuLog.message, _cpuLog.type)
     if (_cpuLog.type === 'place') playCardPlace()
+    else if (_cpuLog.type === 'bid') playBid()
+    else if (_cpuLog.type === 'fold') playFold()
     else if (_cpuLog.type === 'flip') playFlowerFlip()
     else if (_cpuLog.type === 'result') {
       if (_cpuLog.message.includes('💣')) playFailure()

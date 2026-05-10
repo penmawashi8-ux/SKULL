@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
+import { playButtonPress } from '../lib/sounds'
 
 // Deterministic floating card data (no Math.random in render)
 const CARDS = [
@@ -90,7 +91,7 @@ export function HomeScreen() {
 
         {/* Start button */}
         <motion.button
-          onClick={() => navigate('/menu')}
+          onClick={() => { playButtonPress(); navigate('/menu') }}
           className="px-10 py-4 rounded-2xl text-xl font-bold text-white relative overflow-hidden"
           style={{
             fontFamily: 'Cinzel, serif',
