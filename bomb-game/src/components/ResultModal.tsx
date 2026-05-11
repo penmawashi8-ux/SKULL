@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { Player, PlacedDisc } from '../types/game'
+import { AdBanner } from './AdBanner'
 
 interface Props {
   show: boolean
@@ -140,9 +141,10 @@ export function ResultModal({ show, type, challenger, bombOwner, lostDisc, onClo
                 <p className="text-white/70 mb-4" style={{ fontFamily: 'Crimson Text, serif' }}>
                   {challenger?.player_name} が2回のチャレンジに成功した！
                 </p>
+                <AdBanner />
                 <button
                   onClick={onClose}
-                  className="w-full py-3 bg-gradient-to-r from-amber-600 to-amber-400 rounded-xl text-black font-bold"
+                  className="w-full py-3 bg-gradient-to-r from-amber-600 to-amber-400 rounded-xl text-black font-bold mt-4"
                   style={{ fontFamily: 'Cinzel, serif' }}
                 >
                   ホームへ
@@ -174,9 +176,10 @@ export function ResultModal({ show, type, challenger, bombOwner, lostDisc, onClo
                     </p>
                   </>
                 )}
+                <AdBanner />
                 <button
                   onClick={onClose}
-                  className="w-full py-3 border border-white/20 rounded-xl text-white/70"
+                  className="w-full py-3 border border-white/20 rounded-xl text-white/70 mt-4"
                 >
                   ホームへ
                 </button>
