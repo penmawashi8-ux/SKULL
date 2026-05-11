@@ -1,3 +1,5 @@
+import { UpdatePrompt } from './components/UpdatePrompt'
+
 const BOMB_GAME_URL = import.meta.env.VITE_BOMB_GAME_URL as string | undefined
 
 type GameStatus = 'available' | 'coming-soon'
@@ -185,6 +187,7 @@ export default function App() {
       className="min-h-screen relative overflow-x-hidden"
       style={{ background: 'linear-gradient(160deg, #0f0c29 0%, #302b63 50%, #24243e 100%)' }}
     >
+      <UpdatePrompt />
       {/* Background decorations */}
       <Decoration emoji="🎲" className="top-12 left-8 spin-slow text-6xl" />
       <Decoration emoji="🃏" className="top-24 right-16 float" />
