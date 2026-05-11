@@ -25,8 +25,8 @@ const games: Game[] = [
     name: 'BOMB',
     nameEn: 'BOMB',
     description:
-      'スカルか花か——ブラフと心理戦が熱いパーティゲーム。仲間を欺いて勝利を掴め！',
-    icon: '💀',
+      '爆弾か花か——ブラフと心理戦が熱いパーティゲーム。仲間を騙して爆発を回避せよ！',
+    icon: '💣',
     status: 'available',
     url: BOMB_GAME_URL,
     accentColor: '#dc2626',
