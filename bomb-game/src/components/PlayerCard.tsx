@@ -113,7 +113,7 @@ export function PlayerCard({
                   ))}
                 </div>
                 <span className="text-white/60 text-xs bg-white/10 px-1.5 py-0.5 rounded-full">
-                  殌{totalCards}枚
+                  のこり{totalCards}枚
                 </span>
               </div>
 

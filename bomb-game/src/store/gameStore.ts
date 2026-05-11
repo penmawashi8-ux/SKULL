@@ -36,6 +36,10 @@ function getNextPlayerWithHand(players: Player[], currentPlayerId: string): Play
   return null
 }
 
+function allHandsEmpty(players: Player[]): boolean {
+  return players.filter(p => !p.is_eliminated).every(p => p.flower_count + p.bomb_count === 0)
+}
+
 function ts(): string {
   return new Date().toISOString()
 }
@@ -86,6 +90,8 @@ let _cpuRunning = false
 let _addingCpu = false
 // Mutex to prevent double-placing a disc (spam taps in online mode)
 let _placingDisc = false
+// Mutex to prevent double-flipping a disc
+let _flippingDisc = false
 
 export const useGameStore = create<StoreState>()((set, get) => {
 
@@ -214,6 +220,8 @@ export const useGameStore = create<StoreState>()((set, get) => {
       }
 
       const discType = await cpuDecidePlace(currentPlayer, gameState, cpuDifficulty)
+      // Re-verify turn hasn't shifted during the AI think delay
+      if (get().gameState?.current_player_id !== currentPlayer.id) return
       const position = publicDiscs.filter(
         d => d.player_id === currentPlayer.id && d.round_number === round,
       ).length + 1
@@ -985,11 +993,29 @@ export const useGameStore = create<StoreState>()((set, get) => {
             bomb_count:   discType === 'bomb'   ? p.bomb_count   - 1 : p.bomb_count,
           },
         )
-        const next = getNextActivePlayer(updatedPlayers, myPlayer.id)
-        await supabase.from('game_states').update({
-          current_player_id: next?.id ?? null, turn_started_at: ts(), updated_at: ts(),
-        }).eq('id', gameState.id)
-        set({ isLoading: false, _foldedPlayerIds: [] })
+        if (allHandsEmpty(updatedPlayers)) {
+          const nextBidder = getNextActivePlayer(updatedPlayers, myPlayer.id)
+          await supabase.from('game_states').update({
+            phase: 'bid',
+            current_player_id: nextBidder?.id ?? myPlayer.id,
+            turn_started_at: ts(),
+            updated_at: ts(),
+          }).eq('id', gameState.id)
+          set({ isLoading: false, _foldedPlayerIds: [] })
+        } else {
+          const next = getNextPlayerWithHand(updatedPlayers, myPlayer.id)
+          if (next === null) {
+            await supabase.from('game_states').update({
+              phase: 'bid', current_player_id: myPlayer.id, turn_started_at: ts(), updated_at: ts(),
+            }).eq('id', gameState.id)
+            set({ isLoading: false, _foldedPlayerIds: [] })
+          } else {
+            await supabase.from('game_states').update({
+              current_player_id: next.id, turn_started_at: ts(), updated_at: ts(),
+            }).eq('id', gameState.id)
+            set({ isLoading: false, _foldedPlayerIds: [] })
+          }
+        }
       } catch (e) {
         set({ error: (e as any)?.message ?? String(e), isLoading: false })
       } finally {
@@ -1120,51 +1146,72 @@ export const useGameStore = create<StoreState>()((set, get) => {
 
     // ── flipDisc ──────────────────────────────────────────────────────────────
     flipDisc: async (discId): Promise<DiscType> => {
-      const { room, gameState, players, sessionId, isCpuGame, myDiscs, _cpuDiscs } = get()
-      const myPlayer = players.find(p => p.session_id === sessionId)
-      if (!myPlayer || !gameState || !room) return 'flower'
+      if (_flippingDisc) return 'flower'
+      _flippingDisc = true
+      try {
+        const { room, gameState, players, sessionId, isCpuGame, myDiscs, _cpuDiscs } = get()
+        const myPlayer = players.find(p => p.session_id === sessionId)
+        if (!myPlayer || !gameState || !room) return 'flower'
 
-      const newFlipCount = gameState.flip_count + 1
+        const newFlipCount = gameState.flip_count + 1
 
-      if (isCpuGame) {
-        const realDisc = [...myDiscs, ..._cpuDiscs].find(d => d.id === discId)
-        const realType = realDisc?.disc_type ?? 'flower'
+        if (isCpuGame) {
+          const realDisc = [...myDiscs, ..._cpuDiscs].find(d => d.id === discId)
+          const realType = realDisc?.disc_type ?? 'flower'
 
+          set(s => ({
+            publicDiscs: s.publicDiscs.map(d =>
+              d.id === discId
+                ? { ...d, disc_type: realType, is_flipped: true, flipped_by: myPlayer.id }
+                : d,
+            ),
+            myDiscs: s.myDiscs.map(d =>
+              d.id === discId ? { ...d, is_flipped: true, flipped_by: myPlayer.id } : d,
+            ),
+            _cpuDiscs: s._cpuDiscs.map(d =>
+              d.id === discId ? { ...d, is_flipped: true, flipped_by: myPlayer.id } : d,
+            ),
+            gameState: { ...s.gameState!, flip_count: newFlipCount, updated_at: ts() },
+          }))
+
+          return realType
+        }
+
+        // Online: optimistically mark as flipped locally to prevent double-tap
         set(s => ({
+          isLoading: true,
           publicDiscs: s.publicDiscs.map(d =>
-            d.id === discId
-              ? { ...d, disc_type: realType, is_flipped: true, flipped_by: myPlayer.id }
-              : d,
+            d.id === discId ? { ...d, is_flipped: true, flipped_by: myPlayer.id } : d,
           ),
           myDiscs: s.myDiscs.map(d =>
             d.id === discId ? { ...d, is_flipped: true, flipped_by: myPlayer.id } : d,
           ),
-          _cpuDiscs: s._cpuDiscs.map(d =>
-            d.id === discId ? { ...d, is_flipped: true, flipped_by: myPlayer.id } : d,
-          ),
-          gameState: { ...s.gameState!, flip_count: newFlipCount, turn_started_at: ts(), updated_at: ts() },
         }))
-
-        return realType
-      }
-
-      // Online
-      set({ isLoading: true })
-      try {
-        const { data: updatedDisc, error } = await supabase.from('placed_discs')
-          .update({ is_flipped: true, flipped_by: myPlayer.id })
-          .eq('id', discId)
-          .select('disc_type')
-          .single()
-        if (error) throw error
-        await supabase.from('game_states').update({
-          flip_count: newFlipCount, turn_started_at: ts(), updated_at: ts(),
-        }).eq('id', gameState.id)
-        set(s => ({ isLoading: false, gameState: s.gameState ? { ...s.gameState, flip_count: newFlipCount } : null }))
-        return (updatedDisc?.disc_type as DiscType) ?? 'flower'
-      } catch (e) {
-        set({ error: (e as any)?.message ?? String(e), isLoading: false })
-        return 'flower'
+        try {
+          const { data: updatedDisc, error } = await supabase.from('placed_discs')
+            .update({ is_flipped: true, flipped_by: myPlayer.id })
+            .eq('id', discId)
+            .select('disc_type')
+            .single()
+          if (error) throw error
+          await supabase.from('game_states').update({
+            flip_count: newFlipCount, updated_at: ts(),
+          }).eq('id', gameState.id)
+          const realType = (updatedDisc?.disc_type as DiscType) ?? 'flower'
+          set(s => ({
+            isLoading: false,
+            gameState: s.gameState ? { ...s.gameState, flip_count: newFlipCount } : null,
+            publicDiscs: s.publicDiscs.map(d =>
+              d.id === discId ? { ...d, disc_type: realType } : d,
+            ),
+          }))
+          return realType
+        } catch (e) {
+          set({ error: (e as any)?.message ?? String(e), isLoading: false })
+          return 'flower'
+        }
+      } finally {
+        _flippingDisc = false
       }
     },
 
