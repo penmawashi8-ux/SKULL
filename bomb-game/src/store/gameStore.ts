@@ -1172,6 +1172,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
         isLoading: false,
       })
 
+      _cpuRunning = false
       await processCpuTurns()
     },
 
@@ -1616,6 +1617,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
 
     // ── resetGame ─────────────────────────────────────────────────────────────
     resetGame: () => {
+      _cpuRunning = false
       const channel = get()._subscription
       if (channel) supabase.removeChannel(channel)
       set({
