@@ -116,9 +116,9 @@ export function ResultModal({ show, type, challenger, bombOwner, lostDisc, onClo
                   {bombOwner?.player_name} の爆弾に触れてしまった
                 </p>
                 {lostDisc && (
-                  <div className="bg-red-950/50 border border-red-500/30 rounded-xl p-3 text-sm text-red-300 mb-4">
+                  <p className="text-xs text-red-400/70 mb-4" style={{ fontFamily: 'Crimson Text, serif' }}>
                     {challenger?.player_name} はランダムにカードを1枚失う
-                  </div>
+                  </p>
                 )}
                 <button
                   onClick={() => fireOnce.current()}
