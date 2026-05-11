@@ -74,7 +74,7 @@ export function PlayerCard({
   const isHighestBidder = gameState?.highest_bidder_id === player.id
   const phase = gameState?.phase ?? 'place'
   const permTotal = permCards ? permCards.flowers + permCards.bombs : null
-  const liveTotal = player.flower_count + player.bomb_count + playerDiscs.length
+  const liveTotal = (player.flower_count ?? 0) + (player.bomb_count ?? 0) + playerDiscs.length
   const totalCards = player.is_eliminated ? 0
     : (permTotal !== null && permTotal > 0) ? permTotal
     : liveTotal
@@ -113,7 +113,7 @@ export function PlayerCard({
                   ))}
                 </div>
                 <span className="text-white/60 text-xs bg-white/10 px-1.5 py-0.5 rounded-full">
-                  🃏{totalCards}
+                  殌{totalCards}枚
                 </span>
               </div>
 
