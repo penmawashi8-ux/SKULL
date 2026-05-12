@@ -181,7 +181,7 @@ function GameCard({ game }: { game: Game }) {
 
   if (isAvailable && game.url) {
     return (
-      <a href={game.url} target="_blank" rel="noopener noreferrer" className="block h-full no-underline">
+      <a href={game.url} className="block h-full no-underline">
         {cardContent}
       </a>
     )
