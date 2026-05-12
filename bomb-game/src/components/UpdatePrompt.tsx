@@ -1,8 +1,18 @@
 import { useRegisterSW } from 'virtual:pwa-register/react'
 import { motion, AnimatePresence } from 'framer-motion'
 
+const SW_UPDATE_INTERVAL_MS = 60 * 1000
+
 export function UpdatePrompt() {
-  const { needRefresh: [needRefresh], updateServiceWorker } = useRegisterSW()
+  const { needRefresh: [needRefresh], updateServiceWorker } = useRegisterSW({
+    onRegisteredSW(_swUrl, registration) {
+      if (!registration) return
+
+      setInterval(() => {
+        registration.update()
+      }, SW_UPDATE_INTERVAL_MS)
+    },
+  })
 
   return (
     <AnimatePresence>

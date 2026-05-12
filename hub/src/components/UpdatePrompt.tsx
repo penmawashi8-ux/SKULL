@@ -1,7 +1,17 @@
 import { useRegisterSW } from 'virtual:pwa-register/react'
 
+const SW_UPDATE_INTERVAL_MS = 60 * 1000
+
 export function UpdatePrompt() {
-  const { needRefresh: [needRefresh], updateServiceWorker } = useRegisterSW()
+  const { needRefresh: [needRefresh], updateServiceWorker } = useRegisterSW({
+    onRegisteredSW(_swUrl, registration) {
+      if (!registration) return
+
+      setInterval(() => {
+        registration.update()
+      }, SW_UPDATE_INTERVAL_MS)
+    },
+  })
 
   if (!needRefresh) return null
 
@@ -15,9 +25,7 @@ export function UpdatePrompt() {
         animation: 'slideUp 0.3s ease-out',
       }}
     >
-      <p className="text-white/80 text-sm">
-        新しいバージョンが利用可能です
-      </p>
+      <p className="text-white/80 text-sm">新しいバージョンが利用可能です</p>
       <button
         onClick={() => updateServiceWorker(true)}
         className="flex-shrink-0 px-3 py-1.5 rounded-xl text-white text-sm font-bold"
