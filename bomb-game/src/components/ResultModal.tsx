@@ -9,6 +9,7 @@ interface Props {
   bombOwner?: Player
   lostDisc?: PlacedDisc
   onClose: () => void
+  onReturnToHub?: () => void
 }
 
 function Confetti() {
@@ -39,7 +40,7 @@ function Confetti() {
   )
 }
 
-export function ResultModal({ show, type, challenger, bombOwner, lostDisc, onClose }: Props) {
+export function ResultModal({ show, type, challenger, bombOwner, lostDisc, onClose, onReturnToHub }: Props) {
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const firedRef = useRef(false)
 
@@ -140,13 +141,22 @@ export function ResultModal({ show, type, challenger, bombOwner, lostDisc, onClo
                 <p className="text-white/70 mb-4" style={{ fontFamily: 'Crimson Text, serif' }}>
                   {challenger?.player_name} が2回のチャレンジに成功した！
                 </p>
-                <button
-                  onClick={onClose}
-                  className="w-full py-3 bg-gradient-to-r from-amber-600 to-amber-400 rounded-xl text-black font-bold"
-                  style={{ fontFamily: 'Cinzel, serif' }}
-                >
-                  ホームへ
-                </button>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <button
+                    onClick={onClose}
+                    className="py-3 bg-gradient-to-r from-amber-600 to-amber-400 rounded-xl text-black font-bold"
+                    style={{ fontFamily: 'Cinzel, serif' }}
+                  >
+                    BOMBへ戻る
+                  </button>
+                  <button
+                    onClick={onReturnToHub}
+                    className="py-3 border border-white/20 rounded-xl text-white/80"
+                    style={{ fontFamily: 'Cinzel, serif' }}
+                  >
+                    ボドゲ広場へ
+                  </button>
+                </div>
               </>
             )}
 
@@ -174,12 +184,20 @@ export function ResultModal({ show, type, challenger, bombOwner, lostDisc, onClo
                     </p>
                   </>
                 )}
-                <button
-                  onClick={onClose}
-                  className="w-full py-3 border border-white/20 rounded-xl text-white/70"
-                >
-                  ホームへ
-                </button>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <button
+                    onClick={onClose}
+                    className="py-3 border border-white/20 rounded-xl text-white/70"
+                  >
+                    BOMBへ戻る
+                  </button>
+                  <button
+                    onClick={onReturnToHub}
+                    className="py-3 border border-white/20 rounded-xl text-white/80"
+                  >
+                    ボドゲ広場へ
+                  </button>
+                </div>
               </>
             )}
           </motion.div>
