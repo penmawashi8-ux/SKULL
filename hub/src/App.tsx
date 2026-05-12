@@ -181,7 +181,16 @@ function GameCard({ game }: { game: Game }) {
 
   if (isAvailable && game.url) {
     return (
-      <a href={game.url} className="block h-full no-underline">
+      <a
+        href={game.url}
+        target="_self"
+        rel="noopener"
+        className="block h-full no-underline"
+        onClick={(event) => {
+          event.preventDefault()
+          window.location.assign(game.url!)
+        }}
+      >
         {cardContent}
       </a>
     )
