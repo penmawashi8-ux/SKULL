@@ -1,4 +1,22 @@
 import { UpdatePrompt } from './components/UpdatePrompt'
+import { Component, type ReactNode } from 'react'
+
+class SafeRender extends Component<{ children: ReactNode }, { hasError: boolean }> {
+  state = { hasError: false }
+
+  static getDerivedStateFromError() {
+    return { hasError: true }
+  }
+
+  componentDidCatch(error: unknown) {
+    console.error('SafeRender caught an error:', error)
+  }
+
+  render() {
+    if (this.state.hasError) return null
+    return this.props.children
+  }
+}
 
 const BOMB_GAME_URL = import.meta.env.VITE_BOMB_GAME_URL as string | undefined
 
@@ -188,7 +206,9 @@ export default function App() {
       className="min-h-screen relative overflow-x-hidden"
       style={{ background: 'linear-gradient(160deg, #0f0c29 0%, #302b63 50%, #24243e 100%)' }}
     >
-      <UpdatePrompt />
+      <SafeRender>
+        <UpdatePrompt />
+      </SafeRender>
       {/* Background decorations */}
       <Decoration emoji="🎲" className="top-12 left-8 spin-slow text-6xl" />
       <Decoration emoji="🃏" className="top-24 right-16 float" />
