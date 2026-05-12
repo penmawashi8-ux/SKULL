@@ -1346,6 +1346,44 @@ export const useGameStore = create<StoreState>()((set, get) => {
               }
             }
 
+            // ゲーム開始時 (prevGs === null) はプレイヤー一覧と gameState を同時に
+            // セットして「...の手番」フリーズを防ぐ。
+            if (prevGs === null) {
+              supabase.from('players').select().eq('room_id', roomId).then(({ data }) => {
+                if (get().room?.id !== roomId) return
+                const freshPlayers = (data && data.length > 0) ? data : get().players
+                const permCards: Record<string, { flowers: number; bombs: number }> = {}
+                for (const p of freshPlayers) {
+                  if (!p.is_eliminated) permCards[p.id] = { flowers: p.flower_count, bombs: p.bomb_count }
+                }
+                set(s => ({
+                  gameState: newGs,
+                  players: freshPlayers,
+                  _permCards: Object.keys(s._permCards).length === 0 ? permCards : s._permCards,
+                }))
+                const s2 = get()
+                if (!s2.isCpuGame && s2.room?.host_id === s2.sessionId) {
+                  const cp2 = freshPlayers.find(p => p.id === newGs.current_player_id)
+                  if (cp2?.is_cpu) {
+                    if (_onlineCpuProcessing) {
+                      _pendingCpuRetrigger = { player: cp2, gs: newGs }
+                    } else {
+                      processOnlineCpuTurn(cp2, newGs)
+                    }
+                  } else if (cp2 && !cp2.is_eliminated && newGs.phase === 'place') {
+                    const check = () => {
+                      const s3 = get()
+                      const p3 = s3.players.find(p => p.id === cp2.id)
+                      if (p3 && p3.flower_count + p3.bomb_count === 0) processOnlineEmptyHandTurn(p3, newGs)
+                    }
+                    if (cp2.flower_count + cp2.bomb_count === 0) check()
+                    else setTimeout(check, 800)
+                  }
+                }
+              })
+              return
+            }
+
             set({
               gameState: newGs,
               ...(roundChanged ? { publicDiscs: [], myDiscs: [], _cpuDiscs: [], _foldedPlayerIds: [], _permCards: {} } : {}),
@@ -1363,13 +1401,8 @@ export const useGameStore = create<StoreState>()((set, get) => {
               })
             }
 
-            // ゲーム開始時 (prevGs === null) にもプレイヤー一覧を最新化する。
-            // ロビーで追加されたCPUが realtime でまだ届いていない場合に
-            // current_player_id が不明になりフリーズするのを防ぐ。
-            // また、再接続直後など prevGs が存在しても current_player_id が
-            // ローカルの players に見つからない場合も再フェッチする。
+            // 再接続直後など current_player_id がローカルの players に見つからない場合も再フェッチする。
             const needsPlayerRefetch = (() => {
-              if (prevGs === null) return true
               if (!newGs.current_player_id) return false
               const freshState = get()
               return freshState.players.length > 0 &&
@@ -1451,11 +1484,6 @@ export const useGameStore = create<StoreState>()((set, get) => {
             if (evt.status === 'SUBSCRIBED') {
               if (reconnectTimer) clearTimeout(reconnectTimer)
               set({ isReconnecting: false })
-              supabase.from('players').select().eq('room_id', roomId).then(({ data }) => {
-                if (!data || data.length === 0) return
-                if (get().room?.id !== roomId) return
-                set({ players: data })
-              })
               const currentRound = get().gameState?.round_number
               const myId = get()._myPlayerId
               if (currentRound != null) {
@@ -1503,21 +1531,39 @@ export const useGameStore = create<StoreState>()((set, get) => {
                     })
                   })
               }
-              // 再接続後にゲーム状態が変わっていた場合に備えて最新を取得する
-              supabase.from('game_states').select().eq('room_id', roomId).maybeSingle().then(({ data: freshGs }) => {
-                if (!freshGs || get().room?.id !== roomId) return
+              // game_states と players を同時取得して「...の手番」フリーズを防ぐ
+              Promise.all([
+                supabase.from('game_states').select().eq('room_id', roomId).maybeSingle(),
+                supabase.from('players').select().eq('room_id', roomId),
+              ]).then(([{ data: freshGs }, { data: freshPlayers }]) => {
+                if (get().room?.id !== roomId) return
+                const permCards: Record<string, { flowers: number; bombs: number }> = {}
+                if (freshPlayers) {
+                  for (const p of freshPlayers) {
+                    if (!p.is_eliminated) permCards[p.id] = { flowers: p.flower_count, bombs: p.bomb_count }
+                  }
+                }
                 const localGs = get().gameState
-                if (!localGs || freshGs.updated_at !== localGs.updated_at) {
+                if (freshGs && (!localGs || freshGs.updated_at !== localGs.updated_at)) {
                   const roundChanged = localGs != null && freshGs.round_number !== localGs.round_number
-                  set({
+                  set(s => ({
                     gameState: freshGs,
+                    ...(freshPlayers && freshPlayers.length > 0 ? {
+                      players: freshPlayers,
+                      _permCards: Object.keys(s._permCards).length === 0 ? permCards : s._permCards,
+                    } : {}),
                     ...(roundChanged ? { publicDiscs: [], myDiscs: [], _cpuDiscs: [], _foldedPlayerIds: [] } : {}),
-                  })
+                  }))
                   const s2 = get()
                   if (!s2.isCpuGame && s2.room?.host_id === s2.sessionId) {
                     const cp = s2.players.find(p => p.id === freshGs.current_player_id)
                     if (cp?.is_cpu && !_onlineCpuProcessing) processOnlineCpuTurn(cp, freshGs)
                   }
+                } else if (freshPlayers && freshPlayers.length > 0) {
+                  set(s => ({
+                    players: freshPlayers,
+                    _permCards: Object.keys(s._permCards).length === 0 ? permCards : s._permCards,
+                  }))
                 }
               })
             } else if (evt.status === 'CHANNEL_ERROR' || evt.status === 'TIMED_OUT') {
