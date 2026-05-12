@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 import { GameBoard } from '../components/GameBoard'
 
-const BOARD_GAME_HUB_URL = import.meta.env.VITE_BOARD_GAME_HUB_URL || 'https://g-umber-tau.vercel.app'
+const BOARD_GAME_HUB_URL = import.meta.env.VITE_BOARD_GAME_HUB_URL || '/'
 
 export function GameScreen() {
   const { roomCode } = useParams<{ roomCode: string }>()
