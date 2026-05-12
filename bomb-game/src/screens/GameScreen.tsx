@@ -3,6 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useGameStore } from '../store/gameStore'
 import { GameBoard } from '../components/GameBoard'
 
+const BOARD_GAME_HUB_URL = import.meta.env.VITE_BOARD_GAME_HUB_URL || 'https://g-umber-tau.vercel.app'
+
 export function GameScreen() {
   const { roomCode } = useParams<{ roomCode: string }>()
   const navigate = useNavigate()
@@ -39,5 +41,10 @@ export function GameScreen() {
     )
   }
 
-  return <GameBoard onGameEnd={() => navigate('/', { replace: true })} />
+  return (
+    <GameBoard
+      onGameEnd={() => navigate('/', { replace: true })}
+      onReturnToHub={() => { window.location.href = BOARD_GAME_HUB_URL }}
+    />
+  )
 }

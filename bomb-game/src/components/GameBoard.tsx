@@ -21,6 +21,7 @@ const TURN_TIME_LIMIT_SEC = 30
 
 interface Props {
   onGameEnd?: () => void
+  onReturnToHub?: () => void
 }
 
 // ── TurnTimer ────────────────────────────────────────────────────────────────
@@ -75,7 +76,7 @@ function TimeoutToast({ show }: { show: boolean }) {
   )
 }
 
-export function GameBoard({ onGameEnd }: Props) {
+export function GameBoard({ onGameEnd, onReturnToHub }: Props) {
   const {
     room, players, gameState, myDiscs, publicDiscs,
     sessionId, isLoading, placeDisc, placeBid, fold, flipDisc,
@@ -652,6 +653,10 @@ export function GameBoard({ onGameEnd }: Props) {
         challenger={modal.challenger}
         bombOwner={modal.bombOwner}
         lostDisc={modal.lostDisc}
+        onReturnToHub={() => {
+          resetGame()
+          onReturnToHub?.()
+        }}
         onClose={async () => {
           const type = modal.type
           const bombOwnerId = modal.bombOwner?.id
