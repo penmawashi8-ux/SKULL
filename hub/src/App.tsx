@@ -43,7 +43,7 @@ const games: Game[] = [
     name: 'BOMB',
     nameEn: 'BOMB',
     description:
-      '爆弾か花か——ブラフと心理戦が熱いパーティゲーム。仲間を騙して爆発を回避せよ！',
+      '爆弾かリンゴか——ブラフと心理戦が熱いパーティゲーム。仲間を騙して爆発を回避せよ！',
     icon: '💣',
     status: 'available',
     url: BOMB_GAME_URL,
