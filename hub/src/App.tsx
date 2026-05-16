@@ -98,6 +98,32 @@ const games: Game[] = [
     duration: '約5〜10分',
     tags: ['競馬', '予想', 'バーチャル'],
   },
+  {
+    id: 'tbd-1',
+    name: '？？？',
+    nameEn: 'TBD',
+    description: '鋭意制作中……',
+    icon: '❓',
+    status: 'coming-soon',
+    accentColor: '#0891b2',
+    cardBg: 'linear-gradient(135deg, #0c1a2e 0%, #0a2540 100%)',
+    players: '未定',
+    duration: '未定',
+    tags: ['未定'],
+  },
+  {
+    id: 'tbd-2',
+    name: '？？？',
+    nameEn: 'TBD',
+    description: '鋭意制作中……',
+    icon: '❓',
+    status: 'coming-soon',
+    accentColor: '#d97706',
+    cardBg: 'linear-gradient(135deg, #1c1208 0%, #2e1f00 100%)',
+    players: '未定',
+    duration: '未定',
+    tags: ['未定'],
+  },
 ]
 
 function Badge({ text }: { text: string }) {
@@ -261,7 +287,7 @@ export default function App() {
 
       {/* Game grid */}
       <main className="relative z-10 max-w-5xl mx-auto px-4 pb-20">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {games.map((game) => (
             <GameCard key={game.id} game={game} />
           ))}
