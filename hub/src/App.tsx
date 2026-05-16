@@ -76,7 +76,7 @@ const games: Game[] = [
       'カードをめくって中央に積んでいく。色かマークが一致したら山を全部もらい、手札を一番少なく抑えた人が勝ち。',
     icon: '🐷',
     status: 'available',
-    url: '/pig-tail',
+    url: 'https://buta-steel.vercel.app',
     accentColor: '#ec4899',
     cardBg: 'linear-gradient(135deg, #1a0d15 0%, #2d1020 100%)',
     players: '2〜4人',
