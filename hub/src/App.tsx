@@ -73,7 +73,7 @@ const games: Game[] = [
     name: 'ぶたのしっぽ',
     nameEn: "PIG'S TAIL",
     description:
-      '4枚そろったら全員でタッチ！最後になったらBUTAペナルティ。全部揃ったら脱落、最後の1人が勝ち！',
+      'カードをめくって中央に積んでいく。色か数字が一致したら山を全部もらい！手札を一番少なく抑えた人が勝ち。',
     icon: '🐷',
     status: 'available',
     url: '/pig-tail',
