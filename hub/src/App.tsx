@@ -99,6 +99,21 @@ const games: Game[] = [
     tags: ['競馬', '予想', 'バーチャル'],
   },
   {
+    id: 'page-one',
+    name: 'ページワン',
+    nameEn: 'PAGE ONE',
+    description:
+      '手札の数字かマークが合えばカードを出せる。最後の1枚で「ページワン！」特殊カードで逆転ありのトランプゲーム。',
+    icon: '🃏',
+    status: 'available',
+    url: 'https://pageone-wine.vercel.app',
+    accentColor: '#2563eb',
+    cardBg: 'linear-gradient(135deg, #0a0f1e 0%, #0f1f40 100%)',
+    players: '2〜10人',
+    duration: '約15〜30分',
+    tags: ['トランプ', '特殊カード', 'パーティ'],
+  },
+  {
     id: 'tbd-1',
     name: '？？？',
     nameEn: 'TBD',
