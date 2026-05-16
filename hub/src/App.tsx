@@ -1,4 +1,5 @@
 import { UpdatePrompt } from './components/UpdatePrompt'
+import PigTailGame from './games/PigTailGame'
 import { Component, type ReactNode } from 'react'
 
 class SafeRender extends Component<{ children: ReactNode }, { hasError: boolean }> {
@@ -68,30 +69,34 @@ const games: Game[] = [
     tags: ['対戦', '戦略', '新作'],
   },
   {
-    id: 'tbd-2',
-    name: '？？？',
-    nameEn: 'TBD',
-    description: '鋭意制作中……',
-    icon: '❓',
-    status: 'coming-soon',
-    accentColor: '#0891b2',
-    cardBg: 'linear-gradient(135deg, #0c1a2e 0%, #0a2540 100%)',
-    players: '未定',
-    duration: '未定',
-    tags: ['未定'],
+    id: 'pig-tail',
+    name: 'ぶたのしっぽ',
+    nameEn: "PIG'S TAIL",
+    description:
+      '4枚そろったらいち早くタッチ！仲間の動きを見逃すな。反射神経が試されるトランプゲーム。',
+    icon: '🐷',
+    status: 'available',
+    url: '/pig-tail',
+    accentColor: '#ec4899',
+    cardBg: 'linear-gradient(135deg, #1a0d15 0%, #2d1020 100%)',
+    players: '2〜4人',
+    duration: '約10〜20分',
+    tags: ['反射神経', 'トランプ', 'パーティ'],
   },
   {
-    id: 'tbd-3',
-    name: '？？？',
-    nameEn: 'TBD',
-    description: '鋭意制作中……',
-    icon: '❓',
-    status: 'coming-soon',
-    accentColor: '#d97706',
-    cardBg: 'linear-gradient(135deg, #1c1208 0%, #2e1f00 100%)',
-    players: '未定',
-    duration: '未定',
-    tags: ['未定'],
+    id: 'keiba',
+    name: 'バーチャル競馬',
+    nameEn: 'VIRTUAL KEIBA',
+    description:
+      '馬を選んで予想して観戦！バーチャル競馬で白熱のゴール勝負を楽しもう。',
+    icon: '🐎',
+    status: 'available',
+    url: 'https://gamekeiba.vercel.app',
+    accentColor: '#f59e0b',
+    cardBg: 'linear-gradient(135deg, #150f00 0%, #2a1e00 100%)',
+    players: '1人〜',
+    duration: '約5〜10分',
+    tags: ['競馬', '予想', 'バーチャル'],
   },
 ]
 
@@ -208,6 +213,14 @@ function Decoration({ emoji, className }: { emoji: string; className: string }) 
 }
 
 export default function App() {
+  if (window.location.pathname === '/pig-tail') {
+    return (
+      <SafeRender>
+        <PigTailGame />
+      </SafeRender>
+    )
+  }
+
   const availableCount = games.filter((g) => g.status === 'available').length
 
   return (

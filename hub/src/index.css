@@ -26,3 +26,9 @@ body {
 
 .float { animation: float 3s ease-in-out infinite; }
 .spin-slow { animation: spin-slow 8s linear infinite; }
+
+@keyframes touch-pulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgb(239 68 68 / 0.7); }
+  50% { transform: scale(1.06); box-shadow: 0 0 0 20px rgb(239 68 68 / 0); }
+}
+.touch-btn { animation: touch-pulse 0.65s ease-in-out infinite; }
