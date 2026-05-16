@@ -73,7 +73,7 @@ const games: Game[] = [
     name: 'ぶたのしっぽ',
     nameEn: "PIG'S TAIL",
     description:
-      'カードをまわして4枚そろえたらこっそりタッチ！最後に気づいた人が"ぶた"になるトランプゲーム。',
+      '4枚そろったら全員でタッチ！最後になったらBUTAペナルティ。全部揃ったら脱落、最後の1人が勝ち！',
     icon: '🐷',
     status: 'available',
     url: '/pig-tail',
