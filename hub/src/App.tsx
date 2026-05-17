@@ -103,7 +103,7 @@ const games: Game[] = [
     name: 'ページワン',
     nameEn: 'PAGE ONE',
     description:
-      '手札の数字かマークが合えばカードを出せる。最後の1枚で「ページワン！」特殊カードで逆転ありのトランプゲーム。',
+      '手札の数字かマークが合えばカードを出せる。特殊カードで相手に枚数を押し付けろ。最後の1枚で「ページワン！」のトランプゲーム。',
     icon: '🃏',
     status: 'available',
     url: 'https://pageone-wine.vercel.app',
