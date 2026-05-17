@@ -79,7 +79,7 @@ const games: Game[] = [
     url: 'https://buta-steel.vercel.app',
     accentColor: '#ec4899',
     cardBg: 'linear-gradient(135deg, #1a0d15 0%, #2d1020 100%)',
-    players: '2〜4人',
+    players: '1〜6人',
     duration: '約10〜20分',
     tags: ['反射神経', 'トランプ', 'パーティ'],
   },
