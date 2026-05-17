@@ -73,7 +73,7 @@ const games: Game[] = [
     name: 'ぶたのしっぽ',
     nameEn: "PIG'S TAIL",
     description:
-      'カードをめくって中央に積んでいく。色かマークが一致したら山を全部もらい、手札を一番少なく抑えた人が勝ち。',
+      'カードをめくって中央に積んでいく。マークが一致したら山を全部もらい、手札を一番少なく抑えた人が勝ち。',
     icon: '🐷',
     status: 'available',
     url: 'https://buta-steel.vercel.app',
