@@ -109,7 +109,7 @@ const games: Game[] = [
     url: 'https://pageone-wine.vercel.app',
     accentColor: '#2563eb',
     cardBg: 'linear-gradient(135deg, #0a0f1e 0%, #0f1f40 100%)',
-    players: '2〜10人',
+    players: '1〜4人',
     duration: '約15〜30分',
     tags: ['トランプ', '特殊カード', 'パーティ'],
   },
