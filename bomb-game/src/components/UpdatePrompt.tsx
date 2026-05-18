@@ -24,9 +24,9 @@ export function UpdatePrompt() {
             border: '1px solid rgba(139,92,246,0.5)',
             boxShadow: '0 0 24px rgba(109,40,217,0.3)',
           }}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 20 }}
+          initial={{ y: 20 }}
+          animate={{ y: 0 }}
+          exit={{ y: 20 }}
         >
           <p className="text-white/80 text-sm" style={{ fontFamily: 'Crimson Text, serif' }}>
             新しいバージョンが利用可能です
