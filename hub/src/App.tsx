@@ -118,7 +118,7 @@ const games: Game[] = [
     name: 'クー',
     nameEn: 'COUP',
     description:
-      '嘘をついても、バレなければ勝ち。公爵・暗殺者・大使…持っていないキャラクターも堂々と宣言し、ライバルを蹴落とせ！最後に生き残った者が勝者。',
+      '嘘をついても、バレなければ勝ち。持っていないキャラクターも堂々と宣言し、ライバルを蹴落とせ！最後に生き残った者が勝者。',
     icon: '👑',
     status: 'available',
     url: 'https://coup-two.vercel.app',
