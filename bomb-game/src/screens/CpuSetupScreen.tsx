@@ -192,9 +192,6 @@ export function CpuSetupScreen() {
           }}
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.97 }}
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
         >
           {isLoading || isSubmitting ? '起動中...' : 'ゲーム開始'}
         </motion.button>

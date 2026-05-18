@@ -229,8 +229,6 @@ export function LobbyScreen() {
               boxShadow: '0 0 28px rgba(109,40,217,0.45)',
             }}
             whileTap={!isStarting ? { scale: 0.97 } : {}}
-            animate={{ scale: [1, 1.01, 1] }}
-            transition={{ duration: 2, repeat: Infinity }}
           >
             {isStarting ? '準備中...' : 'ゲーム開始'}
           </motion.button>
