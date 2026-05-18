@@ -115,7 +115,7 @@ const games: Game[] = [
   },
   {
     id: 'coup',
-    name: 'クー',
+    name: '謀略',
     nameEn: 'COUP',
     description:
       '嘘をついても、バレなければ勝ち。持っていないキャラクターも堂々と宣言し、ライバルを蹴落とせ！最後に生き残った者が勝者。',
