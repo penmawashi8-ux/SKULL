@@ -114,6 +114,21 @@ const games: Game[] = [
     tags: ['トランプ', '特殊カード', 'パーティ'],
   },
   {
+    id: 'coup',
+    name: 'クー',
+    nameEn: 'COUP',
+    description:
+      '嘘をついても、バレなければ勝ち。公爵・暗殺者・大使…持っていないキャラクターも堂々と宣言し、ライバルを蹴落とせ！最後に生き残った者が勝者。',
+    icon: '👑',
+    status: 'available',
+    url: 'https://coup-two.vercel.app',
+    accentColor: '#10b981',
+    cardBg: 'linear-gradient(135deg, #0a1f15 0%, #122b1e 100%)',
+    players: '2〜6人',
+    duration: '約15〜30分',
+    tags: ['ブラフ', '心理戦', '推理'],
+  },
+  {
     id: 'tbd-1',
     name: '？？？',
     nameEn: 'TBD',
