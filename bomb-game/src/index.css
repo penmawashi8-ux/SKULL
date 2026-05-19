@@ -17,17 +17,13 @@
 html, body {
   margin: 0;
   padding: 0;
-  overflow: hidden;
   overscroll-behavior: none;
-  height: 100%;
 }
 
 #root {
   height: 100svh;
-  overflow: hidden;
   /* Push content below Dynamic Island / notch */
   padding-top: env(safe-area-inset-top);
-  /* Flex container so screens use flex-1 instead of h-full (more reliable on iOS PWA) */
   display: flex;
   flex-direction: column;
 }
