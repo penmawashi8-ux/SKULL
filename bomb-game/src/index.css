@@ -21,7 +21,8 @@ html, body {
 }
 
 #root {
-  height: 100svh;
+  height: 100dvh;
+  overflow: hidden;
   /* Push content below Dynamic Island / notch */
   padding-top: env(safe-area-inset-top);
   display: flex;
