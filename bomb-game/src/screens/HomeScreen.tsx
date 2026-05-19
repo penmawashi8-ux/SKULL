@@ -47,12 +47,7 @@ export function HomeScreen() {
       ))}
 
       {/* Main content */}
-      <motion.div
-        className="relative z-10 flex flex-col items-center gap-8 px-6 text-center"
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.9, ease: 'easeOut' }}
-      >
+      <div className="relative z-10 flex flex-col items-center gap-8 px-6 text-center">
         {/* Bomb icon */}
         <motion.div
           className="w-28 h-28"
@@ -116,7 +111,7 @@ export function HomeScreen() {
         >
           3〜6人 • スマートフォン対応
         </p>
-      </motion.div>
+      </div>
     </div>
   )
 }

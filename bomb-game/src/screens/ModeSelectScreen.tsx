@@ -18,14 +18,14 @@ const RULES = [
   },
   {
     title: '入札フェーズ',
-    body: '「○枚の🍎をめくれる」と宣言してチャレンジ開始。他のプレイヤーはより高く宣言するかパス（フォールド）。',
+    body: '「○枚のりんごをめくれる」と宣言してチャレンジ開始。他のプレイヤーはより高く宣言するかパス（フォールド）。',
   },
   {
     title: 'めくりフェーズ',
-    body: '最高入札者が自分の山を全部めくった後、他の山を自由な順でめくる。宣言枚数の🍎をめくれたら勝利点！',
+    body: '最高入札者が自分の山を全部めくった後、他の山を自由な順でめくる。宣言枚数のりんごをめくれたら勝利点！',
   },
   {
-    title: '💣 爆弾を踏んだら',
+    title: '爆弾を踏んだら',
     body: '自分の手札からランダムに1枚を失う。手札が0になると脱落。',
   },
   {
@@ -34,7 +34,7 @@ const RULES = [
   },
   {
     title: 'エモート',
-    body: 'カードを置いた直後に💣か🍎のエモートを送れる。相手をブラフで惑わせよう！',
+    body: 'カードを置いた直後に爆弾かりんごのエモートを送れる。相手をブラフで惑わせよう！',
   },
 ]
 
@@ -100,17 +100,12 @@ export function ModeSelectScreen() {
       </div>
 
       {/* Mode buttons */}
-      <div className="flex-1 flex flex-col justify-center px-6 gap-4 pb-12">
+      <div className="flex-1 overflow-y-auto px-6 py-4 flex flex-col gap-4">
         {MODES.map((mode, idx) => (
-          <motion.button
+          <button
             key={mode.label}
             onClick={() => handleMode(idx)}
-            className={`w-full p-5 rounded-2xl border ${mode.border} bg-gradient-to-br ${mode.gradient} shadow-xl ${mode.glow} text-left relative overflow-hidden`}
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: idx * 0.1, duration: 0.4 }}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+            className={`w-full p-5 rounded-2xl border ${mode.border} bg-gradient-to-br ${mode.gradient} shadow-xl ${mode.glow} text-left relative overflow-hidden active:scale-[0.98] transition-transform`}
           >
             <div className="flex items-center gap-4">
               <div>
@@ -129,39 +124,28 @@ export function ModeSelectScreen() {
               </div>
               <span className="ml-auto text-white/30 text-xl">›</span>
             </div>
-          </motion.button>
+          </button>
         ))}
 
         {/* Online submenu */}
-        <AnimatePresence>
-          {showOnline && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="overflow-hidden"
+        {showOnline && (
+          <div className="flex gap-3 pt-1">
+            <button
+              onClick={() => { playButtonPress(); navigate('/online/create') }}
+              className="flex-1 py-3 rounded-xl bg-purple-800/60 border border-purple-500/30 text-white text-sm font-semibold active:scale-[0.97] transition-transform"
+              style={{ fontFamily: 'Cinzel, serif' }}
             >
-              <div className="flex gap-3 pt-1">
-                <motion.button
-                  onClick={() => { playButtonPress(); navigate('/online/create') }}
-                  className="flex-1 py-3 rounded-xl bg-purple-800/60 border border-purple-500/30 text-white text-sm font-semibold"
-                  whileTap={{ scale: 0.97 }}
-                  style={{ fontFamily: 'Cinzel, serif' }}
-                >
-                  ＋ ルームを作る
-                </motion.button>
-                <motion.button
-                  onClick={() => { playButtonPress(); navigate('/online/join') }}
-                  className="flex-1 py-3 rounded-xl bg-purple-800/60 border border-purple-500/30 text-white text-sm font-semibold"
-                  whileTap={{ scale: 0.97 }}
-                  style={{ fontFamily: 'Cinzel, serif' }}
-                >
-                  → ルームに入る
-                </motion.button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+              ＋ ルームを作る
+            </button>
+            <button
+              onClick={() => { playButtonPress(); navigate('/online/join') }}
+              className="flex-1 py-3 rounded-xl bg-purple-800/60 border border-purple-500/30 text-white text-sm font-semibold active:scale-[0.97] transition-transform"
+              style={{ fontFamily: 'Cinzel, serif' }}
+            >
+              → ルームに入る
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Rules modal */}
@@ -209,7 +193,7 @@ export function ModeSelectScreen() {
               </div>
               <button
                 onClick={() => { playButtonPress(); setShowRules(false) }}
-                className="mt-6 w-full py-3 rounded-xl border border-white/20 text-white/70 text-sm"
+                className="mt-6 w-full py-3 rounded-xl border border-white/20 text-white/70 text-sm active:scale-[0.97] transition-transform"
               >
                 閉じる
               </button>

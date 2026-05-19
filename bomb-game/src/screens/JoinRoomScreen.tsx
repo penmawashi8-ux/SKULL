@@ -1,6 +1,5 @@
 import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { motion } from 'framer-motion'
 import { useGameStore } from '../store/gameStore'
 
 const RANDOM_NAMES = ['騎士', '魔法使い', '盗賊', '詩人', '商人', '旅人', '冒険者', '忍者', '吟遊詩人', '錬金術師']
@@ -16,8 +15,6 @@ export function JoinRoomScreen() {
   const joiningRef = useRef(false)
 
   function handleCodeChange(raw: string) {
-    // Room codes are either all letters or all numbers.
-    // Determine mode from the first character already entered.
     const filtered = raw.replace(/[^a-zA-Z0-9]/g, '')
     const base = code.length > 0 ? code : filtered
     if (base.length === 0) { setCode(''); return }
@@ -67,7 +64,7 @@ export function JoinRoomScreen() {
       {/* Scrollable content */}
       <div className="flex-1 min-h-0 overflow-y-auto px-6 pt-6 pb-4 flex flex-col gap-6">
         {/* Name */}
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
+        <div>
           <label
             className="block text-white/60 text-sm mb-2"
             style={{ fontFamily: 'Crimson Text, serif' }}
@@ -83,10 +80,10 @@ export function JoinRoomScreen() {
             className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/20 focus:outline-none focus:border-purple-500/60 text-lg"
             style={{ fontFamily: 'Crimson Text, serif' }}
           />
-        </motion.div>
+        </div>
 
         {/* Room code */}
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+        <div>
           <label
             className="block text-white/60 text-sm mb-2"
             style={{ fontFamily: 'Crimson Text, serif' }}
@@ -106,7 +103,6 @@ export function JoinRoomScreen() {
             className="w-full px-4 py-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/20 focus:outline-none focus:border-purple-500/60 text-center text-3xl tracking-[0.3em] font-bold"
             style={{ fontFamily: 'Cinzel, serif', textTransform: 'uppercase' }}
           />
-          {/* Progress dots */}
           <div className="flex justify-center gap-2 mt-3">
             {Array.from({ length: 6 }, (_, i) => (
               <div
@@ -117,29 +113,27 @@ export function JoinRoomScreen() {
               />
             ))}
           </div>
-        </motion.div>
+        </div>
 
         {error && (
-          <motion.p
+          <p
             className="text-red-400 text-sm text-center bg-red-950/30 border border-red-500/20 rounded-xl py-3 px-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
             style={{ fontFamily: 'Crimson Text, serif' }}
           >
             {error}
-          </motion.p>
+          </p>
         )}
       </div>
 
-      {/* Join button — always visible at bottom */}
+      {/* Join button */}
       <div
         className="flex-shrink-0 px-6 pt-3 pb-6"
         style={{ paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom))' }}
       >
-        <motion.button
+        <button
           onClick={handleJoin}
           disabled={isLoading || isSubmitting || !isReady}
-          className="w-full py-4 rounded-2xl text-white text-xl font-bold disabled:opacity-40"
+          className="w-full py-4 rounded-2xl text-white text-xl font-bold disabled:opacity-40 active:scale-[0.97] transition-transform"
           style={{
             fontFamily: 'Cinzel, serif',
             background: 'linear-gradient(135deg, #6d28d9, #4c1d95)',
@@ -147,14 +141,9 @@ export function JoinRoomScreen() {
             touchAction: 'manipulation',
             pointerEvents: (isLoading || isSubmitting) ? 'none' : 'auto',
           }}
-          whileHover={isReady && !isSubmitting ? { scale: 1.02 } : {}}
-          whileTap={isReady && !isSubmitting ? { scale: 0.97 } : {}}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15 }}
         >
           {isLoading || isSubmitting ? '参加中...' : '参加する'}
-        </motion.button>
+        </button>
       </div>
     </div>
   )
