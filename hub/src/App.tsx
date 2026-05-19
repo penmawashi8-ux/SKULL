@@ -131,7 +131,7 @@ const games: Game[] = [
   },
   {
     id: 'g-board-app',
-    name: 'G Umber',
+    name: 'G Umber（ベータ版）',
     nameEn: 'G UMBER',
     description: '戦略とひらめきで勝負する対戦型ウェブアプリ。',
     icon: '🧠',
