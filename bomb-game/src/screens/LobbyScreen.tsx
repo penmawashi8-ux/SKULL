@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
 import { useNavigate, useParams } from 'react-router-dom'
-import { motion, AnimatePresence } from 'framer-motion'
 import { useGameStore } from '../store/gameStore'
 import { playButtonPress } from '../lib/sounds'
 
@@ -102,14 +101,12 @@ export function LobbyScreen() {
 
       {/* Room code card */}
       <div className="px-6 mb-3">
-        <motion.div
+        <div
           className="rounded-2xl px-6 py-3 text-center"
           style={{
             background: 'linear-gradient(135deg, rgba(109,40,217,0.2), rgba(76,29,149,0.15))',
             border: '1px solid rgba(139,92,246,0.3)',
           }}
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
         >
           <p className="text-white/40 text-xs tracking-widest mb-0.5" style={{ fontFamily: 'Crimson Text, serif' }}>
             ROOM CODE
@@ -123,15 +120,14 @@ export function LobbyScreen() {
           >
             {roomCode}
           </p>
-          <motion.button
+          <button
             onClick={handleCopy}
-            className="text-purple-300/70 text-sm flex items-center gap-1.5 mx-auto"
-            whileTap={{ scale: 0.95 }}
+            className="text-purple-300/70 text-sm flex items-center gap-1.5 mx-auto active:scale-95 transition-transform"
             style={{ fontFamily: 'Crimson Text, serif' }}
           >
             {copied ? '✓ コピーしました' : '📋 コードをコピー'}
-          </motion.button>
-        </motion.div>
+          </button>
+        </div>
       </div>
 
       {/* Players list */}
@@ -146,39 +142,32 @@ export function LobbyScreen() {
         </div>
 
         <div className="space-y-2">
-          <AnimatePresence>
-            {players.map((player, idx) => (
-              <motion.div
-                key={player.id}
-                layout
-                initial={{ opacity: 0, x: -20, scale: 0.95 }}
-                animate={{ opacity: 1, x: 0, scale: 1 }}
-                exit={{ opacity: 0, x: 20 }}
-                transition={{ type: 'spring', stiffness: 300, damping: 25, delay: idx * 0.05 }}
-                className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-xl px-4 py-3"
+          {players.map((player) => (
+            <div
+              key={player.id}
+              className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-xl px-4 py-3"
+            >
+              <span
+                className={`w-3 h-3 rounded-full flex-shrink-0 ${COLOR_DOT[player.player_color] ?? 'bg-gray-500'}`}
+              />
+              <span
+                className="text-white font-medium flex-1"
+                style={{ fontFamily: 'Crimson Text, serif' }}
               >
-                <span
-                  className={`w-3 h-3 rounded-full flex-shrink-0 ${COLOR_DOT[player.player_color] ?? 'bg-gray-500'}`}
-                />
-                <span
-                  className="text-white font-medium flex-1"
-                  style={{ fontFamily: 'Crimson Text, serif' }}
-                >
-                  {player.player_name}
+                {player.player_name}
+              </span>
+              {player.session_id === sessionId && (
+                <span className="text-purple-400/60 text-xs" style={{ fontFamily: 'Crimson Text, serif' }}>
+                  あなた
                 </span>
-                {player.session_id === sessionId && (
-                  <span className="text-purple-400/60 text-xs" style={{ fontFamily: 'Crimson Text, serif' }}>
-                    あなた
-                  </span>
-                )}
-                {room.host_id === sessionId && player.session_id === sessionId && (
-                  <span className="text-amber-400/70 text-xs ml-1" style={{ fontFamily: 'Cinzel, serif' }}>
-                    HOST
-                  </span>
-                )}
-              </motion.div>
-            ))}
-          </AnimatePresence>
+              )}
+              {room.host_id === sessionId && player.session_id === sessionId && (
+                <span className="text-amber-400/70 text-xs ml-1" style={{ fontFamily: 'Cinzel, serif' }}>
+                  HOST
+                </span>
+              )}
+            </div>
+          ))}
 
           {/* Empty slots — CPU will be auto-added on start */}
           {Array.from({ length: emptySlots }, (_, i) => (

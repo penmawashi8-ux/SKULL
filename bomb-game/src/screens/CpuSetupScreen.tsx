@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { motion } from 'framer-motion'
 import { useGameStore } from '../store/gameStore'
 
 const RANDOM_NAMES = ['騎士', '魔法使い', '盗賊', '詩人', '商人', '旅人', '冒険者', '忍者', '吟遊詩人', '錬金術師']
@@ -55,11 +54,7 @@ export function CpuSetupScreen() {
       {/* Scrollable settings */}
       <div className="flex-1 min-h-0 overflow-y-auto px-6 pt-2 pb-4 flex flex-col gap-6">
         {/* Player name */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.05 }}
-        >
+        <div>
           <label
             className="block text-white/60 text-sm mb-2"
             style={{ fontFamily: 'Crimson Text, serif' }}
@@ -75,14 +70,10 @@ export function CpuSetupScreen() {
             className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/20 focus:outline-none focus:border-purple-500/60 text-lg"
             style={{ fontFamily: 'Crimson Text, serif' }}
           />
-        </motion.div>
+        </div>
 
         {/* CPU count */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-        >
+        <div>
           <label
             className="block text-white/60 text-sm mb-3"
             style={{ fontFamily: 'Crimson Text, serif' }}
@@ -90,50 +81,43 @@ export function CpuSetupScreen() {
             CPU人数　<span className="text-white font-bold text-base">{cpuCount} 人</span>
           </label>
           <div className="flex items-center gap-4">
-            <motion.button
+            <button
               onClick={() => setCpuCount(v => Math.max(1, v - 1))}
               disabled={cpuCount <= 1}
-              className="w-10 h-10 rounded-full border border-white/20 text-white text-xl disabled:opacity-30 flex items-center justify-center"
-              whileTap={{ scale: 0.9 }}
+              className="w-10 h-10 rounded-full border border-white/20 text-white text-xl disabled:opacity-30 flex items-center justify-center active:scale-90 transition-transform"
             >
               −
-            </motion.button>
+            </button>
             <div className="flex-1 flex justify-center gap-2">
               {Array.from({ length: 5 }, (_, i) => i + 1).map(n => (
-                <motion.button
+                <button
                   key={n}
                   onClick={() => setCpuCount(n)}
-                  className={`w-9 h-9 rounded-lg text-sm font-bold border transition-all ${
+                  className={`w-9 h-9 rounded-lg text-sm font-bold border transition-all active:scale-90 ${
                     cpuCount === n
                       ? 'bg-purple-600 border-purple-400 text-white'
                       : 'bg-white/5 border-white/10 text-white/40'
                   }`}
-                  whileTap={{ scale: 0.9 }}
                 >
                   {n}
-                </motion.button>
+                </button>
               ))}
             </div>
-            <motion.button
+            <button
               onClick={() => setCpuCount(v => Math.min(5, v + 1))}
               disabled={cpuCount >= 5}
-              className="w-10 h-10 rounded-full border border-white/20 text-white text-xl disabled:opacity-30 flex items-center justify-center"
-              whileTap={{ scale: 0.9 }}
+              className="w-10 h-10 rounded-full border border-white/20 text-white text-xl disabled:opacity-30 flex items-center justify-center active:scale-90 transition-transform"
             >
               ＋
-            </motion.button>
+            </button>
           </div>
           <p className="text-white/30 text-xs text-center mt-2" style={{ fontFamily: 'Crimson Text, serif' }}>
             合計 {cpuCount + 1} 人でプレイ
           </p>
-        </motion.div>
+        </div>
 
         {/* Difficulty */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15 }}
-        >
+        <div>
           <label
             className="block text-white/60 text-sm mb-3"
             style={{ fontFamily: 'Crimson Text, serif' }}
@@ -142,15 +126,14 @@ export function CpuSetupScreen() {
           </label>
           <div className="flex flex-col gap-2">
             {DIFFICULTIES.map(d => (
-              <motion.button
+              <button
                 key={d.value}
                 onClick={() => setDifficulty(d.value)}
-                className={`w-full p-4 rounded-xl border-2 text-left transition-all ${
+                className={`w-full p-4 rounded-xl border-2 text-left transition-all active:scale-[0.98] ${
                   difficulty === d.value
                     ? `${d.color} bg-white/5`
                     : 'border-white/10 text-white/40 bg-transparent'
                 }`}
-                whileTap={{ scale: 0.98 }}
               >
                 <span
                   className="font-bold text-base block"
@@ -164,10 +147,10 @@ export function CpuSetupScreen() {
                 >
                   {d.sub}
                 </span>
-              </motion.button>
+              </button>
             ))}
           </div>
-        </motion.div>
+        </div>
 
         {error && (
           <p className="text-red-400 text-sm text-center" style={{ fontFamily: 'Crimson Text, serif' }}>
