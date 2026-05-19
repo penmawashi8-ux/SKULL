@@ -31,7 +31,7 @@ export function GameScreen() {
   if (!room || !gameState) {
     return (
       <div
-        className="min-h-screen flex items-center justify-center"
+        className="flex-1 flex items-center justify-center"
         style={{ background: '#030712' }}
       >
         <p className="text-white/40" style={{ fontFamily: 'Crimson Text, serif' }}>

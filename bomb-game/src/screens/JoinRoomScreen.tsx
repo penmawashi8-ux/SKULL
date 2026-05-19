@@ -44,7 +44,7 @@ export function JoinRoomScreen() {
 
   return (
     <div
-      className="h-full flex flex-col"
+      className="flex-1 min-h-0 flex flex-col"
       style={{ background: 'radial-gradient(ellipse at 50% 0%, #1a0a2e 0%, #030712 70%)' }}
     >
       {/* Header */}

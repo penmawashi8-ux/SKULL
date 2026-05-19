@@ -410,7 +410,7 @@ export function GameBoard({ onGameEnd, onReturnToHub }: Props) {
 
   return (
     <div
-      className="h-full flex flex-col overflow-hidden bg-gray-950 text-white"
+      className="flex-1 min-h-0 flex flex-col overflow-hidden bg-gray-950 text-white"
       style={{ fontFamily: 'Crimson Text, serif' }}
     >
       <ActionLog entries={log} />
