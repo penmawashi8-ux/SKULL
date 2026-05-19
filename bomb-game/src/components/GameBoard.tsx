@@ -499,10 +499,10 @@ export function GameBoard({ onGameEnd, onReturnToHub }: Props) {
             <p className="text-white/40 text-xs mb-1">手札</p>
             <div className="flex gap-1 flex-wrap">
               {Array.from({ length: myPlayer.flower_count }).map((_, i) => (
-                <span key={`f-${i}`} className="text-xl leading-none">🍎</span>
+                <img key={`f-${i}`} src="/apple.svg" alt="りんご" className="w-6 h-6" />
               ))}
               {Array.from({ length: myPlayer.bomb_count }).map((_, i) => (
-                <span key={`b-${i}`} className="text-xl leading-none">💣</span>
+                <img key={`b-${i}`} src="/bomb.svg" alt="爆弾" className="w-6 h-6" />
               ))}
             </div>
             <p className="text-white/30 text-xs mt-0.5">
@@ -532,7 +532,7 @@ export function GameBoard({ onGameEnd, onReturnToHub }: Props) {
                   className="flex-1 py-2 rounded-xl bg-red-900/50 border border-red-500/30 flex items-center justify-center gap-1.5"
                   whileTap={{ scale: 0.95 }}
                 >
-                  <span className="text-xl leading-none">💣</span>
+                  <img src="/bomb.svg" alt="爆弾" className="w-6 h-6" />
                   <span className="text-red-300 text-xs" style={{ fontFamily: 'Crimson Text, serif' }}>爆弾だ！</span>
                 </motion.button>
                 <motion.button
@@ -540,7 +540,7 @@ export function GameBoard({ onGameEnd, onReturnToHub }: Props) {
                   className="flex-1 py-2 rounded-xl bg-emerald-900/50 border border-emerald-500/30 flex items-center justify-center gap-1.5"
                   whileTap={{ scale: 0.95 }}
                 >
-                  <span className="text-xl leading-none">🍎</span>
+                  <img src="/apple.svg" alt="りんご" className="w-6 h-6" />
                   <span className="text-emerald-300 text-xs" style={{ fontFamily: 'Crimson Text, serif' }}>りんごだ！</span>
                 </motion.button>
               </div>
@@ -563,20 +563,20 @@ export function GameBoard({ onGameEnd, onReturnToHub }: Props) {
                   <motion.button
                     onClick={handlePlaceFlower}
                     disabled={isLoading || isActing || hasPlacedThisTurn || myPlayer.flower_count === 0}
-                    className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-emerald-800 to-emerald-600 text-white font-bold disabled:opacity-40 text-sm"
+                    className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-emerald-800 to-emerald-600 text-white font-bold disabled:opacity-40 text-sm flex items-center justify-center gap-1.5"
                     whileTap={!isActing && !hasPlacedThisTurn ? { scale: 0.96 } : {}}
                     style={{ fontFamily: 'Cinzel, serif', touchAction: 'manipulation', pointerEvents: (isLoading || isActing || hasPlacedThisTurn) ? 'none' : 'auto' }}
                   >
-                    🍎を置く
+                    <img src="/apple.svg" alt="" className="w-5 h-5" />を置く
                   </motion.button>
                   <motion.button
                     onClick={handlePlaceBomb}
                     disabled={isLoading || isActing || hasPlacedThisTurn || myPlayer.bomb_count === 0}
-                    className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-gray-700 to-gray-600 text-white font-bold disabled:opacity-40 text-sm"
+                    className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-gray-700 to-gray-600 text-white font-bold disabled:opacity-40 text-sm flex items-center justify-center gap-1.5"
                     whileTap={!isActing && !hasPlacedThisTurn ? { scale: 0.96 } : {}}
                     style={{ fontFamily: 'Cinzel, serif', touchAction: 'manipulation', pointerEvents: (isLoading || isActing || hasPlacedThisTurn) ? 'none' : 'auto' }}
                   >
-                    💣 爆弾
+                    <img src="/bomb.svg" alt="" className="w-5 h-5" />爆弾
                   </motion.button>
                 </div>
               )}

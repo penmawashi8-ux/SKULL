@@ -1,29 +1,29 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
   <defs>
     <radialGradient id="bg" cx="40%" cy="35%" r="70%">
-      <stop offset="0%" stop-color="#081a0e"/><stop offset="100%" stop-color="#020806"/>
+      <stop offset="0%" stop-color="#0a1408"/>
+      <stop offset="100%" stop-color="#020503"/>
     </radialGradient>
-    <radialGradient id="apple" gradientUnits="userSpaceOnUse" cx="50" cy="48" r="36">
-      <stop offset="0%"   stop-color="#f0e070"/>
-      <stop offset="25%"  stop-color="#c8b030"/>
-      <stop offset="60%"  stop-color="#7a8020"/>
-      <stop offset="100%" stop-color="#1e2808"/>
+    <radialGradient id="apple" gradientUnits="userSpaceOnUse" cx="44" cy="46" r="32">
+      <stop offset="0%"   stop-color="#ff9090"/>
+      <stop offset="18%"  stop-color="#ff2020"/>
+      <stop offset="55%"  stop-color="#bb0000"/>
+      <stop offset="100%" stop-color="#4a0000"/>
     </radialGradient>
-    <radialGradient id="leaf" gradientUnits="userSpaceOnUse" cx="66" cy="34" r="12">
-      <stop offset="0%"   stop-color="#d0e040"/>
-      <stop offset="100%" stop-color="#3a5008"/>
+    <radialGradient id="leaf" gradientUnits="userSpaceOnUse" cx="66" cy="32" r="12">
+      <stop offset="0%"   stop-color="#6ee040"/>
+      <stop offset="100%" stop-color="#1a6008"/>
     </radialGradient>
     <filter id="sh"><feDropShadow dx="1" dy="3" stdDeviation="4" flood-color="#000" flood-opacity="0.65"/></filter>
     <clipPath id="cl"><circle cx="60" cy="60" r="50"/></clipPath>
   </defs>
 
   <circle cx="60" cy="60" r="58" fill="url(#bg)"/>
-  <circle cx="60" cy="60" r="57" fill="none" stroke="#10b981" stroke-width="5" opacity="0.12"/>
-  <circle cx="60" cy="60" r="56" fill="none" stroke="#10b981" stroke-width="1.2" opacity="0.75"/>
-  <circle cx="60" cy="60" r="53" fill="none" stroke="#10b981" stroke-width="0.5" opacity="0.25"/>
+  <circle cx="60" cy="60" r="57" fill="none" stroke="#22c55e" stroke-width="5" opacity="0.12"/>
+  <circle cx="60" cy="60" r="56" fill="none" stroke="#22c55e" stroke-width="1.2" opacity="0.75"/>
+  <circle cx="60" cy="60" r="53" fill="none" stroke="#22c55e" stroke-width="0.5" opacity="0.25"/>
 
   <g clip-path="url(#cl)">
-    <!-- Apple body (two lobes joined at bottom) -->
     <path d="
       M 60 36
       C 50 34, 32 38, 30 54
@@ -35,27 +35,22 @@
       Z
     " fill="url(#apple)" filter="url(#sh)"/>
 
-    <!-- Center indent at top -->
-    <ellipse cx="60" cy="37" rx="5" ry="4" fill="#1e2808" opacity="0.45"/>
+    <ellipse cx="60" cy="37" rx="5" ry="4" fill="#3a0000" opacity="0.5"/>
 
-    <!-- Apple shine (left lobe highlight) -->
-    <ellipse cx="44" cy="52" rx="9" ry="13" fill="white" opacity="0.13"
-             transform="rotate(-25 44 52)"/>
-    <ellipse cx="42" cy="50" rx="4" ry="7" fill="white" opacity="0.1"
-             transform="rotate(-25 42 50)"/>
+    <ellipse cx="43" cy="52" rx="10" ry="14" fill="white" opacity="0.20"
+             transform="rotate(-25 43 52)"/>
+    <ellipse cx="41" cy="50" rx="4.5" ry="8" fill="white" opacity="0.15"
+             transform="rotate(-25 41 50)"/>
 
-    <!-- Stem -->
     <path d="M 60 36 C 60 30, 62 24, 65 20"
-          fill="none" stroke="#5a3808" stroke-width="3.5" stroke-linecap="round"/>
+          fill="none" stroke="#4a2808" stroke-width="3.5" stroke-linecap="round"/>
     <path d="M 60 36 C 60 30, 62 24, 65 20"
-          fill="none" stroke="#a06018" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+          fill="none" stroke="#9a6028" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
 
-    <!-- Leaf -->
     <path d="M 64 26 C 70 20, 80 20, 78 30 C 76 36, 68 36, 64 26 Z"
           fill="url(#leaf)" filter="url(#sh)"/>
-    <path d="M 64 26 C 68 26, 74 26, 74 30" fill="none" stroke="#2a3808" stroke-width="1" opacity="0.5"/>
-    <!-- Leaf shine -->
-    <ellipse cx="72" cy="25" rx="4" ry="2.5" fill="white" opacity="0.12" transform="rotate(-30 72 25)"/>
+    <path d="M 64 26 C 68 26, 74 26, 74 30" fill="none" stroke="#1a4808" stroke-width="1" opacity="0.5"/>
+    <ellipse cx="72" cy="24" rx="4" ry="2.5" fill="white" opacity="0.15" transform="rotate(-30 72 24)"/>
   </g>
 
   <circle cx="60" cy="60" r="50" fill="none" stroke="black" stroke-width="6" opacity="0.35"/>

@@ -188,9 +188,9 @@ export function PlayerCard({
                 {highestBid}枚宣言
               </span>
             )}
-            <div className="flex gap-1 text-xs text-white/50">
-              <span>🍎×{player.flower_count}</span>
-              <span>💣×{player.bomb_count}</span>
+            <div className="flex gap-1.5 text-xs text-white/50">
+              <span className="flex items-center gap-0.5"><img src="/apple.svg" alt="" className="w-4 h-4" />×{player.flower_count}</span>
+              <span className="flex items-center gap-0.5"><img src="/bomb.svg" alt="" className="w-4 h-4" />×{player.bomb_count}</span>
             </div>
           </div>
           {!player.is_eliminated && (
