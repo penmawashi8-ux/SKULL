@@ -5,10 +5,10 @@
       <stop offset="100%" stop-color="#080303"/>
     </radialGradient>
     <radialGradient id="bombBody" gradientUnits="userSpaceOnUse" cx="46" cy="52" r="28">
-      <stop offset="0%"   stop-color="#b0b0b0"/>
-      <stop offset="22%"  stop-color="#606060"/>
-      <stop offset="60%"  stop-color="#282828"/>
-      <stop offset="100%" stop-color="#0a0a0a"/>
+      <stop offset="0%"   stop-color="#d0d0d0"/>
+      <stop offset="20%"  stop-color="#888888"/>
+      <stop offset="55%"  stop-color="#3c3c3c"/>
+      <stop offset="100%" stop-color="#0e0e0e"/>
     </radialGradient>
     <radialGradient id="sparkCore" cx="50%" cy="50%" r="50%">
       <stop offset="0%"   stop-color="#fff9c0"/>
@@ -24,7 +24,7 @@
       <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
     <filter id="bodyShading" x="-10%" y="-10%" width="120%" height="120%">
-      <feDropShadow dx="2" dy="4" stdDeviation="5" flood-color="#000" flood-opacity="0.85"/>
+      <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#000" flood-opacity="0.9"/>
     </filter>
     <clipPath id="clip">
       <circle cx="60" cy="60" r="50"/>
@@ -38,30 +38,32 @@
 
   <g clip-path="url(#clip)">
 
-    <!-- Bomb body: charcoal sphere with strong highlight -->
+    <!-- Bomb body -->
     <circle cx="58" cy="68" r="27" fill="url(#bombBody)" filter="url(#bodyShading)"/>
+    <!-- Visible edge stroke to separate from background -->
+    <circle cx="58" cy="68" r="27" fill="none" stroke="#888" stroke-width="1.2" opacity="0.5"/>
 
-    <!-- Primary highlight (bright) -->
-    <ellipse cx="47" cy="56" rx="11" ry="7.5" fill="white" opacity="0.28"
-             transform="rotate(-35 47 56)"/>
-    <!-- Secondary highlight (soft) -->
-    <ellipse cx="45" cy="54" rx="5" ry="3.5" fill="white" opacity="0.20"
-             transform="rotate(-35 45 54)"/>
-    <!-- Rim light (bottom edge) -->
-    <ellipse cx="68" cy="82" rx="10" ry="4" fill="white" opacity="0.07"/>
+    <!-- Primary highlight -->
+    <ellipse cx="47" cy="55" rx="12" ry="8" fill="white" opacity="0.35"
+             transform="rotate(-35 47 55)"/>
+    <!-- Secondary highlight -->
+    <ellipse cx="45" cy="53" rx="5.5" ry="3.5" fill="white" opacity="0.25"
+             transform="rotate(-35 45 53)"/>
+    <!-- Rim light -->
+    <ellipse cx="68" cy="82" rx="10" ry="3.5" fill="white" opacity="0.08"/>
 
     <!-- Fuse connector cap -->
-    <rect x="54.5" y="39" width="8" height="7" rx="2.5" fill="#333"/>
-    <rect x="55.5" y="39.5" width="6" height="3" rx="1.5" fill="#666" opacity="0.6"/>
+    <rect x="54.5" y="39" width="8" height="7" rx="2.5" fill="#444"/>
+    <rect x="55.5" y="39.5" width="6" height="3" rx="1.5" fill="#777" opacity="0.6"/>
 
     <!-- Fuse wire -->
     <path d="M 58.5 39 C 56 30, 66 24, 68 15"
           fill="none" stroke="#7a5010" stroke-width="2.2" stroke-linecap="round"/>
     <path d="M 58.5 39 C 56 30, 66 24, 68 15"
-          fill="none" stroke="#d4a030" stroke-width="1" stroke-linecap="round" opacity="0.90"/>
+          fill="none" stroke="#d4a030" stroke-width="1.2" stroke-linecap="round" opacity="0.95"/>
 
     <!-- Spark glow -->
-    <circle cx="68" cy="14" r="8" fill="url(#sparkCore)" opacity="0.85" filter="url(#softGlow)"/>
+    <circle cx="68" cy="14" r="8" fill="url(#sparkCore)" opacity="0.9" filter="url(#softGlow)"/>
 
     <!-- Spark rays -->
     <g filter="url(#glow)">
