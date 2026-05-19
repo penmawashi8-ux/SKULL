@@ -20,8 +20,8 @@ interface Game {
   id: string
   name: string
   nameEn: string
+  symbol: string
   description: string
-  icon: string
   status: GameStatus
   url?: string
   accentColor: string
@@ -36,8 +36,8 @@ const games: Game[] = [
     id: 'bomb',
     name: 'BOMB',
     nameEn: 'BOMB',
+    symbol: 'BM',
     description: '爆弾かリンゴか——ブラフと心理戦が熱いパーティゲーム。仲間を騙して爆発を回避せよ！',
-    icon: '💣',
     status: 'available',
     url: BOMB_GAME_URL,
     accentColor: '#dc2626',
@@ -50,8 +50,8 @@ const games: Game[] = [
     id: 'pig-tail',
     name: 'ぶたのしっぽ',
     nameEn: "PIG'S TAIL",
+    symbol: 'PT',
     description: 'カードをめくって中央に積んでいく。マークが一致したら山を全部もらい、手札を一番少なく抑えた人が勝ち。',
-    icon: '🐷',
     status: 'available',
     url: 'https://buta-steel.vercel.app',
     accentColor: '#ec4899',
@@ -64,8 +64,8 @@ const games: Game[] = [
     id: 'keiba',
     name: 'バーチャル競馬',
     nameEn: 'VIRTUAL KEIBA',
+    symbol: 'VK',
     description: '馬を選んで予想して観戦！バーチャル競馬で白熱のゴール勝負を楽しもう。',
-    icon: '🐎',
     status: 'available',
     url: 'https://gamekeiba.vercel.app',
     accentColor: '#d97706',
@@ -78,8 +78,8 @@ const games: Game[] = [
     id: 'page-one',
     name: 'ページワン',
     nameEn: 'PAGE ONE',
+    symbol: 'PO',
     description: '手札のマークが合えばカードを出せる。最後の1枚になったら「ページワン！」と宣言。手札をなくした人が勝ちのトランプゲーム。',
-    icon: '🃏',
     status: 'available',
     url: 'https://pageone-wine.vercel.app',
     accentColor: '#3b82f6',
@@ -92,8 +92,8 @@ const games: Game[] = [
     id: 'coup',
     name: '謀略',
     nameEn: 'BORYAKU',
+    symbol: 'BK',
     description: '嘘をついても、バレなければ勝ち。持っていないキャラクターも堂々と宣言し、ライバルを蹴落とせ！最後に生き残った者が勝者。',
-    icon: '👑',
     status: 'available',
     url: 'https://coup-two.vercel.app',
     accentColor: '#10b981',
@@ -106,8 +106,8 @@ const games: Game[] = [
     id: 'racing-board',
     name: '疾走（ベータ版）',
     nameEn: 'SHISSOU',
+    symbol: 'SH',
     description: '進め！斜行して相手を止めろ。邪魔をかいくぐり、誰より先にゴールを目指せ！',
-    icon: '🏇',
     status: 'available',
     url: 'https://g-oei1.vercel.app',
     accentColor: '#ea580c',
@@ -120,8 +120,8 @@ const games: Game[] = [
     id: 'g-board-app',
     name: 'G Umber（ベータ版）',
     nameEn: 'G UMBER',
+    symbol: 'GU',
     description: '戦略とひらめきで勝負する対戦型ウェブアプリ。',
-    icon: '🧠',
     status: 'available',
     url: 'https://g-umber-tau.vercel.app',
     accentColor: '#7c3aed',
@@ -134,8 +134,8 @@ const games: Game[] = [
     id: 'tbd-1',
     name: '？？？',
     nameEn: 'TBD',
+    symbol: '?',
     description: '鋭意制作中……',
-    icon: '❓',
     status: 'coming-soon',
     accentColor: '#0891b2',
     cardBg: 'linear-gradient(135deg, #0a1520 0%, #0a1e2e 100%)',
@@ -147,8 +147,8 @@ const games: Game[] = [
     id: 'tbd-2',
     name: '？？？',
     nameEn: 'TBD',
+    symbol: '?',
     description: '鋭意制作中……',
-    icon: '❓',
     status: 'coming-soon',
     accentColor: '#b45309',
     cardBg: 'linear-gradient(135deg, #150f04 0%, #221800 100%)',
@@ -169,6 +169,33 @@ function Tag({ text }: { text: string }) {
   )
 }
 
+function GameIcon({ game, available }: { game: Game; available: boolean }) {
+  const color = available ? game.accentColor : 'rgba(255,255,255,0.15)'
+  return (
+    <div
+      className="font-cinzel w-[62px] h-[62px] rounded-full flex items-center justify-center flex-shrink-0 select-none relative"
+      style={{
+        background: `radial-gradient(circle at 38% 32%, ${available ? game.accentColor + '18' : 'rgba(255,255,255,0.03)'} 0%, rgba(0,0,0,0.55) 100%)`,
+        border: `1.5px solid ${color}55`,
+        boxShadow: available
+          ? `0 0 0 3px rgba(0,0,0,0.5), 0 0 0 4.5px ${game.accentColor}22, inset 0 1px 0 rgba(255,255,255,0.07)`
+          : `0 0 0 3px rgba(0,0,0,0.3)`,
+        filter: available ? 'none' : 'brightness(0.4)',
+      }}
+    >
+      <span
+        className="text-[13px] font-black tracking-wider leading-none"
+        style={{
+          color,
+          textShadow: available ? `0 0 18px ${game.accentColor}90` : 'none',
+        }}
+      >
+        {game.symbol}
+      </span>
+    </div>
+  )
+}
+
 function GameRow({ game }: { game: Game }) {
   const isAvailable = game.status === 'available'
 
@@ -178,25 +205,16 @@ function GameRow({ game }: { game: Game }) {
       style={{
         background: game.cardBg,
         border: '1px solid rgba(255,255,255,0.07)',
-        boxShadow: isAvailable ? '0 2px 20px rgba(0,0,0,0.4)' : 'none',
+        boxShadow: isAvailable ? '0 2px 24px rgba(0,0,0,0.45)' : 'none',
       }}
     >
       {/* Left accent bar */}
       <div
         className="absolute left-0 top-5 bottom-5 w-[3px] rounded-r-full"
-        style={{ backgroundColor: isAvailable ? game.accentColor : 'rgba(255,255,255,0.08)' }}
+        style={{ backgroundColor: isAvailable ? game.accentColor : 'rgba(255,255,255,0.07)' }}
       />
 
-      {/* Icon */}
-      <div
-        className="text-[40px] w-[56px] h-[56px] flex items-center justify-center flex-shrink-0 rounded-xl ml-1 select-none"
-        style={{
-          background: 'rgba(0,0,0,0.3)',
-          filter: isAvailable ? 'none' : 'grayscale(80%) brightness(0.35)',
-        }}
-      >
-        {game.icon}
-      </div>
+      <GameIcon game={game} available={isAvailable} />
 
       {/* Info */}
       <div className="flex-1 min-w-0">
@@ -206,9 +224,7 @@ function GameRow({ game }: { game: Game }) {
         >
           {game.nameEn}
         </p>
-        <h2
-          className="font-serif-jp font-bold text-[15px] leading-snug mb-1.5 text-white truncate pr-1"
-        >
+        <h2 className="font-serif-jp font-bold text-[15px] leading-snug mb-1.5 text-white truncate pr-1">
           {game.name}
         </h2>
         <p
@@ -236,7 +252,7 @@ function GameRow({ game }: { game: Game }) {
             className="font-cinzel px-3 py-2.5 rounded-xl text-[11px] font-bold text-white text-center leading-snug min-w-[58px]"
             style={{
               backgroundColor: game.accentColor,
-              boxShadow: `0 0 16px ${game.accentColor}55`,
+              boxShadow: `0 0 18px ${game.accentColor}55`,
             }}
           >
             今すぐ<br />遊ぶ →
@@ -299,7 +315,7 @@ export default function App() {
           borderBottom: '1px solid rgba(255,255,255,0.05)',
         }}
       >
-        <div className="w-9 h-9 flex items-center justify-center rounded-lg text-white/40 text-lg">
+        <div className="w-9 h-9 flex items-center justify-center text-white/40 text-xl font-light">
           ☰
         </div>
         <div className="text-center">
@@ -309,22 +325,25 @@ export default function App() {
           >
             Board Game Collection
           </p>
-          <h1
-            className="font-serif-jp font-bold text-[13px] text-white tracking-wider"
-          >
+          {/* Diamond separator */}
+          <div className="flex items-center justify-center gap-2 my-0.5">
+            <div style={{ height: '1px', width: '28px', background: 'linear-gradient(to right, transparent, #b8922a55)' }} />
+            <div style={{ width: '4px', height: '4px', background: '#b8922a88', transform: 'rotate(45deg)' }} />
+            <div style={{ height: '1px', width: '28px', background: 'linear-gradient(to left, transparent, #b8922a55)' }} />
+          </div>
+          <h1 className="font-serif-jp font-bold text-[14px] text-white tracking-widest">
             ボドゲ広場
           </h1>
         </div>
-        <div className="w-9 h-9 flex items-center justify-center rounded-lg text-white/40 text-lg">
+        <div className="w-9 h-9 flex items-center justify-center text-white/40 text-xl">
           🔔
         </div>
       </header>
 
       {/* Hero */}
       <section className="relative px-5 pt-10 pb-7 overflow-hidden">
-        {/* Decorative background */}
         <div
-          className="absolute right-[-8px] top-[-4px] text-[100px] select-none pointer-events-none leading-none"
+          className="absolute right-[-8px] top-[-4px] text-[110px] select-none pointer-events-none leading-none"
           style={{ opacity: 0.07 }}
         >
           🃏
@@ -343,7 +362,7 @@ export default function App() {
           ブラウザで遊べる
         </p>
         <h2
-          className="font-serif-jp font-bold text-[30px] leading-tight mb-3 relative z-10"
+          className="font-serif-jp font-bold text-[32px] leading-tight mb-3 relative z-10"
           style={{ color: '#e2c97e' }}
         >
           ボドゲ広場
@@ -371,7 +390,6 @@ export default function App() {
           ))}
         </div>
 
-        {/* Coming soon */}
         {comingSoon.length > 0 && (
           <div className="mt-10">
             <div className="flex items-center gap-3 mb-5">
