@@ -3,8 +3,11 @@
     <radialGradient id="bg" cx="40%" cy="35%" r="70%">
       <stop offset="0%" stop-color="#1e1400"/><stop offset="100%" stop-color="#060400"/>
     </radialGradient>
-    <radialGradient id="horse" cx="30%" cy="25%" r="70%">
-      <stop offset="0%" stop-color="#c8920a"/><stop offset="40%" stop-color="#7a560a"/><stop offset="100%" stop-color="#1e1505"/>
+    <radialGradient id="horse" cx="38%" cy="28%" r="65%">
+      <stop offset="0%" stop-color="#f0d060"/>
+      <stop offset="30%" stop-color="#d4a030"/>
+      <stop offset="65%" stop-color="#9a6c18"/>
+      <stop offset="100%" stop-color="#3a2208"/>
     </radialGradient>
     <filter id="sh"><feDropShadow dx="2" dy="3" stdDeviation="4" flood-color="#000" flood-opacity="0.6"/></filter>
     <clipPath id="cl"><circle cx="60" cy="60" r="50"/></clipPath>
