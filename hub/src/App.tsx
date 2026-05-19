@@ -41,7 +41,7 @@ const games: Game[] = [
     status: 'available',
     url: BOMB_GAME_URL,
     accentColor: '#dc2626',
-    cardBg: 'linear-gradient(135deg, #1c1010 0%, #2d1515 100%)',
+    cardBg: 'linear-gradient(135deg, #1a0d0d 0%, #2a1111 100%)',
     players: '2〜6人',
     duration: '約20分',
     tags: ['ブラフ', '心理戦', 'パーティ'],
@@ -55,7 +55,7 @@ const games: Game[] = [
     status: 'available',
     url: 'https://buta-steel.vercel.app',
     accentColor: '#ec4899',
-    cardBg: 'linear-gradient(135deg, #1a0d15 0%, #2d1020 100%)',
+    cardBg: 'linear-gradient(135deg, #1a0d15 0%, #2a1020 100%)',
     players: '1〜6人',
     duration: '約10〜20分',
     tags: ['反射神経', 'トランプ', 'パーティ'],
@@ -68,8 +68,8 @@ const games: Game[] = [
     icon: '🐎',
     status: 'available',
     url: 'https://gamekeiba.vercel.app',
-    accentColor: '#f59e0b',
-    cardBg: 'linear-gradient(135deg, #150f00 0%, #2a1e00 100%)',
+    accentColor: '#d97706',
+    cardBg: 'linear-gradient(135deg, #160e00 0%, #271a00 100%)',
     players: '1人〜',
     duration: '約5〜10分',
     tags: ['競馬', '予想', 'バーチャル'],
@@ -82,8 +82,8 @@ const games: Game[] = [
     icon: '🃏',
     status: 'available',
     url: 'https://pageone-wine.vercel.app',
-    accentColor: '#2563eb',
-    cardBg: 'linear-gradient(135deg, #0a0f1e 0%, #0f1f40 100%)',
+    accentColor: '#3b82f6',
+    cardBg: 'linear-gradient(135deg, #080f1e 0%, #0d1a35 100%)',
     players: '1〜4人',
     duration: '約15〜30分',
     tags: ['トランプ', '特殊カード', 'パーティ'],
@@ -97,7 +97,7 @@ const games: Game[] = [
     status: 'available',
     url: 'https://coup-two.vercel.app',
     accentColor: '#10b981',
-    cardBg: 'linear-gradient(135deg, #0a1f15 0%, #122b1e 100%)',
+    cardBg: 'linear-gradient(135deg, #081a10 0%, #0f2518 100%)',
     players: '2〜6人',
     duration: '約15〜30分',
     tags: ['ブラフ', '心理戦', '推理'],
@@ -111,7 +111,7 @@ const games: Game[] = [
     status: 'available',
     url: 'https://g-oei1.vercel.app',
     accentColor: '#ea580c',
-    cardBg: 'linear-gradient(135deg, #1a0800 0%, #2d1200 100%)',
+    cardBg: 'linear-gradient(135deg, #180800 0%, #2a1000 100%)',
     players: '2人〜',
     duration: '約10〜20分',
     tags: ['レース', 'ブロック', 'β版'],
@@ -125,7 +125,7 @@ const games: Game[] = [
     status: 'available',
     url: 'https://g-umber-tau.vercel.app',
     accentColor: '#7c3aed',
-    cardBg: 'linear-gradient(135deg, #1e1b2e 0%, #2e1a47 100%)',
+    cardBg: 'linear-gradient(135deg, #160f28 0%, #22163c 100%)',
     players: '2人〜',
     duration: '約10〜20分',
     tags: ['対戦', '戦略', 'β版'],
@@ -138,7 +138,7 @@ const games: Game[] = [
     icon: '❓',
     status: 'coming-soon',
     accentColor: '#0891b2',
-    cardBg: 'linear-gradient(135deg, #0c1a2e 0%, #0a2540 100%)',
+    cardBg: 'linear-gradient(135deg, #0a1520 0%, #0a1e2e 100%)',
     players: '未定',
     duration: '未定',
     tags: ['未定'],
@@ -150,8 +150,8 @@ const games: Game[] = [
     description: '鋭意制作中……',
     icon: '❓',
     status: 'coming-soon',
-    accentColor: '#d97706',
-    cardBg: 'linear-gradient(135deg, #1c1208 0%, #2e1f00 100%)',
+    accentColor: '#b45309',
+    cardBg: 'linear-gradient(135deg, #150f04 0%, #221800 100%)',
     players: '未定',
     duration: '未定',
     tags: ['未定'],
@@ -160,8 +160,10 @@ const games: Game[] = [
 
 function Tag({ text }: { text: string }) {
   return (
-    <span className="inline-block text-[10px] font-bold px-2 py-0.5 rounded-full text-white/60"
-          style={{ background: 'rgba(255,255,255,0.08)' }}>
+    <span
+      className="font-sans-jp inline-block text-[10px] font-medium px-2 py-0.5 rounded-full"
+      style={{ background: 'rgba(255,255,255,0.09)', color: 'rgba(255,255,255,0.55)' }}
+    >
       {text}
     </span>
   )
@@ -172,24 +174,25 @@ function GameRow({ game }: { game: Game }) {
 
   const inner = (
     <div
-      className="relative flex items-center gap-3 px-4 py-4 rounded-2xl border transition-all duration-200 active:scale-[0.985]"
+      className="relative flex items-center gap-3.5 px-4 py-4 rounded-2xl transition-all duration-200 active:scale-[0.985] active:brightness-90"
       style={{
         background: game.cardBg,
-        borderColor: 'rgba(255,255,255,0.07)',
+        border: '1px solid rgba(255,255,255,0.07)',
+        boxShadow: isAvailable ? '0 2px 20px rgba(0,0,0,0.4)' : 'none',
       }}
     >
       {/* Left accent bar */}
       <div
-        className="absolute left-0 top-4 bottom-4 w-[3px] rounded-r-full"
-        style={{ backgroundColor: isAvailable ? game.accentColor : 'rgba(255,255,255,0.1)' }}
+        className="absolute left-0 top-5 bottom-5 w-[3px] rounded-r-full"
+        style={{ backgroundColor: isAvailable ? game.accentColor : 'rgba(255,255,255,0.08)' }}
       />
 
       {/* Icon */}
       <div
-        className="text-4xl w-14 h-14 flex items-center justify-center flex-shrink-0 rounded-xl select-none ml-1"
+        className="text-[40px] w-[56px] h-[56px] flex items-center justify-center flex-shrink-0 rounded-xl ml-1 select-none"
         style={{
-          background: 'rgba(0,0,0,0.25)',
-          filter: isAvailable ? 'none' : 'grayscale(80%) brightness(0.4)',
+          background: 'rgba(0,0,0,0.3)',
+          filter: isAvailable ? 'none' : 'grayscale(80%) brightness(0.35)',
         }}
       >
         {game.icon}
@@ -198,38 +201,56 @@ function GameRow({ game }: { game: Game }) {
       {/* Info */}
       <div className="flex-1 min-w-0">
         <p
-          className="text-[10px] font-black tracking-[0.18em] mb-0.5 uppercase"
-          style={{ color: isAvailable ? game.accentColor : 'rgba(255,255,255,0.2)' }}
+          className="font-cinzel text-[9px] font-bold tracking-[0.22em] uppercase mb-0.5"
+          style={{ color: isAvailable ? game.accentColor : 'rgba(255,255,255,0.18)' }}
         >
           {game.nameEn}
         </p>
-        <h2 className="text-base font-black text-white leading-tight mb-1.5 truncate pr-1">
+        <h2
+          className="font-serif-jp font-bold text-[15px] leading-snug mb-1.5 text-white truncate pr-1"
+        >
           {game.name}
         </h2>
-        <p className="text-[11px] text-white/45 leading-relaxed line-clamp-2 mb-2">
+        <p
+          className="font-sans-jp text-[11px] leading-relaxed line-clamp-2 mb-2"
+          style={{ color: 'rgba(255,255,255,0.42)' }}
+        >
           {game.description}
         </p>
         <div className="flex flex-wrap gap-1 mb-1.5">
           {game.tags.map(tag => <Tag key={tag} text={tag} />)}
         </div>
-        <div className="flex gap-3 text-[10px] text-white/25">
+        <div
+          className="font-sans-jp flex gap-3 text-[10px]"
+          style={{ color: 'rgba(255,255,255,0.22)' }}
+        >
           <span>👥 {game.players}</span>
           <span>⏱ {game.duration}</span>
         </div>
       </div>
 
       {/* CTA */}
-      <div className="flex-shrink-0 ml-1">
+      <div className="flex-shrink-0">
         {isAvailable ? (
           <div
-            className="px-3 py-2.5 rounded-xl text-[11px] font-black text-white text-center leading-tight min-w-[60px]"
-            style={{ backgroundColor: game.accentColor }}
+            className="font-cinzel px-3 py-2.5 rounded-xl text-[11px] font-bold text-white text-center leading-snug min-w-[58px]"
+            style={{
+              backgroundColor: game.accentColor,
+              boxShadow: `0 0 16px ${game.accentColor}55`,
+            }}
           >
             今すぐ<br />遊ぶ →
           </div>
         ) : (
-          <div className="px-3 py-2.5 rounded-xl text-[11px] font-bold text-white/20 text-center bg-white/5 border border-white/8 min-w-[60px] leading-tight">
-            準備<br />中...
+          <div
+            className="font-sans-jp px-3 py-2.5 rounded-xl text-[11px] text-center leading-snug min-w-[58px]"
+            style={{
+              color: 'rgba(255,255,255,0.18)',
+              background: 'rgba(255,255,255,0.04)',
+              border: '1px solid rgba(255,255,255,0.07)',
+            }}
+          >
+            準備<br />中…
           </div>
         )}
       </div>
@@ -240,14 +261,14 @@ function GameRow({ game }: { game: Game }) {
     return (
       <a
         href={game.url}
-        className="block no-underline"
+        className="block no-underline card-enter"
         onClick={e => { e.preventDefault(); window.location.assign(game.url!) }}
       >
         {inner}
       </a>
     )
   }
-  return <div>{inner}</div>
+  return <div className="card-enter">{inner}</div>
 }
 
 export default function App() {
@@ -263,59 +284,87 @@ export default function App() {
   const comingSoon = games.filter(g => g.status === 'coming-soon')
 
   return (
-    <div className="min-h-screen" style={{ background: '#08080f' }}>
+    <div className="min-h-screen" style={{ background: '#09090f' }}>
       <SafeRender>
         <UpdatePrompt />
       </SafeRender>
 
       {/* Header */}
       <header
-        className="sticky top-0 z-20 flex items-center px-4 py-3"
+        className="sticky top-0 z-20 flex items-center justify-between px-4 py-3"
         style={{
-          background: 'rgba(8,8,15,0.85)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          borderBottom: '1px solid rgba(255,255,255,0.06)',
+          background: 'rgba(9,9,15,0.88)',
+          backdropFilter: 'blur(24px)',
+          WebkitBackdropFilter: 'blur(24px)',
+          borderBottom: '1px solid rgba(255,255,255,0.05)',
         }}
       >
-        <div className="w-10" />
-        <div className="flex-1 text-center">
-          <p className="text-[9px] font-black tracking-[0.25em] uppercase" style={{ color: '#b8922a' }}>
+        <div className="w-9 h-9 flex items-center justify-center rounded-lg text-white/40 text-lg">
+          ☰
+        </div>
+        <div className="text-center">
+          <p
+            className="font-cinzel text-[8px] font-bold tracking-[0.3em] uppercase"
+            style={{ color: '#b8922a' }}
+          >
             Board Game Collection
           </p>
-          <h1 className="text-sm font-black text-white tracking-wide">ボドゲ広場</h1>
+          <h1
+            className="font-serif-jp font-bold text-[13px] text-white tracking-wider"
+          >
+            ボドゲ広場
+          </h1>
         </div>
-        <div className="w-10 h-10 flex items-center justify-center rounded-full text-white/40 text-lg">
+        <div className="w-9 h-9 flex items-center justify-center rounded-lg text-white/40 text-lg">
           🔔
         </div>
       </header>
 
       {/* Hero */}
-      <section className="relative px-5 pt-8 pb-6 overflow-hidden">
-        <div className="absolute right-2 top-0 text-[90px] opacity-[0.07] select-none pointer-events-none leading-none">
+      <section className="relative px-5 pt-10 pb-7 overflow-hidden">
+        {/* Decorative background */}
+        <div
+          className="absolute right-[-8px] top-[-4px] text-[100px] select-none pointer-events-none leading-none"
+          style={{ opacity: 0.07 }}
+        >
           🃏
         </div>
-        <div className="absolute left-[-10px] top-6 text-[80px] opacity-[0.06] select-none pointer-events-none leading-none rotate-[-15deg]">
+        <div
+          className="absolute left-[-12px] top-8 text-[88px] select-none pointer-events-none leading-none"
+          style={{ opacity: 0.055, transform: 'rotate(-18deg)' }}
+        >
           🎲
         </div>
-        <p className="text-white/40 text-sm mb-1 relative z-10">ブラウザで遊べる</p>
+
+        <p
+          className="font-sans-jp text-xs mb-1.5 relative z-10"
+          style={{ color: 'rgba(255,255,255,0.38)' }}
+        >
+          ブラウザで遊べる
+        </p>
         <h2
-          className="text-3xl font-black mb-3 relative z-10"
-          style={{ color: '#e8d5a0' }}
+          className="font-serif-jp font-bold text-[30px] leading-tight mb-3 relative z-10"
+          style={{ color: '#e2c97e' }}
         >
           ボドゲ広場
         </h2>
-        <p className="text-white/35 text-xs leading-relaxed relative z-10">
+        <p
+          className="font-sans-jp text-[12px] leading-relaxed relative z-10"
+          style={{ color: 'rgba(255,255,255,0.32)' }}
+        >
           友達と、家族と、見知らぬ誰かと。<br />
           オンラインでつながるボードゲームの世界。
         </p>
       </section>
 
-      {/* Divider */}
-      <div className="mx-5 mb-5" style={{ height: '1px', background: 'rgba(255,255,255,0.05)' }} />
+      {/* Separator */}
+      <div
+        className="mx-5 mb-5"
+        style={{ height: '1px', background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.07), transparent)' }}
+      />
 
       {/* Game list */}
-      <main className="px-4 pb-6 max-w-2xl mx-auto">
+      <main className="px-4 pb-8 max-w-xl mx-auto">
         <div className="flex flex-col gap-3">
           {available.map(game => (
             <GameRow key={game.id} game={game} />
@@ -324,13 +373,21 @@ export default function App() {
 
         {/* Coming soon */}
         {comingSoon.length > 0 && (
-          <div className="mt-8">
-            <div className="flex items-center gap-3 mb-4">
+          <div className="mt-10">
+            <div className="flex items-center gap-3 mb-5">
               <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.05)' }} />
-              <span className="text-[10px] font-black tracking-[0.2em] text-white/20 uppercase">Coming Soon</span>
+              <span
+                className="font-cinzel text-[9px] font-bold tracking-[0.3em] uppercase"
+                style={{ color: 'rgba(255,255,255,0.18)' }}
+              >
+                Coming Soon
+              </span>
               <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.05)' }} />
             </div>
-            <p className="text-center text-white/20 text-xs tracking-wider mb-4">
+            <p
+              className="font-sans-jp text-center text-[11px] mb-4"
+              style={{ color: 'rgba(255,255,255,0.18)' }}
+            >
               新しいゲームを続々追加予定
             </p>
             <div className="flex flex-col gap-3">
