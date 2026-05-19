@@ -212,7 +212,7 @@ function GameRow({ game }: { game: Game }) {
           {game.name}
         </h2>
         <p
-          className="font-sans-jp text-[11px] leading-relaxed line-clamp-2 mb-2"
+          className="font-sans-jp text-[11px] leading-relaxed mb-2"
           style={{ color: 'rgba(255,255,255,0.42)' }}
         >
           {game.description}
