@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <defs>
+    <radialGradient id="bg" cx="40%" cy="35%" r="70%">
+      <stop offset="0%" stop-color="#081a10"/><stop offset="100%" stop-color="#020806"/>
+    </radialGradient>
+    <radialGradient id="gold" cx="30%" cy="20%" r="75%">
+      <stop offset="0%" stop-color="#e8c040"/><stop offset="35%" stop-color="#a87820"/><stop offset="100%" stop-color="#2a1c04"/>
+    </radialGradient>
+    <radialGradient id="gem" cx="35%" cy="30%" r="65%">
+      <stop offset="0%" stop-color="#80f0c0"/><stop offset="60%" stop-color="#20a060"/><stop offset="100%" stop-color="#083020"/>
+    </radialGradient>
+    <filter id="sh"><feDropShadow dx="1" dy="3" stdDeviation="4" flood-color="#000" flood-opacity="0.7"/></filter>
+    <filter id="gemGlow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="3" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <clipPath id="cl"><circle cx="60" cy="60" r="50"/></clipPath>
+  </defs>
+  <circle cx="60" cy="60" r="58" fill="url(#bg)"/>
+  <circle cx="60" cy="60" r="57" fill="none" stroke="#10b981" stroke-width="5" opacity="0.12"/>
+  <circle cx="60" cy="60" r="56" fill="none" stroke="#10b981" stroke-width="1.2" opacity="0.75"/>
+  <circle cx="60" cy="60" r="53" fill="none" stroke="#10b981" stroke-width="0.5" opacity="0.25"/>
+  <g clip-path="url(#cl)">
+    <!-- Crown base band -->
+    <rect x="26" y="72" width="68" height="16" rx="3" fill="url(#gold)" filter="url(#sh)"/>
+    <!-- Band highlight -->
+    <rect x="26" y="72" width="68" height="5" rx="3" fill="white" opacity="0.12"/>
+    <!-- Band engraving lines -->
+    <line x1="38" y1="74" x2="38" y2="86" stroke="#1e1404" stroke-width="1" opacity="0.4"/>
+    <line x1="52" y1="74" x2="52" y2="86" stroke="#1e1404" stroke-width="1" opacity="0.4"/>
+    <line x1="68" y1="74" x2="68" y2="86" stroke="#1e1404" stroke-width="1" opacity="0.4"/>
+    <line x1="82" y1="74" x2="82" y2="86" stroke="#1e1404" stroke-width="1" opacity="0.4"/>
+
+    <!-- Crown body (trapezoid) -->
+    <path d="M 26 74 L 26 52 L 94 52 L 94 74 Z" fill="url(#gold)" filter="url(#sh)"/>
+
+    <!-- Crown points (5 points) -->
+    <!-- Center point (tallest) -->
+    <path d="M 50 52 L 60 22 L 70 52 Z" fill="url(#gold)" filter="url(#sh)"/>
+    <!-- Left-center point -->
+    <path d="M 30 52 L 38 34 L 50 52 Z" fill="url(#gold)" filter="url(#sh)"/>
+    <!-- Right-center point -->
+    <path d="M 70 52 L 82 34 L 90 52 Z" fill="url(#gold)" filter="url(#sh)"/>
+    <!-- Far-left point -->
+    <path d="M 20 52 L 26 40 L 32 52 Z" fill="url(#gold)" filter="url(#sh)"/>
+    <!-- Far-right point -->
+    <path d="M 88 52 L 94 40 L 100 52 Z" fill="url(#gold)" filter="url(#sh)"/>
+
+    <!-- Crown highlight (top surface) -->
+    <path d="M 26 52 L 94 52 L 94 56 L 26 56 Z" fill="white" opacity="0.1"/>
+    <path d="M 50 52 L 60 22 L 62 26 L 52 54 Z" fill="white" opacity="0.1"/>
+
+    <!-- Top gem on center point -->
+    <circle cx="60" cy="22" r="5.5" fill="url(#gem)" filter="url(#gemGlow)"/>
+    <circle cx="58.5" cy="20.5" r="2" fill="white" opacity="0.6"/>
+
+    <!-- Side gems on points -->
+    <circle cx="38" cy="34" r="3.5" fill="url(#gem)" filter="url(#gemGlow)" opacity="0.85"/>
+    <circle cx="82" cy="34" r="3.5" fill="url(#gem)" filter="url(#gemGlow)" opacity="0.85"/>
+
+    <!-- Band gems -->
+    <circle cx="45" cy="80" r="3" fill="url(#gem)" opacity="0.8"/>
+    <circle cx="60" cy="80" r="3" fill="url(#gem)" opacity="0.8"/>
+    <circle cx="75" cy="80" r="3" fill="url(#gem)" opacity="0.8"/>
+  </g>
+  <circle cx="60" cy="60" r="50" fill="none" stroke="black" stroke-width="6" opacity="0.35"/>
+</svg>
