@@ -8,7 +8,7 @@ export default defineConfig({
     tailwindcss(),
     react(),
     VitePWA({
-      registerType: 'prompt',
+      registerType: 'autoUpdate',
       manifest: {
         name: 'ボドゲ広場',
         short_name: 'ボドゲ広場',
