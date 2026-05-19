@@ -171,9 +171,11 @@ function Tag({ text }: { text: string }) {
 
 function GameIcon({ game, available }: { game: Game; available: boolean }) {
   const color = available ? game.accentColor : 'rgba(255,255,255,0.15)'
+  const imgSrc = `/icons/${game.id}.svg`
+
   return (
     <div
-      className="font-cinzel w-[62px] h-[62px] rounded-full flex items-center justify-center flex-shrink-0 select-none relative"
+      className="w-[62px] h-[62px] rounded-full flex items-center justify-center flex-shrink-0 select-none relative overflow-hidden"
       style={{
         background: `radial-gradient(circle at 38% 32%, ${available ? game.accentColor + '18' : 'rgba(255,255,255,0.03)'} 0%, rgba(0,0,0,0.55) 100%)`,
         border: `1.5px solid ${color}55`,
@@ -183,12 +185,21 @@ function GameIcon({ game, available }: { game: Game; available: boolean }) {
         filter: available ? 'none' : 'brightness(0.4)',
       }}
     >
-      <span
-        className="text-[13px] font-black tracking-wider leading-none"
-        style={{
-          color,
-          textShadow: available ? `0 0 18px ${game.accentColor}90` : 'none',
+      <img
+        src={imgSrc}
+        alt={game.name}
+        className="w-full h-full object-cover rounded-full"
+        onError={e => {
+          const el = e.currentTarget
+          el.style.display = 'none'
+          const fallback = el.nextElementSibling as HTMLElement | null
+          if (fallback) fallback.style.display = 'flex'
         }}
+      />
+      {/* Fallback monogram shown only if image fails */}
+      <span
+        className="font-cinzel absolute inset-0 items-center justify-center text-[13px] font-black tracking-wider"
+        style={{ display: 'none', color, textShadow: available ? `0 0 18px ${game.accentColor}90` : 'none' }}
       >
         {game.symbol}
       </span>
