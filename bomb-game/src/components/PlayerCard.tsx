@@ -46,9 +46,11 @@ function EmoteBubble({ emote }: { emote: { type: EmoteType; sentAt: string } }) 
         transition={{ type: 'spring', stiffness: 400, damping: 20 }}
       >
         <div className="relative bg-white rounded-2xl px-3 py-1.5 shadow-lg shadow-black/50 flex items-center justify-center">
-          <span className="text-2xl leading-none select-none">
-            {emote.type === 'BOMB' ? '💣' : '🍎'}
-          </span>
+          <img
+            src={emote.type === 'BOMB' ? '/bomb.svg' : '/apple.svg'}
+            alt={emote.type}
+            className="w-7 h-7"
+          />
           {/* Tail */}
           <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-0 h-0
             border-l-[7px] border-r-[7px] border-t-[9px]

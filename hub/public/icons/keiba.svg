@@ -3,64 +3,66 @@
     <radialGradient id="bg" cx="40%" cy="35%" r="70%">
       <stop offset="0%" stop-color="#1e1400"/><stop offset="100%" stop-color="#060400"/>
     </radialGradient>
-    <radialGradient id="horse" cx="38%" cy="28%" r="65%">
-      <stop offset="0%" stop-color="#f0d060"/>
-      <stop offset="30%" stop-color="#d4a030"/>
-      <stop offset="65%" stop-color="#9a6c18"/>
+    <!-- gradient anchored to userSpace so it hits the actual shapes -->
+    <radialGradient id="g" gradientUnits="userSpaceOnUse" cx="52" cy="42" r="38">
+      <stop offset="0%"   stop-color="#f5e080"/>
+      <stop offset="30%"  stop-color="#d4a028"/>
+      <stop offset="70%"  stop-color="#8a5c10"/>
+      <stop offset="100%" stop-color="#2a1604"/>
+    </radialGradient>
+    <radialGradient id="gn" gradientUnits="userSpaceOnUse" cx="52" cy="42" r="38">
+      <stop offset="0%"   stop-color="#e8cc60"/>
+      <stop offset="50%"  stop-color="#a07820"/>
       <stop offset="100%" stop-color="#3a2208"/>
     </radialGradient>
-    <filter id="sh"><feDropShadow dx="2" dy="3" stdDeviation="4" flood-color="#000" flood-opacity="0.6"/></filter>
+    <filter id="sh"><feDropShadow dx="1" dy="2" stdDeviation="3" flood-color="#000" flood-opacity="0.7"/></filter>
     <clipPath id="cl"><circle cx="60" cy="60" r="50"/></clipPath>
   </defs>
+
   <circle cx="60" cy="60" r="58" fill="url(#bg)"/>
   <circle cx="60" cy="60" r="57" fill="none" stroke="#d97706" stroke-width="5" opacity="0.12"/>
   <circle cx="60" cy="60" r="56" fill="none" stroke="#d97706" stroke-width="1.2" opacity="0.75"/>
   <circle cx="60" cy="60" r="53" fill="none" stroke="#d97706" stroke-width="0.5" opacity="0.25"/>
+
   <g clip-path="url(#cl)">
-    <!-- Horse head silhouette facing right -->
-    <path d="
-      M 66 22
-      C 63 15, 58 10, 57 13
-      C 56 16, 60 20, 62 25
-      C 64 29, 68 34, 72 42
-      C 76 50, 78 58, 76 64
-      C 74 70, 68 74, 62 75
-      C 56 76, 50 74, 46 72
-      C 42 70, 40 68, 40 66
-      C 40 63, 42 60, 44 58
-      C 46 56, 48 55, 48 52
-      C 48 49, 46 46, 44 44
-      C 42 42, 38 42, 36 44
-      C 34 46, 34 50, 36 54
-      C 38 58, 42 62, 42 66
-      C 42 70, 40 74, 38 78
-      C 36 82, 35 85, 38 86
-      C 41 87, 44 84, 46 80
-      C 48 76, 50 72, 54 72
-      C 58 72, 64 74, 68 76
-      C 72 78, 74 80, 76 82
-      C 78 84, 80 84, 80 82
-      C 80 78, 76 72, 74 66
-      C 74 64, 76 60, 78 54
-      C 80 48, 80 40, 76 34
-      C 72 28, 68 24, 66 22
-      Z
-    " fill="url(#horse)" filter="url(#sh)"/>
-    <!-- Mane -->
-    <path d="M 62 25 C 58 30, 52 36, 48 44 C 46 48, 46 52, 48 54"
-          fill="none" stroke="#5a3806" stroke-width="5" stroke-linecap="round" opacity="0.7"/>
-    <path d="M 62 25 C 58 30, 52 36, 48 44 C 46 48, 46 52, 48 54"
-          fill="none" stroke="#a87010" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
-    <!-- Eye -->
-    <circle cx="68" cy="44" r="5" fill="#120804"/>
-    <circle cx="69.5" cy="42.5" r="1.8" fill="white" opacity="0.85"/>
-    <!-- Nostril -->
-    <ellipse cx="74" cy="68" rx="3.5" ry="2.5" fill="#120804" opacity="0.8" transform="rotate(-15 74 68)"/>
-    <!-- Head highlight -->
-    <ellipse cx="60" cy="38" rx="7" ry="5" fill="white" opacity="0.07" transform="rotate(-30 60 38)"/>
+
+    <!-- Neck (lower-left area) -->
+    <path d="M 24 88 C 28 76, 34 64, 42 56 C 46 52, 50 50, 54 50
+             L 50 88 Z"
+          fill="url(#g)" filter="url(#sh)"/>
+
+    <!-- Head (large bold oval, tilted) -->
+    <ellipse cx="58" cy="46" rx="24" ry="17"
+             fill="url(#g)" transform="rotate(-10 58 46)" filter="url(#sh)"/>
+
+    <!-- Muzzle (forward extension) -->
+    <ellipse cx="78" cy="56" rx="13" ry="9"
+             fill="url(#gn)" filter="url(#sh)"/>
+
     <!-- Ear -->
-    <path d="M 62 22 C 58 14, 52 10, 54 16 C 55 20, 60 22, 62 22 Z" fill="url(#horse)"/>
-    <path d="M 60 21 C 57 15, 55 12, 56 16 C 57 19, 60 21, 60 21 Z" fill="#4a2808" opacity="0.6"/>
+    <polygon points="46,30 40,16 52,28" fill="url(#g)" filter="url(#sh)"/>
+    <polygon points="46,29 42,20 50,28" fill="#2e1604" opacity="0.55"/>
+
+    <!-- Mane (bold strokes along back of neck) -->
+    <path d="M 48 32 C 44 40, 40 50, 38 60 C 36 68, 34 76, 32 84"
+          fill="none" stroke="#6a3e08" stroke-width="6" stroke-linecap="round"/>
+    <path d="M 48 32 C 44 40, 40 50, 38 60 C 36 68, 34 76, 32 84"
+          fill="none" stroke="#d4a028" stroke-width="2.5" stroke-linecap="round" opacity="0.5"/>
+
+    <!-- Eye (large, visible) -->
+    <circle cx="62" cy="42" r="6" fill="#120804"/>
+    <circle cx="64" cy="40" r="2.2" fill="white" opacity="0.9"/>
+    <circle cx="62" cy="42" r="3.5" fill="#0a0402"/>
+
+    <!-- Nostril -->
+    <ellipse cx="84" cy="58" rx="4" ry="3" fill="#120804" opacity="0.85"
+             transform="rotate(15 84 58)"/>
+
+    <!-- Head highlight -->
+    <ellipse cx="48" cy="38" rx="9" ry="6" fill="white" opacity="0.1"
+             transform="rotate(-20 48 38)"/>
+
   </g>
+
   <circle cx="60" cy="60" r="50" fill="none" stroke="black" stroke-width="6" opacity="0.35"/>
 </svg>

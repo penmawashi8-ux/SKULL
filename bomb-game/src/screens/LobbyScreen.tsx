@@ -219,19 +219,18 @@ export function LobbyScreen() {
         )}
 
         {isHost ? (
-          <motion.button
+          <button
             onClick={handleStart}
             disabled={isStarting || isLoading}
-            className="w-full py-4 rounded-2xl text-white text-xl font-bold disabled:opacity-60"
+            className="w-full py-4 rounded-2xl text-white text-xl font-bold disabled:opacity-60 active:scale-[0.97] transition-transform"
             style={{
               fontFamily: 'Cinzel, serif',
               background: 'linear-gradient(135deg, #6d28d9, #4c1d95)',
               boxShadow: '0 0 28px rgba(109,40,217,0.45)',
             }}
-            whileTap={!isStarting ? { scale: 0.97 } : {}}
           >
             {isStarting ? '準備中...' : 'ゲーム開始'}
-          </motion.button>
+          </button>
         ) : (
           <div
             className="w-full py-4 rounded-2xl text-center text-white/30 text-sm border border-white/5"

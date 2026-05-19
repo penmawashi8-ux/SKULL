@@ -96,7 +96,7 @@ export function DiscStack({ player, discs, isFlipPhase, isMyTurnToFlip, myOwnSta
                 : 'bg-emerald-950 border-emerald-400 shadow-emerald-500/50'
             }`}
           >
-            {disc.disc_type === 'bomb' ? '💣' : '🍎'}
+            <img src={disc.disc_type === 'bomb' ? '/bomb.svg' : '/apple.svg'} alt={disc.disc_type} className="w-8 h-8" />
           </motion.div>
         ))}
       </AnimatePresence>

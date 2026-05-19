@@ -181,20 +181,18 @@ export function CpuSetupScreen() {
         className="flex-shrink-0 px-6 pt-3 pb-6"
         style={{ paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom))' }}
       >
-        <motion.button
+        <button
           onClick={handleStart}
           disabled={isLoading || isSubmitting}
-          className="w-full py-4 rounded-2xl text-white text-xl font-bold disabled:opacity-40"
+          className="w-full py-4 rounded-2xl text-white text-xl font-bold disabled:opacity-40 active:scale-[0.97] transition-transform"
           style={{
             fontFamily: 'Cinzel, serif',
             background: 'linear-gradient(135deg, #6d28d9, #4c1d95)',
             boxShadow: '0 0 24px rgba(109,40,217,0.4)',
           }}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.97 }}
         >
           {isLoading || isSubmitting ? '起動中...' : 'ゲーム開始'}
-        </motion.button>
+        </button>
       </div>
     </div>
   )

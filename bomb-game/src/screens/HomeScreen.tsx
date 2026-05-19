@@ -4,16 +4,16 @@ import { playButtonPress } from '../lib/sounds'
 
 // Deterministic floating card data (no Math.random in render)
 const CARDS = [
-  { id: 0, icon: '💣', left: '8%',  duration: 14, delay: 0,    drift: 18,  rotate: 12  },
-  { id: 1, icon: '🍎', left: '22%', duration: 11, delay: -3.5, drift: -14, rotate: -10 },
-  { id: 2, icon: '🍎', left: '38%', duration: 16, delay: -7,   drift: 22,  rotate: 8   },
-  { id: 3, icon: '💣', left: '54%', duration: 12, delay: -1.5, drift: -20, rotate: -15 },
-  { id: 4, icon: '🍎', left: '68%', duration: 15, delay: -5,   drift: 16,  rotate: 10  },
-  { id: 5, icon: '💣', left: '82%', duration: 13, delay: -9,   drift: -12, rotate: -8  },
-  { id: 6, icon: '🍎', left: '14%', duration: 17, delay: -4,   drift: 24,  rotate: 6   },
-  { id: 7, icon: '💣', left: '46%', duration: 10, delay: -11,  drift: -18, rotate: -12 },
-  { id: 8, icon: '🍎', left: '74%', duration: 14, delay: -2,   drift: 14,  rotate: 9   },
-  { id: 9, icon: '💣', left: '90%', duration: 12, delay: -6,   drift: -22, rotate: -7  },
+  { id: 0, type: 'bomb',  left: '8%',  duration: 14, delay: 0,    drift: 18,  rotate: 12  },
+  { id: 1, type: 'apple', left: '22%', duration: 11, delay: -3.5, drift: -14, rotate: -10 },
+  { id: 2, type: 'apple', left: '38%', duration: 16, delay: -7,   drift: 22,  rotate: 8   },
+  { id: 3, type: 'bomb',  left: '54%', duration: 12, delay: -1.5, drift: -20, rotate: -15 },
+  { id: 4, type: 'apple', left: '68%', duration: 15, delay: -5,   drift: 16,  rotate: 10  },
+  { id: 5, type: 'bomb',  left: '82%', duration: 13, delay: -9,   drift: -12, rotate: -8  },
+  { id: 6, type: 'apple', left: '14%', duration: 17, delay: -4,   drift: 24,  rotate: 6   },
+  { id: 7, type: 'bomb',  left: '46%', duration: 10, delay: -11,  drift: -18, rotate: -12 },
+  { id: 8, type: 'apple', left: '74%', duration: 14, delay: -2,   drift: 14,  rotate: 9   },
+  { id: 9, type: 'bomb',  left: '90%', duration: 12, delay: -6,   drift: -22, rotate: -7  },
 ]
 
 export function HomeScreen() {
@@ -28,8 +28,8 @@ export function HomeScreen() {
       {CARDS.map(card => (
         <motion.div
           key={card.id}
-          className="absolute text-5xl pointer-events-none select-none"
-          style={{ left: card.left, top: '-10%', opacity: 0.12 }}
+          className="absolute pointer-events-none select-none w-14 h-14"
+          style={{ left: card.left, top: '-10%', opacity: 0.15 }}
           animate={{
             y: ['0vh', '115vh'],
             x: [0, card.drift, 0],
@@ -42,7 +42,7 @@ export function HomeScreen() {
             ease: 'linear',
           }}
         >
-          {card.icon}
+          <img src={card.type === 'bomb' ? '/bomb.svg' : '/apple.svg'} alt="" className="w-full h-full" />
         </motion.div>
       ))}
 
@@ -55,11 +55,11 @@ export function HomeScreen() {
       >
         {/* Bomb icon */}
         <motion.div
-          className="text-8xl"
+          className="w-28 h-28"
           animate={{ rotate: [-3, 3, -3] }}
           transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
         >
-          💣
+          <img src="/bomb.svg" alt="BOMB" className="w-full h-full" />
         </motion.div>
 
         {/* Title */}
