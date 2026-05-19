@@ -4,15 +4,8 @@ import { Component, type ReactNode } from 'react'
 
 class SafeRender extends Component<{ children: ReactNode }, { hasError: boolean }> {
   state = { hasError: false }
-
-  static getDerivedStateFromError() {
-    return { hasError: true }
-  }
-
-  componentDidCatch(error: unknown) {
-    console.error('SafeRender caught an error:', error)
-  }
-
+  static getDerivedStateFromError() { return { hasError: true } }
+  componentDidCatch(error: unknown) { console.error('SafeRender caught:', error) }
   render() {
     if (this.state.hasError) return null
     return this.props.children
@@ -43,13 +36,12 @@ const games: Game[] = [
     id: 'bomb',
     name: 'BOMB',
     nameEn: 'BOMB',
-    description:
-      '爆弾かリンゴか——ブラフと心理戦が熱いパーティゲーム。仲間を騙して爆発を回避せよ！',
+    description: '爆弾かリンゴか——ブラフと心理戦が熱いパーティゲーム。仲間を騙して爆発を回避せよ！',
     icon: '💣',
     status: 'available',
     url: BOMB_GAME_URL,
     accentColor: '#dc2626',
-    cardBg: 'linear-gradient(135deg, #1c1c1e 0%, #2d1515 100%)',
+    cardBg: 'linear-gradient(135deg, #1c1010 0%, #2d1515 100%)',
     players: '2〜6人',
     duration: '約20分',
     tags: ['ブラフ', '心理戦', 'パーティ'],
@@ -58,8 +50,7 @@ const games: Game[] = [
     id: 'pig-tail',
     name: 'ぶたのしっぽ',
     nameEn: "PIG'S TAIL",
-    description:
-      'カードをめくって中央に積んでいく。マークが一致したら山を全部もらい、手札を一番少なく抑えた人が勝ち。',
+    description: 'カードをめくって中央に積んでいく。マークが一致したら山を全部もらい、手札を一番少なく抑えた人が勝ち。',
     icon: '🐷',
     status: 'available',
     url: 'https://buta-steel.vercel.app',
@@ -73,8 +64,7 @@ const games: Game[] = [
     id: 'keiba',
     name: 'バーチャル競馬',
     nameEn: 'VIRTUAL KEIBA',
-    description:
-      '馬を選んで予想して観戦！バーチャル競馬で白熱のゴール勝負を楽しもう。',
+    description: '馬を選んで予想して観戦！バーチャル競馬で白熱のゴール勝負を楽しもう。',
     icon: '🐎',
     status: 'available',
     url: 'https://gamekeiba.vercel.app',
@@ -88,8 +78,7 @@ const games: Game[] = [
     id: 'page-one',
     name: 'ページワン',
     nameEn: 'PAGE ONE',
-    description:
-      '手札のマークが合えばカードを出せる。最後の1枚になったら「ページワン！」と宣言。手札をなくした人が勝ちのトランプゲーム。',
+    description: '手札のマークが合えばカードを出せる。最後の1枚になったら「ページワン！」と宣言。手札をなくした人が勝ちのトランプゲーム。',
     icon: '🃏',
     status: 'available',
     url: 'https://pageone-wine.vercel.app',
@@ -103,8 +92,7 @@ const games: Game[] = [
     id: 'coup',
     name: '謀略',
     nameEn: 'BORYAKU',
-    description:
-      '嘘をついても、バレなければ勝ち。持っていないキャラクターも堂々と宣言し、ライバルを蹴落とせ！最後に生き残った者が勝者。',
+    description: '嘘をついても、バレなければ勝ち。持っていないキャラクターも堂々と宣言し、ライバルを蹴落とせ！最後に生き残った者が勝者。',
     icon: '👑',
     status: 'available',
     url: 'https://coup-two.vercel.app',
@@ -116,10 +104,9 @@ const games: Game[] = [
   },
   {
     id: 'racing-board',
-    name: '疾走',
+    name: '疾走（ベータ版）',
     nameEn: 'SHISSOU',
-    description:
-      '進め！斜行して相手を止めろ。邪魔をかいくぐり、誰より先にゴールを目指せ！',
+    description: '進め！斜行して相手を止めろ。邪魔をかいくぐり、誰より先にゴールを目指せ！',
     icon: '🏇',
     status: 'available',
     url: 'https://g-oei1.vercel.app',
@@ -127,7 +114,7 @@ const games: Game[] = [
     cardBg: 'linear-gradient(135deg, #1a0800 0%, #2d1200 100%)',
     players: '2人〜',
     duration: '約10〜20分',
-    tags: ['レース', 'ブロック', '戦略'],
+    tags: ['レース', 'ブロック', 'β版'],
   },
   {
     id: 'g-board-app',
@@ -171,84 +158,78 @@ const games: Game[] = [
   },
 ]
 
-function Badge({ text }: { text: string }) {
+function Tag({ text }: { text: string }) {
   return (
-    <span className="inline-block text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/10 text-white/70">
+    <span className="inline-block text-[10px] font-bold px-2 py-0.5 rounded-full text-white/60"
+          style={{ background: 'rgba(255,255,255,0.08)' }}>
       {text}
     </span>
   )
 }
 
-function GameCard({ game }: { game: Game }) {
+function GameRow({ game }: { game: Game }) {
   const isAvailable = game.status === 'available'
 
-  const cardContent = (
+  const inner = (
     <div
-      className={`
-        relative rounded-2xl overflow-hidden h-full flex flex-col
-        border border-white/10 shadow-xl
-        transition-all duration-300
-        ${isAvailable ? 'hover:scale-[1.03] hover:shadow-2xl cursor-pointer' : 'opacity-75 cursor-not-allowed'}
-      `}
-      style={{ background: game.cardBg }}
+      className="relative flex items-center gap-3 px-4 py-4 rounded-2xl border transition-all duration-200 active:scale-[0.985]"
+      style={{
+        background: game.cardBg,
+        borderColor: 'rgba(255,255,255,0.07)',
+      }}
     >
-      {/* Top accent line */}
-      <div className="h-1 w-full" style={{ backgroundColor: game.accentColor }} />
+      {/* Left accent bar */}
+      <div
+        className="absolute left-0 top-4 bottom-4 w-[3px] rounded-r-full"
+        style={{ backgroundColor: isAvailable ? game.accentColor : 'rgba(255,255,255,0.1)' }}
+      />
 
-      {/* Coming soon ribbon */}
-      {!isAvailable && (
-        <div
-          className="absolute top-4 right-4 text-[10px] font-black tracking-widest px-3 py-1 rounded-full uppercase"
-          style={{ backgroundColor: game.accentColor + '33', color: game.accentColor, border: `1px solid ${game.accentColor}66` }}
+      {/* Icon */}
+      <div
+        className="text-4xl w-14 h-14 flex items-center justify-center flex-shrink-0 rounded-xl select-none ml-1"
+        style={{
+          background: 'rgba(0,0,0,0.25)',
+          filter: isAvailable ? 'none' : 'grayscale(80%) brightness(0.4)',
+        }}
+      >
+        {game.icon}
+      </div>
+
+      {/* Info */}
+      <div className="flex-1 min-w-0">
+        <p
+          className="text-[10px] font-black tracking-[0.18em] mb-0.5 uppercase"
+          style={{ color: isAvailable ? game.accentColor : 'rgba(255,255,255,0.2)' }}
         >
-          COMING SOON
+          {game.nameEn}
+        </p>
+        <h2 className="text-base font-black text-white leading-tight mb-1.5 truncate pr-1">
+          {game.name}
+        </h2>
+        <p className="text-[11px] text-white/45 leading-relaxed line-clamp-2 mb-2">
+          {game.description}
+        </p>
+        <div className="flex flex-wrap gap-1 mb-1.5">
+          {game.tags.map(tag => <Tag key={tag} text={tag} />)}
         </div>
-      )}
-
-      <div className="p-6 flex flex-col flex-1">
-        {/* Icon */}
-        <div
-          className={`text-5xl mb-3 select-none ${isAvailable ? 'float' : ''}`}
-          style={{ filter: isAvailable ? 'none' : 'grayscale(80%) brightness(0.5)' }}
-        >
-          {game.icon}
-        </div>
-
-        {/* Name */}
-        <div className="mb-1">
-          <span className="text-[10px] font-bold tracking-widest" style={{ color: game.accentColor }}>
-            {game.nameEn}
-          </span>
-        </div>
-        <h2 className="text-xl font-black text-white mb-3">{game.name}</h2>
-
-        {/* Description */}
-        <p className="text-sm text-white/60 leading-relaxed flex-1 mb-4">{game.description}</p>
-
-        {/* Tags */}
-        <div className="flex flex-wrap gap-1 mb-4">
-          {game.tags.map((tag) => (
-            <Badge key={tag} text={tag} />
-          ))}
-        </div>
-
-        {/* Meta info */}
-        <div className="flex gap-4 text-xs text-white/40 mb-5">
+        <div className="flex gap-3 text-[10px] text-white/25">
           <span>👥 {game.players}</span>
           <span>⏱ {game.duration}</span>
         </div>
+      </div>
 
-        {/* CTA */}
+      {/* CTA */}
+      <div className="flex-shrink-0 ml-1">
         {isAvailable ? (
           <div
-            className="py-3 rounded-xl text-center text-sm font-black text-white tracking-wider transition-opacity hover:opacity-90"
+            className="px-3 py-2.5 rounded-xl text-[11px] font-black text-white text-center leading-tight min-w-[60px]"
             style={{ backgroundColor: game.accentColor }}
           >
-            今すぐ遊ぶ →
+            今すぐ<br />遊ぶ →
           </div>
         ) : (
-          <div className="py-3 rounded-xl text-center text-sm font-bold text-white/20 bg-white/5 border border-white/10">
-            準備中...
+          <div className="px-3 py-2.5 rounded-xl text-[11px] font-bold text-white/20 text-center bg-white/5 border border-white/8 min-w-[60px] leading-tight">
+            準備<br />中...
           </div>
         )}
       </div>
@@ -259,28 +240,14 @@ function GameCard({ game }: { game: Game }) {
     return (
       <a
         href={game.url}
-        target="_self"
-        rel="noopener"
-        className="block h-full no-underline"
-        onClick={(event) => {
-          event.preventDefault()
-          window.location.assign(game.url!)
-        }}
+        className="block no-underline"
+        onClick={e => { e.preventDefault(); window.location.assign(game.url!) }}
       >
-        {cardContent}
+        {inner}
       </a>
     )
   }
-
-  return <div className="h-full">{cardContent}</div>
-}
-
-function Decoration({ emoji, className }: { emoji: string; className: string }) {
-  return (
-    <div className={`absolute select-none pointer-events-none opacity-20 text-4xl ${className}`}>
-      {emoji}
-    </div>
-  )
+  return <div>{inner}</div>
 }
 
 export default function App() {
@@ -292,56 +259,87 @@ export default function App() {
     )
   }
 
-  const availableCount = games.filter((g) => g.status === 'available').length
+  const available = games.filter(g => g.status === 'available')
+  const comingSoon = games.filter(g => g.status === 'coming-soon')
 
   return (
-    <div
-      className="min-h-screen relative overflow-x-hidden"
-      style={{ background: 'linear-gradient(160deg, #0f0c29 0%, #302b63 50%, #24243e 100%)' }}
-    >
+    <div className="min-h-screen" style={{ background: '#08080f' }}>
       <SafeRender>
         <UpdatePrompt />
       </SafeRender>
-      {/* Background decorations */}
-      <Decoration emoji="🎲" className="top-12 left-8 spin-slow text-6xl" />
-      <Decoration emoji="🃏" className="top-24 right-16 float" />
-      <Decoration emoji="♟️" className="top-64 left-24 float text-5xl" />
-      <Decoration emoji="🎯" className="bottom-32 right-8 spin-slow" />
-      <Decoration emoji="⭐" className="bottom-16 left-12 float text-5xl" />
 
       {/* Header */}
-      <header className="relative z-10 pt-14 pb-10 text-center px-4">
-        <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-5 py-2 mb-6 border border-white/20">
-          <span className="text-[11px] font-black tracking-[0.2em] uppercase text-white/70">
+      <header
+        className="sticky top-0 z-20 flex items-center px-4 py-3"
+        style={{
+          background: 'rgba(8,8,15,0.85)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          borderBottom: '1px solid rgba(255,255,255,0.06)',
+        }}
+      >
+        <div className="w-10" />
+        <div className="flex-1 text-center">
+          <p className="text-[9px] font-black tracking-[0.25em] uppercase" style={{ color: '#b8922a' }}>
             Board Game Collection
-          </span>
-          <span className="text-[10px] font-bold bg-green-400 text-black rounded-full px-2 py-0.5">
-            {availableCount} 本公開中
-          </span>
+          </p>
+          <h1 className="text-sm font-black text-white tracking-wide">ボドゲ広場</h1>
         </div>
-
-        <h1 className="text-5xl md:text-7xl font-black text-white mb-3 tracking-tight">
-          🎲 ボドゲ広場
-        </h1>
-        <p className="text-white/50 text-sm md:text-base max-w-md mx-auto leading-relaxed">
-          ブラウザで遊べるオンラインボードゲームが集まった広場。
-          <br />
-          友達と、家族と、見知らぬ誰かと。
-        </p>
+        <div className="w-10 h-10 flex items-center justify-center rounded-full text-white/40 text-lg">
+          🔔
+        </div>
       </header>
 
-      {/* Game grid */}
-      <main className="relative z-10 max-w-5xl mx-auto px-4 pb-20">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {games.map((game) => (
-            <GameCard key={game.id} game={game} />
+      {/* Hero */}
+      <section className="relative px-5 pt-8 pb-6 overflow-hidden">
+        <div className="absolute right-2 top-0 text-[90px] opacity-[0.07] select-none pointer-events-none leading-none">
+          🃏
+        </div>
+        <div className="absolute left-[-10px] top-6 text-[80px] opacity-[0.06] select-none pointer-events-none leading-none rotate-[-15deg]">
+          🎲
+        </div>
+        <p className="text-white/40 text-sm mb-1 relative z-10">ブラウザで遊べる</p>
+        <h2
+          className="text-3xl font-black mb-3 relative z-10"
+          style={{ color: '#e8d5a0' }}
+        >
+          ボドゲ広場
+        </h2>
+        <p className="text-white/35 text-xs leading-relaxed relative z-10">
+          友達と、家族と、見知らぬ誰かと。<br />
+          オンラインでつながるボードゲームの世界。
+        </p>
+      </section>
+
+      {/* Divider */}
+      <div className="mx-5 mb-5" style={{ height: '1px', background: 'rgba(255,255,255,0.05)' }} />
+
+      {/* Game list */}
+      <main className="px-4 pb-6 max-w-2xl mx-auto">
+        <div className="flex flex-col gap-3">
+          {available.map(game => (
+            <GameRow key={game.id} game={game} />
           ))}
         </div>
 
-        {/* Footer note */}
-        <p className="text-center text-white/25 text-xs mt-14 tracking-wider">
-          新しいゲームを随時追加予定 ✨
-        </p>
+        {/* Coming soon */}
+        {comingSoon.length > 0 && (
+          <div className="mt-8">
+            <div className="flex items-center gap-3 mb-4">
+              <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.05)' }} />
+              <span className="text-[10px] font-black tracking-[0.2em] text-white/20 uppercase">Coming Soon</span>
+              <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.05)' }} />
+            </div>
+            <p className="text-center text-white/20 text-xs tracking-wider mb-4">
+              新しいゲームを続々追加予定
+            </p>
+            <div className="flex flex-col gap-3">
+              {comingSoon.map(game => (
+                <GameRow key={game.id} game={game} />
+              ))}
+            </div>
+          </div>
+        )}
       </main>
     </div>
   )
