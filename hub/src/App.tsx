@@ -12,7 +12,7 @@ class SafeRender extends Component<{ children: ReactNode }, { hasError: boolean 
   }
 }
 
-const BOMB_GAME_URL = import.meta.env.VITE_BOMB_GAME_URL as string | undefined
+const BOMB_GAME_URL = 'https://bomb.boardgamecat.com'
 
 type GameStatus = 'available' | 'coming-soon'
 
@@ -53,7 +53,7 @@ const games: Game[] = [
     symbol: 'PT',
     description: 'カードをめくって中央に積んでいく。マークが一致したら山を全部もらい、手札を一番少なく抑えた人が勝ち。',
     status: 'available',
-    url: 'https://buta-steel.vercel.app',
+    url: 'https://buta.boardgamecat.com',
     accentColor: '#ec4899',
     cardBg: 'linear-gradient(135deg, #1a0d15 0%, #2a1020 100%)',
     players: '1〜6人',
@@ -67,7 +67,7 @@ const games: Game[] = [
     symbol: 'VK',
     description: '馬を選んで予想して観戦！バーチャル競馬で白熱のゴール勝負を楽しもう。',
     status: 'available',
-    url: 'https://gamekeiba.vercel.app',
+    url: 'https://gamekeiba.boardgamecat.com',
     accentColor: '#d97706',
     cardBg: 'linear-gradient(135deg, #160e00 0%, #271a00 100%)',
     players: '1人〜',
@@ -81,7 +81,7 @@ const games: Game[] = [
     symbol: 'PO',
     description: '手札のマークが合えばカードを出せる。最後の1枚になったら「ページワン！」と宣言。手札をなくした人が勝ちのトランプゲーム。',
     status: 'available',
-    url: 'https://pageone-wine.vercel.app',
+    url: 'https://pageone.boardgamecat.com',
     accentColor: '#3b82f6',
     cardBg: 'linear-gradient(135deg, #080f1e 0%, #0d1a35 100%)',
     players: '1〜4人',
@@ -95,7 +95,7 @@ const games: Game[] = [
     symbol: 'BK',
     description: '嘘をついても、バレなければ勝ち。持っていないキャラクターも堂々と宣言し、ライバルを蹴落とせ！最後に生き残った者が勝者。',
     status: 'available',
-    url: 'https://coup-two.vercel.app',
+    url: 'https://bouryaku.boardgamecat.com',
     accentColor: '#10b981',
     cardBg: 'linear-gradient(135deg, #081a10 0%, #0f2518 100%)',
     players: '2〜6人',
