@@ -1669,7 +1669,18 @@ export const useGameStore = create<StoreState>()((set, get) => {
             ? getNextActivePlayer(updatedPlayers, myPlayer.id)?.id ?? myPlayer.id
             : myPlayer.id
           startNextRound(starterId, updatedPlayers, room, gameState)
-          await processCpuTurns()
+          if (_cpuRunning) {
+            // Old CPU loop still sleeping; it will pick up the new round state when it wakes.
+            // Safety retry in case it exits before processing this round's first CPU turn.
+            setTimeout(() => {
+              const s = get()
+              if (!s.isCpuGame || !s.gameState || _cpuRunning) return
+              const curr = s.players.find(p => p.id === s.gameState!.current_player_id)
+              if (curr?.is_cpu) processCpuTurns()
+            }, 900)
+          } else {
+            await processCpuTurns()
+          }
         } else {
           // Online: fetch placed_discs first so bomb-loss is computed from authoritative perm values
           const { data: roundDiscs } = await supabase
