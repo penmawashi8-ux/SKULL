@@ -11,7 +11,7 @@ export interface Room {
   host_id: string
   max_players: number
   current_round: number
-  password: string | null
+  password?: string | null
   created_at: string
   updated_at: string
 }
