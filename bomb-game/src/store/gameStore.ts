@@ -482,16 +482,21 @@ export const useGameStore = create<StoreState>()((set, get) => {
   }
 
   // ── processOnlineCpuTurn ──────────────────────────────────────────────────
-  // Called by the host client when the realtime game_state update shows a CPU's turn.
-  async function processOnlineCpuTurn(cpuPlayer: Player, _gs: GameState): Promise<void> {
+  // Any connected client may call this. The updated_at version check ensures
+  // only the first client to act actually commits; others detect the state
+  // has already moved on and abort.
+  async function processOnlineCpuTurn(cpuPlayer: Player, gs: GameState): Promise<void> {
     if (_onlineCpuProcessing) return
     _onlineCpuProcessing = true
+    const gsUpdatedAt = gs.updated_at
     try {
       await new Promise(r => setTimeout(r, 700))
 
       const s = get()
       if (!s.room || s.isCpuGame || !s.gameState) return
       if (s.gameState.current_player_id !== cpuPlayer.id) return
+      // Another client already processed this turn
+      if (s.gameState.updated_at !== gsUpdatedAt) return
 
       const { players, publicDiscs, myDiscs, _cpuDiscs, _foldedPlayerIds, room, cpuDifficulty } = s
       const round = s.gameState.round_number
@@ -1370,7 +1375,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
                   _permCards: Object.keys(s._permCards).length === 0 ? permCards : s._permCards,
                 }))
                 const s2 = get()
-                if (!s2.isCpuGame && s2.room?.host_id === s2.sessionId) {
+                if (!s2.isCpuGame) {
                   const cp2 = freshPlayers.find(p => p.id === newGs.current_player_id)
                   if (cp2?.is_cpu) {
                     if (_onlineCpuProcessing) {
@@ -1428,18 +1433,18 @@ export const useGameStore = create<StoreState>()((set, get) => {
                   players: data,
                   _permCards: Object.keys(s._permCards).length === 0 ? permCards : s._permCards,
                 }))
-                // プレイヤー一覧更新後、ホストがCPUターンを再チェック
+                // プレイヤー一覧更新後、CPUターンを再チェック
                 const s2 = get()
-                if (!s2.isCpuGame && s2.room?.host_id === s2.sessionId) {
+                if (!s2.isCpuGame) {
                   const cp2 = data.find(p => p.id === newGs.current_player_id)
                   if (cp2?.is_cpu && !_onlineCpuProcessing) processOnlineCpuTurn(cp2, newGs)
                 }
               })
             }
 
-            // Host processes CPU turns and detects empty-hand human players
+            // Any client processes CPU turns and detects empty-hand human players
             const s = get()
-            if (!s.isCpuGame && s.room?.host_id === s.sessionId) {
+            if (!s.isCpuGame) {
               const cp = s.players.find(p => p.id === newGs.current_player_id)
               if (cp?.is_cpu) {
                 if (_onlineCpuProcessing) {
@@ -1563,7 +1568,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
                     ...(roundChanged ? { publicDiscs: [], myDiscs: [], _cpuDiscs: [], _foldedPlayerIds: [] } : {}),
                   }))
                   const s2 = get()
-                  if (!s2.isCpuGame && s2.room?.host_id === s2.sessionId) {
+                  if (!s2.isCpuGame) {
                     const cp = s2.players.find(p => p.id === freshGs.current_player_id)
                     if (cp?.is_cpu && !_onlineCpuProcessing) processOnlineCpuTurn(cp, freshGs)
                   }
