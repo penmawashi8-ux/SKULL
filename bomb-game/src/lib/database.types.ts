@@ -15,6 +15,7 @@ export type Database = {
           host_id: string
           max_players: number
           current_round: number
+          password: string | null
           created_at: string
           updated_at: string
         }
@@ -25,6 +26,7 @@ export type Database = {
           host_id: string
           max_players?: number
           current_round?: number
+          password?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -35,6 +37,7 @@ export type Database = {
           host_id?: string
           max_players?: number
           current_round?: number
+          password?: string | null
           created_at?: string
           updated_at?: string
         }

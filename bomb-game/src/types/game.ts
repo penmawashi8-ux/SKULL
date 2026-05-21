@@ -11,8 +11,18 @@ export interface Room {
   host_id: string
   max_players: number
   current_round: number
+  password: string | null
   created_at: string
   updated_at: string
+}
+
+export interface RoomListItem {
+  id: string
+  room_code: string
+  max_players: number
+  current_players: number
+  has_password: boolean
+  created_at: string
 }
 
 export interface Player {
