@@ -369,8 +369,10 @@ export function GameBoard({ onGameEnd, onReturnToHub }: Props) {
       if (ownUnflipped.length > 0) { await handleFlip(ownUnflipped[0].id); return }
       const othersUnflipped = publicDiscs
         .filter(d => d.player_id !== myPlayer.id && d.round_number === round && !d.is_flipped)
-        .sort((a, b) => b.position - a.position)
-      if (othersUnflipped.length > 0) await handleFlip(othersUnflipped[0].id)
+      if (othersUnflipped.length > 0) {
+        const target = othersUnflipped[Math.floor(Math.random() * othersUnflipped.length)]
+        await handleFlip(target.id)
+      }
     }
   }, [myPlayer, gameState, phase, highestBid, totalDiscs, isChallenger, round, myDiscs, publicDiscs, handlePlaceFlower, handlePlaceBomb, handleBid, handleFold, handleFlip])
 
