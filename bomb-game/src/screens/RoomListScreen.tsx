@@ -29,10 +29,12 @@ export function RoomListScreen() {
   const joiningRef = useRef(false)
 
   async function fetchRooms() {
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString()
     const { data } = await supabase
       .from('rooms')
       .select('id, room_code, max_players, password, created_at, players(id)')
       .eq('status', 'waiting')
+      .gte('created_at', oneHourAgo)
       .order('created_at', { ascending: false })
 
     if (!data) { setFetching(false); return }

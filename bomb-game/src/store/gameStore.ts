@@ -1219,6 +1219,12 @@ export const useGameStore = create<StoreState>()((set, get) => {
     // ── startCpuGame ──────────────────────────────────────────────────────────
     startCpuGame: async (playerName, cpuCount, difficulty) => {
       set({ isLoading: true, error: null })
+      // Disconnect any active online subscription before starting a CPU game
+      const prevSub = get()._subscription
+      if (prevSub) {
+        supabase.removeChannel(prevSub)
+        set({ _subscription: null })
+      }
       const sessionId = get().sessionId
       const roomId = crypto.randomUUID()
 
@@ -1597,7 +1603,10 @@ export const useGameStore = create<StoreState>()((set, get) => {
         const winner = getWinner(updatedPlayers)
         if (winner) {
           if (!isCpuGame) {
-            await supabase.from('players').update({ win_count: myPlayer.win_count + 1 }).eq('id', myPlayer.id)
+            await Promise.all([
+              supabase.from('players').update({ win_count: myPlayer.win_count + 1 }).eq('id', myPlayer.id),
+              supabase.from('rooms').update({ status: 'finished' }).eq('id', room.id),
+            ])
           }
           set({ players: updatedPlayers })
           return
@@ -1712,11 +1721,14 @@ export const useGameStore = create<StoreState>()((set, get) => {
           })
           const winner = getWinner(updatedPlayers)
           if (winner) {
-            await supabase.from('players').update({
-              flower_count: newPerm.flowers,
-              bomb_count: newPerm.bombs,
-              is_eliminated: isEliminated,
-            }).eq('id', myPlayer.id)
+            await Promise.all([
+              supabase.from('players').update({
+                flower_count: newPerm.flowers,
+                bomb_count: newPerm.bombs,
+                is_eliminated: isEliminated,
+              }).eq('id', myPlayer.id),
+              supabase.from('rooms').update({ status: 'finished' }).eq('id', room.id),
+            ])
             set({ players: updatedPlayers })
             return
           }
