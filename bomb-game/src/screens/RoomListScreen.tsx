@@ -29,13 +29,22 @@ export function RoomListScreen() {
   const joiningRef = useRef(false)
 
   async function fetchRooms() {
-    const { data: roomRows } = await supabase
+    const { data } = await supabase
       .from('rooms')
       .select('id, room_code, max_players, password, created_at, players(id)')
       .eq('status', 'waiting')
       .order('created_at', { ascending: false })
 
-    if (!roomRows) { setFetching(false); return }
+    if (!data) { setFetching(false); return }
+
+    const roomRows = data as Array<{
+      id: string
+      room_code: string
+      max_players: number
+      password: string | null
+      created_at: string
+      players: { id: string }[]
+    }>
 
     setRooms(
       roomRows.map(r => ({

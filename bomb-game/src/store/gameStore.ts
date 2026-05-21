@@ -1229,6 +1229,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
         host_id: sessionId,
         max_players: cpuCount + 1,
         current_round: 1,
+        password: null,
         created_at: ts(),
         updated_at: ts(),
       }
