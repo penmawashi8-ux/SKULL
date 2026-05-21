@@ -124,7 +124,7 @@ export function ResultModal({ show, type, challenger, bombOwner, lostDisc, onClo
                 <button
                   onClick={() => fireOnce.current()}
                   className="w-full py-3 border border-red-500/40 rounded-xl text-red-300 text-sm mt-2"
-                  style={{ fontFamily: 'Cinzel, serif' }}
+                  style={{ fontFamily: 'Cinzel, serif', touchAction: 'manipulation' }}
                 >
                   続ける
                 </button>

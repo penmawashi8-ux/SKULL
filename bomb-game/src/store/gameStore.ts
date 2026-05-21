@@ -63,8 +63,8 @@ export interface StoreState {
   _permCards: Record<string, { flowers: number; bombs: number }>
   _cpuLog: { id: string; message: string; type: 'place' | 'bid' | 'fold' | 'flip' | 'result' } | null
 
-  createRoom: (playerName: string, maxPlayers: number) => Promise<string>
-  joinRoom: (roomCode: string, playerName: string) => Promise<void>
+  createRoom: (playerName: string, maxPlayers: number, password?: string) => Promise<string>
+  joinRoom: (roomCode: string, playerName: string, password?: string) => Promise<void>
   startGame: () => Promise<void>
   placeDisc: (discType: DiscType) => Promise<void>
   placeBid: (amount: number) => Promise<void>
@@ -766,7 +766,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
     _cpuLog: null,
 
     // ── createRoom ────────────────────────────────────────────────────────────
-    createRoom: async (playerName, maxPlayers) => {
+    createRoom: async (playerName, maxPlayers, password) => {
       set({ isLoading: true, error: null })
       try {
         const sessionId = get().sessionId
@@ -774,7 +774,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
 
         const { data: room, error: roomErr } = await supabase
           .from('rooms')
-          .insert({ room_code: roomCode, host_id: sessionId, max_players: maxPlayers })
+          .insert({ room_code: roomCode, host_id: sessionId, max_players: maxPlayers, password: password || null })
           .select()
           .single()
         if (roomErr) throw roomErr
@@ -796,7 +796,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
     },
 
     // ── joinRoom ──────────────────────────────────────────────────────────────
-    joinRoom: async (roomCode, playerName) => {
+    joinRoom: async (roomCode, playerName, password) => {
       set({ isLoading: true, error: null })
       try {
         const sessionId = get().sessionId
@@ -805,6 +805,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
           .from('rooms').select().eq('room_code', roomCode).single()
         if (roomErr) throw new Error('ルームが見つかりません')
         if (room.status !== 'waiting') throw new Error('ゲームは既に開始されています')
+        if (room.password && room.password !== (password ?? '')) throw new Error('パスワードが違います')
 
         const { data: existing, error: existErr } = await supabase
           .from('players').select().eq('room_id', room.id)
@@ -1669,7 +1670,18 @@ export const useGameStore = create<StoreState>()((set, get) => {
             ? getNextActivePlayer(updatedPlayers, myPlayer.id)?.id ?? myPlayer.id
             : myPlayer.id
           startNextRound(starterId, updatedPlayers, room, gameState)
-          await processCpuTurns()
+          if (_cpuRunning) {
+            // Old CPU loop still sleeping; it will pick up the new round state when it wakes.
+            // Safety retry in case it exits before processing this round's first CPU turn.
+            setTimeout(() => {
+              const s = get()
+              if (!s.isCpuGame || !s.gameState || _cpuRunning) return
+              const curr = s.players.find(p => p.id === s.gameState!.current_player_id)
+              if (curr?.is_cpu) processCpuTurns()
+            }, 900)
+          } else {
+            await processCpuTurns()
+          }
         } else {
           // Online: fetch placed_discs first so bomb-loss is computed from authoritative perm values
           const { data: roundDiscs } = await supabase

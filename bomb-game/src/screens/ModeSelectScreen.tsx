@@ -138,11 +138,11 @@ export function ModeSelectScreen() {
               ＋ ルームを作る
             </button>
             <button
-              onClick={() => { playButtonPress(); navigate('/online/join') }}
+              onClick={() => { playButtonPress(); navigate('/online/rooms') }}
               className="flex-1 py-3 rounded-xl bg-purple-800/60 border border-purple-500/30 text-white text-sm font-semibold active:scale-[0.97] transition-transform"
               style={{ fontFamily: 'Cinzel, serif' }}
             >
-              → ルームに入る
+              → ルームを探す
             </button>
           </div>
         )}

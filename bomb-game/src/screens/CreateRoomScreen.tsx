@@ -11,6 +11,8 @@ export function CreateRoomScreen() {
   const [defaultName]              = useState(() => RANDOM_NAMES[Math.floor(Math.random() * RANDOM_NAMES.length)])
   const [name, setName]           = useState('')
   const [maxPlayers, setMaxPlayers] = useState(4)
+  const [usePassword, setUsePassword] = useState(false)
+  const [password, setPassword]   = useState('')
   const [roomCode, setRoomCode]   = useState<string | null>(null)
   const [copied, setCopied]       = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -19,7 +21,8 @@ export function CreateRoomScreen() {
     if (isSubmitting || isLoading) return
     setIsSubmitting(true)
     try {
-      const code = await createRoom(name.trim() || defaultName, maxPlayers)
+      const pw = usePassword && password.trim() ? password.trim() : undefined
+      const code = await createRoom(name.trim() || defaultName, maxPlayers, pw)
       setRoomCode(code)
     } finally {
       setIsSubmitting(false)
@@ -100,6 +103,36 @@ export function CreateRoomScreen() {
                   </button>
                 ))}
               </div>
+            </div>
+
+            {/* Password */}
+            <div>
+              <button
+                onClick={() => { setUsePassword(v => !v); setPassword('') }}
+                className="flex items-center gap-2 text-white/60 text-sm"
+                style={{ fontFamily: 'Crimson Text, serif', touchAction: 'manipulation' }}
+              >
+                <span
+                  className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
+                    usePassword ? 'border-purple-400 bg-purple-900/60' : 'border-white/20 bg-transparent'
+                  }`}
+                >
+                  {usePassword && <span className="text-purple-300 text-xs">✓</span>}
+                </span>
+                パスワードを設定する
+              </button>
+              {usePassword && (
+                <input
+                  type="text"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  maxLength={20}
+                  placeholder="パスワードを入力"
+                  autoComplete="off"
+                  className="mt-3 w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/20 focus:outline-none focus:border-purple-500/60 text-lg"
+                  style={{ fontFamily: 'Crimson Text, serif' }}
+                />
+              )}
             </div>
 
             {error && (
