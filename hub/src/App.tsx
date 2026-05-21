@@ -58,7 +58,7 @@ const games: Game[] = [
     cardBg: 'linear-gradient(135deg, #1a0d15 0%, #2a1020 100%)',
     players: '1〜6人',
     duration: '約10〜20分',
-    tags: ['反射神経', 'トランプ', 'パーティ'],
+    tags: ['トランプ', 'パーティ'],
   },
   {
     id: 'keiba',

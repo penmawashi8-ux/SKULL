@@ -1324,7 +1324,16 @@ export const useGameStore = create<StoreState>()((set, get) => {
         .on('postgres_changes', {
           event: '*', schema: 'public', table: 'rooms', filter: `id=eq.${roomId}`,
         }, payload => {
-          if (payload.eventType !== 'DELETE') set({ room: payload.new as Room })
+          if (payload.eventType !== 'DELETE') {
+            const newRoom = payload.new as Room
+            set({ room: newRoom })
+            if (newRoom.status === 'finished') {
+              supabase.from('players').select().eq('room_id', roomId).then(({ data }) => {
+                if (!data || get().room?.id !== roomId) return
+                set({ players: data })
+              })
+            }
+          }
         })
         .on('postgres_changes', {
           event: '*', schema: 'public', table: 'players', filter: `room_id=eq.${roomId}`,
