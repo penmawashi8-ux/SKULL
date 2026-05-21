@@ -6,7 +6,7 @@ import { useGameStore } from '../store/gameStore'
 import type { RoomListItem } from '../types/game'
 import { playButtonPress } from '../lib/sounds'
 
-const RANDOM_NAMES = ['騎士', '魔法使い', '盗賊', '詩人', '商人', '旅人', '冒険者', '忍者', '吟遊詩人', '錬金術師']
+const RANDOM_NAMES = ['騎士', '魔法使い', '盗賊', '詩人', '商人', '旅人', '冒険者', '忍者', '吵游詩人', '錬金術師']
 
 function timeAgo(iso: string): string {
   const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 1000)
