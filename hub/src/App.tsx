@@ -462,7 +462,7 @@ export default function App() {
           ))}
         </nav>
         <p className="font-sans-jp text-[10px]" style={{ color: 'rgba(255,255,255,0.18)' }}>
-          © 2024 ボドゲ広場
+          © 2026 ボドゲ広場
         </p>
       </footer>
     </div>
