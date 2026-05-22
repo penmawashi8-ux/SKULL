@@ -32,7 +32,7 @@ export function GameScreen() {
     return (
       <div
         className="flex-1 flex items-center justify-center"
-        style={{ background: '#030712' }}
+        style={{ background: '#0e1023' }}
       >
         <p className="text-white/40" style={{ fontFamily: 'Crimson Text, serif' }}>
           読み込み中...

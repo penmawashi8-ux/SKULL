@@ -102,7 +102,7 @@ export function RoomListScreen() {
   return (
     <div
       className="flex-1 min-h-0 flex flex-col"
-      style={{ background: 'radial-gradient(ellipse at 50% 0%, #1a0a2e 0%, #030712 70%)' }}
+      style={{ background: 'radial-gradient(ellipse at 50% 0%, #261545 0%, #0e1023 70%)' }}
     >
       {/* Header */}
       <div className="flex-shrink-0 flex items-center gap-3 px-4 pt-6 pb-4">

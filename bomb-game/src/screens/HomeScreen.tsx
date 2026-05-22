@@ -22,7 +22,7 @@ export function HomeScreen() {
   return (
     <div
       className="flex-1 min-h-0 flex flex-col items-center justify-center relative overflow-hidden"
-      style={{ background: 'radial-gradient(ellipse at 50% 20%, #1a0a2e 0%, #030712 65%)' }}
+      style={{ background: 'radial-gradient(ellipse at 50% 20%, #261545 0%, #0e1023 65%)' }}
     >
       {/* Floating background cards */}
       {CARDS.map(card => (
