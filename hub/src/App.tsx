@@ -201,6 +201,7 @@ function GameIcon({ game, available }: { game: Game; available: boolean }) {
       />
       {/* Fallback monogram shown only if image fails */}
       <span
+        aria-hidden="true"
         className="font-cinzel absolute inset-0 items-center justify-center text-[13px] font-black tracking-wider"
         style={{ display: 'none', color, textShadow: available ? `0 0 18px ${game.accentColor}90` : 'none' }}
       >
