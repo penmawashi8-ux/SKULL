@@ -1,5 +1,8 @@
 import { UpdatePrompt } from './components/UpdatePrompt'
 import PigTailGame from './games/PigTailGame'
+import PrivacyPolicy from './pages/PrivacyPolicy'
+import Terms from './pages/Terms'
+import Contact from './pages/Contact'
 import { Component, type ReactNode } from 'react'
 
 class SafeRender extends Component<{ children: ReactNode }, { hasError: boolean }> {
@@ -299,13 +302,18 @@ function GameRow({ game }: { game: Game }) {
 }
 
 export default function App() {
-  if (window.location.pathname === '/pig-tail') {
+  const path = window.location.pathname
+
+  if (path === '/pig-tail') {
     return (
       <SafeRender>
         <PigTailGame />
       </SafeRender>
     )
   }
+  if (path === '/privacy-policy') return <PrivacyPolicy />
+  if (path === '/terms') return <Terms />
+  if (path === '/contact') return <Contact />
 
   const available = games.filter(g => g.status === 'available')
   const comingSoon = games.filter(g => g.status === 'coming-soon')
@@ -427,6 +435,36 @@ export default function App() {
           </div>
         )}
       </main>
+
+      {/* Footer */}
+      <footer
+        className="px-5 py-8 text-center"
+        style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}
+      >
+        <p className="font-cinzel text-[10px] font-bold tracking-[0.25em] uppercase mb-3" style={{ color: '#b8922a' }}>
+          ボドゲ広場
+        </p>
+        <nav className="flex justify-center gap-5 mb-4">
+          {[
+            { label: 'プライバシーポリシー', path: '/privacy-policy' },
+            { label: '利用規約', path: '/terms' },
+            { label: 'お問い合わせ', path: '/contact' },
+          ].map(({ label, path }) => (
+            <a
+              key={path}
+              href={path}
+              onClick={e => { e.preventDefault(); window.location.assign(path) }}
+              className="font-sans-jp text-[11px] hover:opacity-80 transition-opacity"
+              style={{ color: 'rgba(255,255,255,0.35)' }}
+            >
+              {label}
+            </a>
+          ))}
+        </nav>
+        <p className="font-sans-jp text-[10px]" style={{ color: 'rgba(255,255,255,0.18)' }}>
+          © 2024 ボドゲ広場
+        </p>
+      </footer>
     </div>
   )
 }
