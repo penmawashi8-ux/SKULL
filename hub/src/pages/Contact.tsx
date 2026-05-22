@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-const CONTACT_EMAIL = 'contact@boardgamecat.com'
+const CONTACT_EMAIL = 'boardgamecat@yahoo.co.jp'
 
 function PageHeader({ title }: { title: string }) {
   return (
