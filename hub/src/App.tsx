@@ -3,7 +3,7 @@ import PigTailGame from './games/PigTailGame'
 import PrivacyPolicy from './pages/PrivacyPolicy'
 import Terms from './pages/Terms'
 import Contact from './pages/Contact'
-import { Component, type ReactNode } from 'react'
+import { Component, useState, type ReactNode } from 'react'
 
 class SafeRender extends Component<{ children: ReactNode }, { hasError: boolean }> {
   state = { hasError: false }
@@ -18,6 +18,7 @@ class SafeRender extends Component<{ children: ReactNode }, { hasError: boolean 
 const BOMB_GAME_URL = 'https://bomb.boardgamecat.com'
 
 type GameStatus = 'available' | 'coming-soon'
+type Genre = 'all' | 'trump' | 'bluff' | 'other'
 
 interface Game {
   id: string
@@ -34,6 +35,20 @@ interface Game {
   tags: string[]
 }
 
+const GENRES: { id: Genre; label: string }[] = [
+  { id: 'all', label: 'すべて' },
+  { id: 'bluff', label: 'ブラフ' },
+  { id: 'trump', label: 'トランプ' },
+  { id: 'other', label: 'その他' },
+]
+
+function matchGenre(game: Game, genre: Genre): boolean {
+  if (genre === 'all') return true
+  if (genre === 'bluff') return game.tags.includes('ブラフ')
+  if (genre === 'trump') return game.tags.includes('トランプ')
+  return !game.tags.includes('ブラフ') && !game.tags.includes('トランプ')
+}
+
 const games: Game[] = [
   {
     id: 'bomb',
@@ -44,7 +59,7 @@ const games: Game[] = [
     status: 'available',
     url: BOMB_GAME_URL,
     accentColor: '#dc2626',
-    cardBg: 'linear-gradient(135deg, #1a0d0d 0%, #2a1111 100%)',
+    cardBg: 'linear-gradient(135deg, #2e1515 0%, #3d1a1a 100%)',
     players: '2〜6人',
     duration: '約20分',
     tags: ['ブラフ', '心理戦', 'パーティ'],
@@ -58,7 +73,7 @@ const games: Game[] = [
     status: 'available',
     url: 'https://buta.boardgamecat.com',
     accentColor: '#ec4899',
-    cardBg: 'linear-gradient(135deg, #1a0d15 0%, #2a1020 100%)',
+    cardBg: 'linear-gradient(135deg, #2e1525 0%, #3d1832 100%)',
     players: '1〜6人',
     duration: '約10〜20分',
     tags: ['トランプ', 'パーティ'],
@@ -72,7 +87,7 @@ const games: Game[] = [
     status: 'available',
     url: 'https://gamekeiba.boardgamecat.com',
     accentColor: '#d97706',
-    cardBg: 'linear-gradient(135deg, #160e00 0%, #271a00 100%)',
+    cardBg: 'linear-gradient(135deg, #261800 0%, #382400 100%)',
     players: '1人〜',
     duration: '約5〜10分',
     tags: ['競馬', '予想', 'バーチャル'],
@@ -86,7 +101,7 @@ const games: Game[] = [
     status: 'available',
     url: 'https://pageone.boardgamecat.com',
     accentColor: '#3b82f6',
-    cardBg: 'linear-gradient(135deg, #080f1e 0%, #0d1a35 100%)',
+    cardBg: 'linear-gradient(135deg, #0f1e3a 0%, #162848 100%)',
     players: '1〜4人',
     duration: '約15〜30分',
     tags: ['トランプ', '特殊カード', 'パーティ'],
@@ -100,7 +115,7 @@ const games: Game[] = [
     status: 'available',
     url: 'https://bouryaku.boardgamecat.com',
     accentColor: '#10b981',
-    cardBg: 'linear-gradient(135deg, #081a10 0%, #0f2518 100%)',
+    cardBg: 'linear-gradient(135deg, #0f2d1e 0%, #163d28 100%)',
     players: '2〜6人',
     duration: '約15〜30分',
     tags: ['ブラフ', '心理戦', '推理'],
@@ -114,7 +129,7 @@ const games: Game[] = [
     status: 'available',
     url: 'https://g-oei1.vercel.app',
     accentColor: '#ea580c',
-    cardBg: 'linear-gradient(135deg, #180800 0%, #2a1000 100%)',
+    cardBg: 'linear-gradient(135deg, #2a1200 0%, #3d1c00 100%)',
     players: '2人〜',
     duration: '約10〜20分',
     tags: ['レース', 'ブロック', 'β版'],
@@ -128,7 +143,7 @@ const games: Game[] = [
     status: 'available',
     url: 'https://g.boardgamecat.com',
     accentColor: '#7c3aed',
-    cardBg: 'linear-gradient(135deg, #160f28 0%, #22163c 100%)',
+    cardBg: 'linear-gradient(135deg, #1e1540 0%, #2a1c54 100%)',
     players: '2人〜',
     duration: '約10〜20分',
     tags: ['対戦', '戦略', 'β版'],
@@ -141,7 +156,7 @@ const games: Game[] = [
     description: '鋭意制作中……',
     status: 'coming-soon',
     accentColor: '#0891b2',
-    cardBg: 'linear-gradient(135deg, #0a1520 0%, #0a1e2e 100%)',
+    cardBg: 'linear-gradient(135deg, #0f2030 0%, #102a3e 100%)',
     players: '未定',
     duration: '未定',
     tags: ['未定'],
@@ -154,7 +169,7 @@ const games: Game[] = [
     description: '鋭意制作中……',
     status: 'coming-soon',
     accentColor: '#b45309',
-    cardBg: 'linear-gradient(135deg, #150f04 0%, #221800 100%)',
+    cardBg: 'linear-gradient(135deg, #221808 0%, #302200 100%)',
     players: '未定',
     duration: '未定',
     tags: ['未定'],
@@ -165,27 +180,55 @@ function Tag({ text }: { text: string }) {
   return (
     <span
       className="font-sans-jp inline-block text-[10px] font-medium px-2 py-0.5 rounded-full"
-      style={{ background: 'rgba(255,255,255,0.09)', color: 'rgba(255,255,255,0.55)' }}
+      style={{ background: 'rgba(255,255,255,0.13)', color: 'rgba(255,255,255,0.65)' }}
     >
       {text}
     </span>
   )
 }
 
+function GenreFilter({ selected, onChange }: { selected: Genre; onChange: (g: Genre) => void }) {
+  return (
+    <div
+      className="flex gap-2 overflow-x-auto px-4 pb-1 mb-4"
+      style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' } as React.CSSProperties}
+    >
+      {GENRES.map(g => {
+        const active = g.id === selected
+        return (
+          <button
+            key={g.id}
+            onClick={() => onChange(g.id)}
+            className="font-sans-jp flex-shrink-0 text-[12px] font-bold px-4 py-1.5 rounded-full transition-all duration-150"
+            style={{
+              background: active ? 'rgba(184,146,42,0.9)' : 'rgba(255,255,255,0.08)',
+              color: active ? '#fff' : 'rgba(255,255,255,0.5)',
+              border: active ? '1px solid #b8922a' : '1px solid rgba(255,255,255,0.1)',
+              boxShadow: active ? '0 0 12px rgba(184,146,42,0.4)' : 'none',
+            }}
+          >
+            {g.label}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
 function GameIcon({ game, available }: { game: Game; available: boolean }) {
-  const color = available ? game.accentColor : 'rgba(255,255,255,0.15)'
+  const color = available ? game.accentColor : 'rgba(255,255,255,0.2)'
   const imgSrc = `/icons/${game.id}.svg`
 
   return (
     <div
       className="w-[62px] h-[62px] rounded-full flex items-center justify-center flex-shrink-0 select-none relative overflow-hidden"
       style={{
-        background: `radial-gradient(circle at 38% 32%, ${available ? game.accentColor + '18' : 'rgba(255,255,255,0.03)'} 0%, rgba(0,0,0,0.55) 100%)`,
-        border: `1.5px solid ${color}55`,
+        background: `radial-gradient(circle at 38% 32%, ${available ? game.accentColor + '22' : 'rgba(255,255,255,0.05)'} 0%, rgba(0,0,0,0.4) 100%)`,
+        border: `1.5px solid ${color}66`,
         boxShadow: available
-          ? `0 0 0 3px rgba(0,0,0,0.5), 0 0 0 4.5px ${game.accentColor}22, inset 0 1px 0 rgba(255,255,255,0.07)`
-          : `0 0 0 3px rgba(0,0,0,0.3)`,
-        filter: available ? 'none' : 'brightness(0.4)',
+          ? `0 0 0 3px rgba(0,0,0,0.4), 0 0 0 4.5px ${game.accentColor}28, inset 0 1px 0 rgba(255,255,255,0.1)`
+          : `0 0 0 3px rgba(0,0,0,0.2)`,
+        filter: available ? 'none' : 'brightness(0.5)',
       }}
     >
       <img
@@ -199,7 +242,6 @@ function GameIcon({ game, available }: { game: Game; available: boolean }) {
           if (fallback) fallback.style.display = 'flex'
         }}
       />
-      {/* Fallback monogram shown only if image fails */}
       <span
         aria-hidden="true"
         className="font-cinzel absolute inset-0 items-center justify-center text-[13px] font-black tracking-wider"
@@ -219,23 +261,21 @@ function GameRow({ game }: { game: Game }) {
       className="relative flex items-center gap-3.5 px-4 py-4 rounded-2xl transition-all duration-200 active:scale-[0.985] active:brightness-90"
       style={{
         background: game.cardBg,
-        border: '1px solid rgba(255,255,255,0.07)',
-        boxShadow: isAvailable ? '0 2px 24px rgba(0,0,0,0.45)' : 'none',
+        border: '1px solid rgba(255,255,255,0.1)',
+        boxShadow: isAvailable ? '0 2px 20px rgba(0,0,0,0.35)' : 'none',
       }}
     >
-      {/* Left accent bar */}
       <div
         className="absolute left-0 top-5 bottom-5 w-[3px] rounded-r-full"
-        style={{ backgroundColor: isAvailable ? game.accentColor : 'rgba(255,255,255,0.07)' }}
+        style={{ backgroundColor: isAvailable ? game.accentColor : 'rgba(255,255,255,0.1)' }}
       />
 
       <GameIcon game={game} available={isAvailable} />
 
-      {/* Info */}
       <div className="flex-1 min-w-0">
         <p
           className="font-cinzel text-[9px] font-bold tracking-[0.22em] uppercase mb-0.5"
-          style={{ color: isAvailable ? game.accentColor : 'rgba(255,255,255,0.18)' }}
+          style={{ color: isAvailable ? game.accentColor : 'rgba(255,255,255,0.25)' }}
         >
           {game.nameEn}
         </p>
@@ -244,7 +284,7 @@ function GameRow({ game }: { game: Game }) {
         </h2>
         <p
           className="font-sans-jp text-[11px] leading-relaxed mb-2"
-          style={{ color: 'rgba(255,255,255,0.42)' }}
+          style={{ color: 'rgba(255,255,255,0.58)' }}
         >
           {game.description}
         </p>
@@ -253,21 +293,20 @@ function GameRow({ game }: { game: Game }) {
         </div>
         <div
           className="font-sans-jp flex gap-3 text-[10px]"
-          style={{ color: 'rgba(255,255,255,0.22)' }}
+          style={{ color: 'rgba(255,255,255,0.35)' }}
         >
           <span>👥 {game.players}</span>
           <span>⏱ {game.duration}</span>
         </div>
       </div>
 
-      {/* CTA */}
       <div className="flex-shrink-0">
         {isAvailable ? (
           <div
             className="font-cinzel px-3 py-2.5 rounded-xl text-[11px] font-bold text-white text-center leading-snug min-w-[58px]"
             style={{
               backgroundColor: game.accentColor,
-              boxShadow: `0 0 18px ${game.accentColor}55`,
+              boxShadow: `0 0 18px ${game.accentColor}66`,
             }}
           >
             今すぐ<br />遊ぶ →
@@ -276,9 +315,9 @@ function GameRow({ game }: { game: Game }) {
           <div
             className="font-sans-jp px-3 py-2.5 rounded-xl text-[11px] text-center leading-snug min-w-[58px]"
             style={{
-              color: 'rgba(255,255,255,0.18)',
-              background: 'rgba(255,255,255,0.04)',
-              border: '1px solid rgba(255,255,255,0.07)',
+              color: 'rgba(255,255,255,0.25)',
+              background: 'rgba(255,255,255,0.06)',
+              border: '1px solid rgba(255,255,255,0.1)',
             }}
           >
             準備<br />中…
@@ -316,11 +355,13 @@ export default function App() {
   if (path === '/terms') return <Terms />
   if (path === '/contact') return <Contact />
 
-  const available = games.filter(g => g.status === 'available')
+  const [genre, setGenre] = useState<Genre>('all')
+
+  const available = games.filter(g => g.status === 'available' && matchGenre(g, genre))
   const comingSoon = games.filter(g => g.status === 'coming-soon')
 
   return (
-    <div className="min-h-screen" style={{ background: '#09090f' }}>
+    <div className="min-h-screen" style={{ background: '#16162a' }}>
       <SafeRender>
         <UpdatePrompt />
       </SafeRender>
@@ -329,13 +370,13 @@ export default function App() {
       <header
         className="sticky top-0 z-20 flex items-center justify-between px-4 py-3"
         style={{
-          background: 'rgba(9,9,15,0.88)',
+          background: 'rgba(22,22,42,0.92)',
           backdropFilter: 'blur(24px)',
           WebkitBackdropFilter: 'blur(24px)',
-          borderBottom: '1px solid rgba(255,255,255,0.05)',
+          borderBottom: '1px solid rgba(255,255,255,0.08)',
         }}
       >
-        <div className="w-9 h-9 flex items-center justify-center text-white/40 text-xl font-light">
+        <div className="w-9 h-9 flex items-center justify-center text-white/50 text-xl font-light">
           ☰
         </div>
         <div className="text-center">
@@ -345,17 +386,16 @@ export default function App() {
           >
             Board Game Collection
           </p>
-          {/* Diamond separator */}
           <div className="flex items-center justify-center gap-2 my-0.5">
-            <div style={{ height: '1px', width: '28px', background: 'linear-gradient(to right, transparent, #b8922a55)' }} />
-            <div style={{ width: '4px', height: '4px', background: '#b8922a88', transform: 'rotate(45deg)' }} />
-            <div style={{ height: '1px', width: '28px', background: 'linear-gradient(to left, transparent, #b8922a55)' }} />
+            <div style={{ height: '1px', width: '28px', background: 'linear-gradient(to right, transparent, #b8922a66)' }} />
+            <div style={{ width: '4px', height: '4px', background: '#b8922a99', transform: 'rotate(45deg)' }} />
+            <div style={{ height: '1px', width: '28px', background: 'linear-gradient(to left, transparent, #b8922a66)' }} />
           </div>
           <h1 className="font-serif-jp font-bold text-[14px] text-white tracking-widest">
             ボドゲ広場
           </h1>
         </div>
-        <div className="w-9 h-9 flex items-center justify-center text-white/40 text-xl">
+        <div className="w-9 h-9 flex items-center justify-center text-white/50 text-xl">
           🔔
         </div>
       </header>
@@ -364,20 +404,20 @@ export default function App() {
       <section className="relative px-5 pt-10 pb-7 overflow-hidden">
         <div
           className="absolute right-[-8px] top-[-4px] text-[110px] select-none pointer-events-none leading-none"
-          style={{ opacity: 0.07 }}
+          style={{ opacity: 0.1 }}
         >
           🃏
         </div>
         <div
           className="absolute left-[-12px] top-8 text-[88px] select-none pointer-events-none leading-none"
-          style={{ opacity: 0.055, transform: 'rotate(-18deg)' }}
+          style={{ opacity: 0.08, transform: 'rotate(-18deg)' }}
         >
           🎲
         </div>
 
         <p
           className="font-sans-jp text-xs mb-1.5 relative z-10"
-          style={{ color: 'rgba(255,255,255,0.38)' }}
+          style={{ color: 'rgba(255,255,255,0.55)' }}
         >
           ブラウザで遊べる
         </p>
@@ -389,7 +429,7 @@ export default function App() {
         </h2>
         <p
           className="font-sans-jp text-[12px] leading-relaxed relative z-10"
-          style={{ color: 'rgba(255,255,255,0.32)' }}
+          style={{ color: 'rgba(255,255,255,0.5)' }}
         >
           友達と、家族と、見知らぬ誰かと。<br />
           オンラインでつながるボードゲームの世界。
@@ -398,33 +438,44 @@ export default function App() {
 
       {/* Separator */}
       <div
-        className="mx-5 mb-5"
-        style={{ height: '1px', background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.07), transparent)' }}
+        className="mx-5 mb-4"
+        style={{ height: '1px', background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.1), transparent)' }}
       />
+
+      {/* Genre filter */}
+      <GenreFilter selected={genre} onChange={setGenre} />
 
       {/* Game list */}
       <main className="px-4 pb-8 max-w-xl mx-auto">
         <div className="flex flex-col gap-3">
-          {available.map(game => (
-            <GameRow key={game.id} game={game} />
-          ))}
+          {available.length > 0
+            ? available.map(game => <GameRow key={game.id} game={game} />)
+            : (
+              <p
+                className="font-sans-jp text-center text-[12px] py-10"
+                style={{ color: 'rgba(255,255,255,0.3)' }}
+              >
+                このジャンルのゲームは準備中です
+              </p>
+            )
+          }
         </div>
 
-        {comingSoon.length > 0 && (
+        {genre === 'all' && comingSoon.length > 0 && (
           <div className="mt-10">
             <div className="flex items-center gap-3 mb-5">
-              <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.05)' }} />
+              <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.08)' }} />
               <span
                 className="font-cinzel text-[9px] font-bold tracking-[0.3em] uppercase"
-                style={{ color: 'rgba(255,255,255,0.18)' }}
+                style={{ color: 'rgba(255,255,255,0.25)' }}
               >
                 Coming Soon
               </span>
-              <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.05)' }} />
+              <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.08)' }} />
             </div>
             <p
               className="font-sans-jp text-center text-[11px] mb-4"
-              style={{ color: 'rgba(255,255,255,0.18)' }}
+              style={{ color: 'rgba(255,255,255,0.25)' }}
             >
               新しいゲームを続々追加予定
             </p>
@@ -440,7 +491,7 @@ export default function App() {
       {/* Footer */}
       <footer
         className="px-5 py-8 text-center"
-        style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}
+        style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}
       >
         <p className="font-cinzel text-[10px] font-bold tracking-[0.25em] uppercase mb-3" style={{ color: '#b8922a' }}>
           ボドゲ広場
@@ -456,13 +507,13 @@ export default function App() {
               href={path}
               onClick={e => { e.preventDefault(); window.location.assign(path) }}
               className="font-sans-jp text-[11px] hover:opacity-80 transition-opacity"
-              style={{ color: 'rgba(255,255,255,0.35)' }}
+              style={{ color: 'rgba(255,255,255,0.45)' }}
             >
               {label}
             </a>
           ))}
         </nav>
-        <p className="font-sans-jp text-[10px]" style={{ color: 'rgba(255,255,255,0.18)' }}>
+        <p className="font-sans-jp text-[10px]" style={{ color: 'rgba(255,255,255,0.25)' }}>
           © 2026 ボドゲ広場
         </p>
       </footer>
