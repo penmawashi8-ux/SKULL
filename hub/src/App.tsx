@@ -341,6 +341,93 @@ function GameRow({ game }: { game: Game }) {
   return <div className="card-enter">{inner}</div>
 }
 
+const NOTICES = [
+  {
+    id: 1,
+    date: '2026.05.22',
+    title: 'ジャンルフィルター追加',
+    body: 'ゲーム一覧にジャンル別フィルター（ブラフ・トランプ・その他）を追加しました。',
+  },
+  {
+    id: 2,
+    date: '2026.05.20',
+    title: 'バーチャル競馬 公開',
+    body: '馬を選んで予想して観戦！バーチャル競馬を新たに追加しました。',
+  },
+  {
+    id: 3,
+    date: '2026.05.15',
+    title: '謀略 公開',
+    body: 'ブラフ系の新ゲーム「謀略」を公開しました。嘘をついて生き残れ！',
+  },
+  {
+    id: 4,
+    date: '2026.05.10',
+    title: 'ぶたのしっぽ 公開',
+    body: 'トランプゲーム「ぶたのしっぽ」を公開しました。',
+  },
+]
+
+function NoticeDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
+  return (
+    <>
+      <div
+        className="fixed inset-0 z-30 transition-opacity duration-300"
+        style={{
+          background: 'rgba(0,0,0,0.6)',
+          opacity: open ? 1 : 0,
+          pointerEvents: open ? 'auto' : 'none',
+        }}
+        onClick={onClose}
+      />
+      <div
+        className="fixed top-0 right-0 h-full z-40 flex flex-col"
+        style={{
+          width: '82vw',
+          maxWidth: '320px',
+          background: 'linear-gradient(180deg, #1e1b3a 0%, #16162a 100%)',
+          borderLeft: '1px solid rgba(255,255,255,0.08)',
+          transform: open ? 'translateX(0)' : 'translateX(100%)',
+          transition: 'transform 0.28s cubic-bezier(0.4,0,0.2,1)',
+          paddingTop: 'env(safe-area-inset-top)',
+        }}
+      >
+        <div
+          className="flex items-center justify-between px-5 py-4"
+          style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}
+        >
+          <p className="font-serif-jp font-bold text-[15px] text-white">お知らせ</p>
+          <button
+            onClick={onClose}
+            className="w-8 h-8 flex items-center justify-center rounded-full"
+            style={{ background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.6)' }}
+          >
+            ✕
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto px-5 py-4 flex flex-col gap-4">
+          {NOTICES.map(n => (
+            <div
+              key={n.id}
+              className="rounded-xl p-4"
+              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}
+            >
+              <p className="font-cinzel text-[9px] font-bold tracking-widest mb-1" style={{ color: '#b8922a' }}>
+                {n.date}
+              </p>
+              <p className="font-serif-jp font-bold text-[13px] text-white mb-1.5">{n.title}</p>
+              <p className="font-sans-jp text-[11px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.5)' }}>
+                {n.body}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </>
+  )
+}
+
 function Drawer({ open, onClose }: { open: boolean; onClose: () => void }) {
   const navigate = (path: string) => { onClose(); window.location.assign(path) }
   const availableGames = games.filter(g => g.status === 'available')
@@ -466,6 +553,7 @@ export default function App() {
 
   const [genre, setGenre] = useState<Genre>('all')
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const [noticeOpen, setNoticeOpen] = useState(false)
 
   const available = games.filter(g => g.status === 'available' && matchGenre(g, genre))
   const comingSoon = games.filter(g => g.status === 'coming-soon')
@@ -477,6 +565,7 @@ export default function App() {
       </SafeRender>
 
       <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
+      <NoticeDrawer open={noticeOpen} onClose={() => setNoticeOpen(false)} />
 
       {/* Header */}
       <header
@@ -510,9 +599,16 @@ export default function App() {
             ボドゲ広場
           </h1>
         </div>
-        <div className="w-9 h-9 flex items-center justify-center text-white/50 text-xl">
+        <button
+          className="w-9 h-9 flex items-center justify-center text-white/60 text-xl relative"
+          onClick={() => setNoticeOpen(true)}
+        >
           🔔
-        </div>
+          <span
+            className="absolute top-1 right-1 w-2 h-2 rounded-full"
+            style={{ background: '#dc2626' }}
+          />
+        </button>
       </header>
 
       {/* Hero */}
