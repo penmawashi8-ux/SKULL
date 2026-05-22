@@ -16,6 +16,7 @@ function getNextActivePlayer(
     .filter(p => !p.is_eliminated)
     .sort((a, b) => a.seat_order - b.seat_order)
   const idx = all.findIndex(p => p.id === currentPlayerId)
+  // Walk forward; never return the current player themselves (wrap-around guard)
   for (let i = 1; i < all.length; i++) {
     const candidate = all[(idx + i) % all.length]
     if (!skipIds.includes(candidate.id)) return candidate
@@ -94,14 +95,14 @@ let _flippingDisc = false
 
 export const useGameStore = create<StoreState>()((set, get) => {
 
-  // ── helpers ────────────────────────────────────────────────────────────────────────────
+  // ── helpers ──────────────────────────────────────────────────────────────────
 
   function allPlacedAtLeastOnce(players: Player[], discs: PlacedDisc[], round: number): boolean {
     const active = players.filter(p => !p.is_eliminated)
     return active.every(p => discs.some(d => d.player_id === p.id && d.round_number === round))
   }
 
-  // ── startNextRound (CPU game) ───────────────────────────────────────────────────────
+  // ── startNextRound (CPU game) ─────────────────────────────────────────────
   function startNextRound(
     startingPlayerId: string,
     playersIn: Player[],
@@ -122,6 +123,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
       last_emote: null,
       updated_at: ts(),
     }
+    // Restore hand to permanent totals (respects cards lost to bombs)
     const { _permCards } = get()
     const resetPlayers = playersIn.map(p => {
       if (p.is_eliminated) return p
@@ -139,7 +141,8 @@ export const useGameStore = create<StoreState>()((set, get) => {
     })
   }
 
-  // ── processCpuTurns ─────────────────────────────────────────────────────────────────
+  // ── processCpuTurns ───────────────────────────────────────────────────────
+  // _runCpuLoop: inner recursive implementation (no mutex check)
   async function _runCpuLoop(): Promise<void> {
     await new Promise(r => setTimeout(r, 700))
     const s = get()
@@ -152,10 +155,12 @@ export const useGameStore = create<StoreState>()((set, get) => {
     const round = gameState.round_number
     const allReal = [...myDiscs, ..._cpuDiscs]
 
+    // ── place phase ──────────────────────────────────────────────────────────
     if (gameState.phase === 'place') {
       const hasHand = currentPlayer.flower_count + currentPlayer.bomb_count > 0
       const placed = allPlacedAtLeastOnce(players, publicDiscs, round)
 
+      // If no hand left, skip to next player with cards (or force bid if none)
       if (!hasHand) {
         const nextWithCards = getNextPlayerWithHand(players, currentPlayer.id)
         if (nextWithCards === null) {
@@ -182,13 +187,16 @@ export const useGameStore = create<StoreState>()((set, get) => {
         return
       }
 
+      // CPU decides: if allPlaced, may choose to bid instead of placing
       let shouldBid = false
       if (placed && hasHand) {
+        // Decide stochastically based on difficulty
         const bidChance = cpuDifficulty === 'hard' ? 0.5 : cpuDifficulty === 'normal' ? 0.35 : 0.2
         shouldBid = Math.random() < bidChance
       }
 
       if (shouldBid) {
+        // CPU starts bidding
         const totalDiscs = publicDiscs.filter(d => d.round_number === round).length
         const minBid = gameState.highest_bid + 1
         if (minBid <= totalDiscs) {
@@ -212,6 +220,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
       }
 
       const discType = await cpuDecidePlace(currentPlayer, gameState, cpuDifficulty)
+      // Re-verify turn hasn't shifted during the AI think delay
       if (get().gameState?.current_player_id !== currentPlayer.id) return
       const position = publicDiscs.filter(
         d => d.player_id === currentPlayer.id && d.round_number === round,
@@ -283,6 +292,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
       return
     }
 
+    // ── bid phase ────────────────────────────────────────────────────────────
     if (gameState.phase === 'bid') {
       const result = await cpuDecideBidOrFold(
         currentPlayer, gameState, players, allReal, cpuDifficulty,
@@ -292,6 +302,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
         ? [..._foldedPlayerIds, currentPlayer.id]
         : _foldedPlayerIds
 
+      // Challenge starts when only one non-folded player remains (the highest bidder)
       const nonFolded = activePlayers.filter(p => !newFoldedIds.includes(p.id))
       const isChallenge = nonFolded.length <= 1
 
@@ -300,6 +311,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
         if (isChallenge) {
           const challenger = players.find(p => p.id === gameState.highest_bidder_id) ?? null
           if (!challenger) {
+            // highest_bidder_id が null のまま flip 移行するとフリーズするので bid を継続
             const next = getNextActivePlayer(players, currentPlayer.id, newFoldedIds)
             set(prev => ({
               gameState: { ...prev.gameState!, current_player_id: next?.id ?? currentPlayer.id, turn_started_at: ts(), updated_at: ts() },
@@ -356,6 +368,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
       return
     }
 
+    // ── flip phase ───────────────────────────────────────────────────────────
     if (gameState.phase === 'flip') {
       if (gameState.highest_bidder_id !== currentPlayer.id) return
 
@@ -398,6 +411,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
       }))
 
       if (realDisc.disc_type === 'bomb') {
+        // CPU challenger hit a bomb — lose a random card permanently
         const freshState = get()
         const currentPerm = freshState._permCards[currentPlayer.id] ?? { flowers: 3, bombs: 1 }
         const permTotal = currentPerm.flowers + currentPerm.bombs
@@ -419,7 +433,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
           gameState: winner
             ? { ...freshState.gameState!, phase: 'place', updated_at: ts() }
             : freshState.gameState,
-          _cpuLog: { id: crypto.randomUUID(), message: `💣 ${currentPlayer.player_name} が爆弾を踏んだ！カードを１枚失った`, type: 'result' },
+          _cpuLog: { id: crypto.randomUUID(), message: `💣 ${currentPlayer.player_name} が爆弾を踏んだ！カードを1枚失った`, type: 'result' },
         })
         if (!winner) {
           const failedChallenger = updatedPlayers.find(p => p.id === currentPlayer.id)
@@ -434,6 +448,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
       }
 
       if (newFlipCount >= gameState.highest_bid) {
+        // CPU challenge succeeded
         const freshState = get()
         const updatedPlayers = freshState.players.map(p =>
           p.id !== currentPlayer.id ? p : { ...p, win_count: p.win_count + 1 },
@@ -455,6 +470,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
     }
   }
 
+  // processCpuTurns: guarded entry point — drops concurrent calls via _cpuRunning mutex
   async function processCpuTurns(): Promise<void> {
     if (_cpuRunning) return
     _cpuRunning = true
@@ -465,7 +481,10 @@ export const useGameStore = create<StoreState>()((set, get) => {
     }
   }
 
-  // ── processOnlineCpuTurn ──────────────────────────────────────────────────────────
+  // ── processOnlineCpuTurn ──────────────────────────────────────────────────
+  // Any connected client may call this. The updated_at version check ensures
+  // only the first client to act actually commits; others detect the state
+  // has already moved on and abort.
   async function processOnlineCpuTurn(cpuPlayer: Player, gs: GameState): Promise<void> {
     if (_onlineCpuProcessing) return
     _onlineCpuProcessing = true
@@ -476,6 +495,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
       const s = get()
       if (!s.room || s.isCpuGame || !s.gameState) return
       if (s.gameState.current_player_id !== cpuPlayer.id) return
+      // Another client already processed this turn
       if (s.gameState.updated_at !== gsUpdatedAt) return
 
       const { players, publicDiscs, myDiscs, _cpuDiscs, _foldedPlayerIds, room, cpuDifficulty } = s
@@ -483,6 +503,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
       const allReal = [...myDiscs, ..._cpuDiscs]
       const gs2 = s.gameState
 
+      // ── place ────────────────────────────────────────────────────────────
       if (gs2.phase === 'place') {
         const hasHand = cpuPlayer.flower_count + cpuPlayer.bomb_count > 0
         const placed = allPlacedAtLeastOnce(players, publicDiscs, round)
@@ -538,10 +559,13 @@ export const useGameStore = create<StoreState>()((set, get) => {
         return
       }
 
+      // ── bid ──────────────────────────────────────────────────────────────
       if (gs2.phase === 'bid') {
         const result = await cpuDecideBidOrFold(cpuPlayer, gs2, players, allReal, cpuDifficulty)
         const activePlayers = players.filter(p => !p.is_eliminated)
         const newFoldedIds = result.action === 'fold' ? [..._foldedPlayerIds, cpuPlayer.id] : _foldedPlayerIds
+        // Use pass_count (authoritative in DB) instead of local _foldedPlayerIds,
+        // because guest folds are not propagated to the host's _foldedPlayerIds.
         const isChallenge = result.action === 'fold' && (gs2.pass_count + 1) >= (activePlayers.length - 1)
 
         if (result.action === 'fold') {
@@ -574,6 +598,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
         return
       }
 
+      // ── flip (CPU is challenger) ──────────────────────────────────────────
       if (gs2.phase === 'flip' && gs2.highest_bidder_id === cpuPlayer.id) {
         const alreadyFlipped = publicDiscs.filter(d => d.is_flipped && d.round_number === round).map(d => d.id)
         const targetId = await cpuDecideFlipTarget(cpuPlayer, players, allReal.filter(d => d.round_number === round), alreadyFlipped, cpuDifficulty)
@@ -598,6 +623,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
         }))
 
         if (realDisc.disc_type === 'bomb') {
+          // CPU hit a bomb — lose a random card
           const freshS = get()
           const currentPerm = freshS._permCards[cpuPlayer.id] ?? { flowers: 3, bombs: 1 }
           const permTotal = currentPerm.flowers + currentPerm.bombs
@@ -613,7 +639,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
           set({
             players: updatedPlayers,
             _permCards: updatedPerm,
-            _cpuLog: { id: crypto.randomUUID(), message: `💣 ${cpuPlayer.player_name} が爆弾を踏んだ！カードを１枚失った`, type: 'result' },
+            _cpuLog: { id: crypto.randomUUID(), message: `💣 ${cpuPlayer.player_name} が爆弾を踏んだ！カードを1枚失った`, type: 'result' },
           })
           const winner = getWinner(updatedPlayers)
           if (!winner) {
@@ -640,6 +666,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
             set({ players: resetPlayers, publicDiscs: [], myDiscs: [], _cpuDiscs: [], _foldedPlayerIds: [] })
           }
         } else if (newFlipCount >= gs2.highest_bid) {
+          // CPU challenge succeeded
           await supabase.from('players').update({ win_count: cpuPlayer.win_count + 1 }).eq('id', cpuPlayer.id)
           const freshS = get()
           const updatedPlayers = freshS.players.map(p => p.id !== cpuPlayer.id ? p : { ...p, win_count: p.win_count + 1 })
@@ -671,6 +698,8 @@ export const useGameStore = create<StoreState>()((set, get) => {
       }
     } finally {
       _onlineCpuProcessing = false
+      // If the realtime event arrived while we were processing, it was blocked by
+      // _onlineCpuProcessing. Re-fire it now so the next CPU turn isn't dropped.
       const retrigger = _pendingCpuRetrigger
       _pendingCpuRetrigger = null
       if (retrigger) {
@@ -688,7 +717,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
     }
   }
 
-  // ── processOnlineEmptyHandTurn ──────────────────────────────────────────────────────
+  // ── processOnlineEmptyHandTurn ────────────────────────────────────────────
   async function processOnlineEmptyHandTurn(player: Player, gs: GameState): Promise<void> {
     if (_onlineCpuProcessing) return
     _onlineCpuProcessing = true
@@ -709,6 +738,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
       const { data: freshDiscs } = await supabase.from('placed_discs').select().eq('room_id', s.room!.id)
       const placed = allPlacedAtLeastOnce(freshPlayers, freshDiscs ?? [], gs.round_number)
 
+      // If allPlaced, the human player must bid — leave the turn as-is and let them use the BidController
       if (placed) return
 
       const next = getNextActivePlayer(freshPlayers, freshPlayer.id)
@@ -721,6 +751,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
   }
 
   return {
+    // ── Initial state ─────────────────────────────────────────────────────────
     room: null,
     players: [],
     gameState: null,
@@ -739,6 +770,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
     _permCards: {},
     _cpuLog: null,
 
+    // ── createRoom ────────────────────────────────────────────────────────────
     createRoom: async (playerName, maxPlayers, password) => {
       set({ isLoading: true, error: null })
       try {
@@ -768,6 +800,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
       }
     },
 
+    // ── joinRoom ──────────────────────────────────────────────────────────────
     joinRoom: async (roomCode, playerName, password) => {
       set({ isLoading: true, error: null })
       try {
@@ -784,6 +817,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
         if (existErr) throw existErr
         if (existing.length >= room.max_players) throw new Error('ルームが満員です')
 
+        // Rejoin if session already has a player in this room
         const rejoining = existing.find(p => p.session_id === sessionId)
         if (rejoining) {
           set({ room, players: existing, _myPlayerId: rejoining.id, isLoading: false })
@@ -808,6 +842,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
       }
     },
 
+    // ── startGame ─────────────────────────────────────────────────────────────
     startGame: async () => {
       set({ isLoading: true, error: null })
       try {
@@ -840,6 +875,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
       }
     },
 
+    // ── addCpuPlayer ──────────────────────────────────────────────────────────
     addCpuPlayer: async () => {
       if (_addingCpu) return
       _addingCpu = true
@@ -864,6 +900,8 @@ export const useGameStore = create<StoreState>()((set, get) => {
           is_eliminated: false,
         }).select().single()
         if (error) throw error
+        // Update local state immediately so the next sequential addCpuPlayer
+        // call sees the correct players count before the realtime event arrives
         set(s => ({
           isLoading: false,
           players: s.players.some(x => x.id === newPlayer.id)
@@ -877,6 +915,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
       }
     },
 
+    // ── placeDisc ─────────────────────────────────────────────────────────────
     placeDisc: async (discType) => {
       const { room, gameState, players, sessionId, isCpuGame, myDiscs, publicDiscs } = get()
       const myPlayer = players.find(p => p.session_id === sessionId)
@@ -939,6 +978,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
         return
       }
 
+      // Online
       if (_placingDisc) return
       _placingDisc = true
       set({ isLoading: true })
@@ -989,6 +1029,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
       }
     },
 
+    // ── placeBid ──────────────────────────────────────────────────────────────
     placeBid: async (amount) => {
       const { room, gameState, players, sessionId, isCpuGame, _foldedPlayerIds, publicDiscs } = get()
       const myPlayer = players.find(p => p.session_id === sessionId)
@@ -1034,6 +1075,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
       }
     },
 
+    // ── fold ──────────────────────────────────────────────────────────────────
     fold: async () => {
       const { room, gameState, players, sessionId, isCpuGame, _foldedPlayerIds } = get()
       const myPlayer = players.find(p => p.session_id === sessionId)
@@ -1048,6 +1090,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
         if (isChallenge) {
           const challenger = players.find(p => p.id === gameState.highest_bidder_id) ?? null
           if (!challenger) {
+            // highest_bidder_id が null → フリーズ防止のため次プレイヤーへ継続
             const next = getNextActivePlayer(players, myPlayer.id, newFoldedIds)
             set(s => ({
               gameState: { ...s.gameState!, current_player_id: next?.id ?? myPlayer.id, turn_started_at: ts(), updated_at: ts() },
@@ -1084,6 +1127,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
         return
       }
 
+      // Online: use pass_count (authoritative in DB) for isChallenge
       const isChallengeOnline = (gameState.pass_count + 1) >= (activePlayers.length - 1)
       set({ isLoading: true })
       try {
@@ -1106,6 +1150,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
       }
     },
 
+    // ── flipDisc ──────────────────────────────────────────────────────────────
     flipDisc: async (discId): Promise<DiscType> => {
       if (_flippingDisc) return 'flower'
       _flippingDisc = true
@@ -1138,6 +1183,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
           return realType
         }
 
+        // Online: optimistically mark as flipped locally to prevent double-tap
         set(s => ({
           isLoading: true,
           publicDiscs: s.publicDiscs.map(d =>
@@ -1175,8 +1221,10 @@ export const useGameStore = create<StoreState>()((set, get) => {
       }
     },
 
+    // ── startCpuGame ──────────────────────────────────────────────────────────
     startCpuGame: async (playerName, cpuCount, difficulty) => {
       set({ isLoading: true, error: null })
+      // Disconnect any active online subscription before starting a CPU game
       const prevSub = get()._subscription
       if (prevSub) {
         supabase.removeChannel(prevSub)
@@ -1255,6 +1303,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
       await processCpuTurns()
     },
 
+    // ── subscribeToRoom ───────────────────────────────────────────────────────
     subscribeToRoom: (_roomCode) => {
       const { _subscription, room, _myPlayerId } = get()
       if (_subscription) supabase.removeChannel(_subscription)
@@ -1265,6 +1314,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
 
       supabase.from('players').select().eq('room_id', roomId).then(({ data }) => {
         if (!data || data.length === 0) return
+        // 別ルームへ移動済みの場合は古いフェッチ結果を捨てる
         if (get().room?.id !== roomId) return
         set({ players: data })
       })
@@ -1318,6 +1368,8 @@ export const useGameStore = create<StoreState>()((set, get) => {
               }
             }
 
+            // ゲーム開始時 (prevGs === null) はプレイヤー一覧と gameState を同時に
+            // セットして「...の手番」フリーズを防ぐ。
             if (prevGs === null) {
               supabase.from('players').select().eq('room_id', roomId).then(({ data }) => {
                 if (get().room?.id !== roomId) return
@@ -1371,6 +1423,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
               })
             }
 
+            // 再接続直後など current_player_id がローカルの players に見つからない場合も再フェッチする。
             const needsPlayerRefetch = (() => {
               if (!newGs.current_player_id) return false
               const freshState = get()
@@ -1389,6 +1442,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
                   players: data,
                   _permCards: Object.keys(s._permCards).length === 0 ? permCards : s._permCards,
                 }))
+                // プレイヤー一覧更新後、CPUターンを再チェック
                 const s2 = get()
                 if (!s2.isCpuGame) {
                   const cp2 = data.find(p => p.id === newGs.current_player_id)
@@ -1397,11 +1451,13 @@ export const useGameStore = create<StoreState>()((set, get) => {
               })
             }
 
+            // Any client processes CPU turns and detects empty-hand human players
             const s = get()
             if (!s.isCpuGame) {
               const cp = s.players.find(p => p.id === newGs.current_player_id)
               if (cp?.is_cpu) {
                 if (_onlineCpuProcessing) {
+                  // Still finishing the previous turn — store so finally can re-fire
                   _pendingCpuRetrigger = { player: cp, gs: newGs }
                 } else {
                   processOnlineCpuTurn(cp, newGs)
@@ -1497,6 +1553,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
                     })
                   })
               }
+              // game_states と players を同時取得して「...の手番」フリーズを防ぐ
               Promise.all([
                 supabase.from('game_states').select().eq('room_id', roomId).maybeSingle(),
                 supabase.from('players').select().eq('room_id', roomId),
@@ -1548,6 +1605,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
       set({ _subscription: channel })
     },
 
+    // ── advanceAfterChallenge ─────────────────────────────────────────────────
     advanceAfterChallenge: async (result, _bombOwnerId) => {
       const { players, gameState, room, isCpuGame, sessionId } = get()
       const myPlayer = players.find(p => p.session_id === sessionId)
@@ -1612,6 +1670,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
           set({ players: resetPlayers, publicDiscs: [], myDiscs: [], _cpuDiscs: [], _foldedPlayerIds: [] })
         }
       } else {
+        // Challenge loss: remove one random card permanently.
         if (isCpuGame) {
           const { _permCards } = get()
           const currentPerm = _permCards[myPlayer.id] ?? { flowers: 3, bombs: 1 }
@@ -1636,6 +1695,8 @@ export const useGameStore = create<StoreState>()((set, get) => {
             : myPlayer.id
           startNextRound(starterId, updatedPlayers, room, gameState)
           if (_cpuRunning) {
+            // Old CPU loop still sleeping; it will pick up the new round state when it wakes.
+            // Safety retry in case it exits before processing this round's first CPU turn.
             setTimeout(() => {
               const s = get()
               if (!s.isCpuGame || !s.gameState || _cpuRunning) return
@@ -1646,6 +1707,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
             await processCpuTurns()
           }
         } else {
+          // Online: fetch placed_discs first so bomb-loss is computed from authoritative perm values
           const { data: roundDiscs } = await supabase
             .from('placed_discs').select('player_id, disc_type')
             .eq('room_id', room.id).eq('round_number', gameState.round_number)
@@ -1722,6 +1784,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
       }
     },
 
+    // ── sendEmote ─────────────────────────────────────────────────────────────
     sendEmote: async (type: EmoteType) => {
       const { gameState, players, sessionId, isCpuGame } = get()
       const myPlayer = players.find(p => p.session_id === sessionId)
@@ -1734,6 +1797,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
       }
     },
 
+    // ── unsubscribeFromRoom ───────────────────────────────────────────────────
     unsubscribeFromRoom: () => {
       const channel = get()._subscription
       if (channel) {
@@ -1742,6 +1806,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
       }
     },
 
+    // ── resumeCpuTurns ────────────────────────────────────────────────────────
     resumeCpuTurns: async () => {
       const s = get()
       if (!s.isCpuGame || !s.gameState) return
@@ -1749,6 +1814,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
       if (current?.is_cpu) await processCpuTurns()
     },
 
+    // ── resetGame ─────────────────────────────────────────────────────────────
     resetGame: () => {
       _cpuRunning = false
       const channel = get()._subscription

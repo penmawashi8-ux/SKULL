@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-const CONTACT_EMAIL = 'contact@boardgamecat.com'
+const CONTACT_EMAIL = 'boardgamecat@yahoo.co.jp'
 
 function PageHeader({ title }: { title: string }) {
   return (
@@ -101,7 +101,7 @@ export default function Contact() {
           <p className="font-sans-jp text-[13px] leading-relaxed mb-8" style={{ color: 'rgba(255,255,255,0.5)' }}>
             メールアプリからそのまま送信してください。<br />
             お問い合わせ内容は自動的に入力されています。<br />
-            通常3　5営業日以内にご返信いたします。
+            通常3〜5営業日以内にご返信いたします。
           </p>
           <button
             onClick={() => window.location.assign('/')}
@@ -120,10 +120,11 @@ export default function Contact() {
       <PageHeader title="お問い合わせ" />
 
       <main className="px-5 pt-8 pb-16 max-w-xl mx-auto">
+        {/* Intro */}
         <div className="mb-8">
           <p className="font-sans-jp text-[13px] leading-relaxed mb-4" style={{ color: 'rgba(255,255,255,0.55)' }}>
             ボドゲ広場へのご質問・ご意見・不具合報告など、お気軽にお問い合わせください。
-            通常3　5営業日以内にご返信いたします。
+            通常3〜5営業日以内にご返信いたします。
           </p>
           <div
             className="font-sans-jp text-[12px] px-4 py-3 rounded-xl"
@@ -136,7 +137,9 @@ export default function Contact() {
           </div>
         </div>
 
+        {/* Form */}
         <form onSubmit={handleSubmit} noValidate>
+          {/* Name */}
           <div className="mb-5">
             <label className="font-sans-jp text-[12px] font-bold mb-1.5 block" style={{ color: 'rgba(255,255,255,0.6)' }}>
               お名前 <span style={{ color: '#f87171' }}>*</span>
@@ -153,6 +156,7 @@ export default function Contact() {
             {errors.name && <p style={errorStyle}>{errors.name}</p>}
           </div>
 
+          {/* Email */}
           <div className="mb-5">
             <label className="font-sans-jp text-[12px] font-bold mb-1.5 block" style={{ color: 'rgba(255,255,255,0.6)' }}>
               メールアドレス <span style={{ color: '#f87171' }}>*</span>
@@ -169,6 +173,7 @@ export default function Contact() {
             {errors.email && <p style={errorStyle}>{errors.email}</p>}
           </div>
 
+          {/* Category */}
           <div className="mb-5">
             <label className="font-sans-jp text-[12px] font-bold mb-1.5 block" style={{ color: 'rgba(255,255,255,0.6)' }}>
               お問い合わせ種別 <span style={{ color: '#f87171' }}>*</span>
@@ -192,12 +197,13 @@ export default function Contact() {
               <option value="不具合・バグ報告" style={{ background: '#1a1a2e' }}>不具合・バグ報告</option>
               <option value="ゲームに関するご質問" style={{ background: '#1a1a2e' }}>ゲームに関するご質問</option>
               <option value="ご要望・ご提案" style={{ background: '#1a1a2e' }}>ご要望・ご提案</option>
-              <option value="広告・憂載に関するご相談" style={{ background: '#1a1a2e' }}>広告・憂載に関するご相談</option>
+              <option value="広告・掲載に関するご相談" style={{ background: '#1a1a2e' }}>広告・掲載に関するご相談</option>
               <option value="その他" style={{ background: '#1a1a2e' }}>その他</option>
             </select>
             {errors.category && <p style={errorStyle}>{errors.category}</p>}
           </div>
 
+          {/* Message */}
           <div className="mb-7">
             <label className="font-sans-jp text-[12px] font-bold mb-1.5 block" style={{ color: 'rgba(255,255,255,0.6)' }}>
               お問い合わせ内容 <span style={{ color: '#f87171' }}>*</span>
@@ -227,6 +233,7 @@ export default function Contact() {
             </div>
           </div>
 
+          {/* Privacy note */}
           <p className="font-sans-jp text-[11px] mb-5 leading-relaxed" style={{ color: 'rgba(255,255,255,0.3)' }}>
             送信することで
             <a
