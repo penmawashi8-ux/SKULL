@@ -341,6 +341,115 @@ function GameRow({ game }: { game: Game }) {
   return <div className="card-enter">{inner}</div>
 }
 
+function Drawer({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const navigate = (path: string) => { onClose(); window.location.assign(path) }
+  const availableGames = games.filter(g => g.status === 'available')
+
+  return (
+    <>
+      {/* Overlay */}
+      <div
+        className="fixed inset-0 z-30 transition-opacity duration-300"
+        style={{
+          background: 'rgba(0,0,0,0.6)',
+          opacity: open ? 1 : 0,
+          pointerEvents: open ? 'auto' : 'none',
+        }}
+        onClick={onClose}
+      />
+      {/* Drawer panel */}
+      <div
+        className="fixed top-0 left-0 h-full z-40 flex flex-col"
+        style={{
+          width: '72vw',
+          maxWidth: '300px',
+          background: 'linear-gradient(180deg, #1e1b3a 0%, #16162a 100%)',
+          borderRight: '1px solid rgba(255,255,255,0.08)',
+          transform: open ? 'translateX(0)' : 'translateX(-100%)',
+          transition: 'transform 0.28s cubic-bezier(0.4,0,0.2,1)',
+          paddingTop: 'env(safe-area-inset-top)',
+        }}
+      >
+        {/* Drawer header */}
+        <div
+          className="flex items-center justify-between px-5 py-4"
+          style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}
+        >
+          <div>
+            <p className="font-cinzel text-[8px] font-bold tracking-[0.3em] uppercase" style={{ color: '#b8922a' }}>
+              Board Game Collection
+            </p>
+            <p className="font-serif-jp font-bold text-[15px] text-white mt-0.5">ボドゲ広場</p>
+          </div>
+          <button
+            onClick={onClose}
+            className="w-8 h-8 flex items-center justify-center rounded-full"
+            style={{ background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.6)' }}
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Games section */}
+        <div className="px-5 pt-5 pb-3">
+          <p className="font-cinzel text-[8px] font-bold tracking-[0.25em] uppercase mb-3" style={{ color: 'rgba(255,255,255,0.3)' }}>
+            Games
+          </p>
+          <div className="flex flex-col gap-1">
+            {availableGames.map(g => (
+              <button
+                key={g.id}
+                onClick={() => g.url && window.location.assign(g.url)}
+                className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all duration-150 active:scale-[0.98]"
+                style={{ background: 'rgba(255,255,255,0.04)' }}
+              >
+                <div
+                  className="w-2 h-2 rounded-full flex-shrink-0"
+                  style={{ backgroundColor: g.accentColor }}
+                />
+                <span className="font-sans-jp text-[13px] text-white/80">{g.name}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Divider */}
+        <div className="mx-5 my-2" style={{ height: '1px', background: 'rgba(255,255,255,0.07)' }} />
+
+        {/* Info section */}
+        <div className="px-5 pt-3">
+          <p className="font-cinzel text-[8px] font-bold tracking-[0.25em] uppercase mb-3" style={{ color: 'rgba(255,255,255,0.3)' }}>
+            Info
+          </p>
+          <div className="flex flex-col gap-1">
+            {[
+              { label: 'プライバシーポリシー', path: '/privacy-policy' },
+              { label: '利用規約', path: '/terms' },
+              { label: 'お問い合わせ', path: '/contact' },
+            ].map(({ label, path }) => (
+              <button
+                key={path}
+                onClick={() => navigate(path)}
+                className="font-sans-jp text-left px-3 py-2.5 rounded-xl text-[13px] transition-all duration-150 active:scale-[0.98]"
+                style={{ color: 'rgba(255,255,255,0.5)', background: 'rgba(255,255,255,0.04)' }}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="mt-auto px-5 py-5">
+          <p className="font-sans-jp text-[10px]" style={{ color: 'rgba(255,255,255,0.2)' }}>
+            © 2026 ボドゲ広場
+          </p>
+        </div>
+      </div>
+    </>
+  )
+}
+
 export default function App() {
   const path = window.location.pathname
 
@@ -356,6 +465,7 @@ export default function App() {
   if (path === '/contact') return <Contact />
 
   const [genre, setGenre] = useState<Genre>('all')
+  const [drawerOpen, setDrawerOpen] = useState(false)
 
   const available = games.filter(g => g.status === 'available' && matchGenre(g, genre))
   const comingSoon = games.filter(g => g.status === 'coming-soon')
@@ -365,6 +475,8 @@ export default function App() {
       <SafeRender>
         <UpdatePrompt />
       </SafeRender>
+
+      <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
 
       {/* Header */}
       <header
@@ -376,9 +488,12 @@ export default function App() {
           borderBottom: '1px solid rgba(255,255,255,0.08)',
         }}
       >
-        <div className="w-9 h-9 flex items-center justify-center text-white/50 text-xl font-light">
+        <button
+          className="w-9 h-9 flex items-center justify-center text-white/60 text-xl"
+          onClick={() => setDrawerOpen(true)}
+        >
           ☰
-        </div>
+        </button>
         <div className="text-center">
           <p
             className="font-cinzel text-[8px] font-bold tracking-[0.3em] uppercase"
