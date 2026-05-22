@@ -1,5 +1,8 @@
 import { UpdatePrompt } from './components/UpdatePrompt'
 import PigTailGame from './games/PigTailGame'
+import PrivacyPolicy from './pages/PrivacyPolicy'
+import Terms from './pages/Terms'
+import Contact from './pages/Contact'
 import { Component, type ReactNode } from 'react'
 
 class SafeRender extends Component<{ children: ReactNode }, { hasError: boolean }> {
@@ -37,13 +40,13 @@ const games: Game[] = [
     name: 'BOMB',
     nameEn: 'BOMB',
     symbol: 'BM',
-    description: '爆弾かリンゴか——ブラフと心理戦が熱いパーティゲーム。仲間を騙して爆発を回避せよ！',
+    description: '爆弾かリンゴか——ブラフと心理戦が熱いパーティゲーム。仁伴を騙して爆発を回避せよ！',
     status: 'available',
     url: BOMB_GAME_URL,
     accentColor: '#dc2626',
     cardBg: 'linear-gradient(135deg, #1a0d0d 0%, #2a1111 100%)',
-    players: '2〜6人',
-    duration: '約20分',
+    players: '2、6人',
+    duration: '絀20分',
     tags: ['ブラフ', '心理戦', 'パーティ'],
   },
   {
@@ -56,8 +59,8 @@ const games: Game[] = [
     url: 'https://buta.boardgamecat.com',
     accentColor: '#ec4899',
     cardBg: 'linear-gradient(135deg, #1a0d15 0%, #2a1020 100%)',
-    players: '1〜6人',
-    duration: '約10〜20分',
+    players: '1、6人',
+    duration: '絀10〒20分',
     tags: ['トランプ', 'パーティ'],
   },
   {
@@ -71,7 +74,7 @@ const games: Game[] = [
     accentColor: '#d97706',
     cardBg: 'linear-gradient(135deg, #160e00 0%, #271a00 100%)',
     players: '1人〜',
-    duration: '約5〜10分',
+    duration: '絀5〒10分',
     tags: ['競馬', '予想', 'バーチャル'],
   },
   {
@@ -84,8 +87,8 @@ const games: Game[] = [
     url: 'https://pageone.boardgamecat.com',
     accentColor: '#3b82f6',
     cardBg: 'linear-gradient(135deg, #080f1e 0%, #0d1a35 100%)',
-    players: '1〜4人',
-    duration: '約15〜30分',
+    players: '1、4人',
+    duration: '絀15〒30分',
     tags: ['トランプ', '特殊カード', 'パーティ'],
   },
   {
@@ -93,13 +96,13 @@ const games: Game[] = [
     name: '謀略',
     nameEn: 'BORYAKU',
     symbol: 'BK',
-    description: '嘘をついても、バレなければ勝ち。持っていないキャラクターも堂々と宣言し、ライバルを蹴落とせ！最後に生き残った者が勝者。',
+    description: '嘘をついても、バレなければ勝ち。持っていないキャラクターも堵々と宣言し、ライバルを踴り落とせ！最後に生き残った者が勝者。',
     status: 'available',
     url: 'https://bouryaku.boardgamecat.com',
     accentColor: '#10b981',
     cardBg: 'linear-gradient(135deg, #081a10 0%, #0f2518 100%)',
-    players: '2〜6人',
-    duration: '約15〜30分',
+    players: '2、6人',
+    duration: '絀15〒30分',
     tags: ['ブラフ', '心理戦', '推理'],
   },
   {
@@ -113,7 +116,7 @@ const games: Game[] = [
     accentColor: '#ea580c',
     cardBg: 'linear-gradient(135deg, #180800 0%, #2a1000 100%)',
     players: '2人〜',
-    duration: '約10〜20分',
+    duration: '絀10〒20分',
     tags: ['レース', 'ブロック', 'β版'],
   },
   {
@@ -127,7 +130,7 @@ const games: Game[] = [
     accentColor: '#7c3aed',
     cardBg: 'linear-gradient(135deg, #160f28 0%, #22163c 100%)',
     players: '2人〜',
-    duration: '約10〜20分',
+    duration: '絀10〒20分',
     tags: ['対戦', '戦略', 'β版'],
   },
   {
@@ -135,7 +138,7 @@ const games: Game[] = [
     name: '？？？',
     nameEn: 'TBD',
     symbol: '?',
-    description: '鋭意制作中……',
+    description: '遑々制作中……',
     status: 'coming-soon',
     accentColor: '#0891b2',
     cardBg: 'linear-gradient(135deg, #0a1520 0%, #0a1e2e 100%)',
@@ -148,7 +151,7 @@ const games: Game[] = [
     name: '？？？',
     nameEn: 'TBD',
     symbol: '?',
-    description: '鋭意制作中……',
+    description: '遑々制作中……',
     status: 'coming-soon',
     accentColor: '#b45309',
     cardBg: 'linear-gradient(135deg, #150f04 0%, #221800 100%)',
@@ -196,7 +199,6 @@ function GameIcon({ game, available }: { game: Game; available: boolean }) {
           if (fallback) fallback.style.display = 'flex'
         }}
       />
-      {/* Fallback monogram shown only if image fails */}
       <span
         className="font-cinzel absolute inset-0 items-center justify-center text-[13px] font-black tracking-wider"
         style={{ display: 'none', color, textShadow: available ? `0 0 18px ${game.accentColor}90` : 'none' }}
@@ -219,7 +221,6 @@ function GameRow({ game }: { game: Game }) {
         boxShadow: isAvailable ? '0 2px 24px rgba(0,0,0,0.45)' : 'none',
       }}
     >
-      {/* Left accent bar */}
       <div
         className="absolute left-0 top-5 bottom-5 w-[3px] rounded-r-full"
         style={{ backgroundColor: isAvailable ? game.accentColor : 'rgba(255,255,255,0.07)' }}
@@ -227,7 +228,6 @@ function GameRow({ game }: { game: Game }) {
 
       <GameIcon game={game} available={isAvailable} />
 
-      {/* Info */}
       <div className="flex-1 min-w-0">
         <p
           className="font-cinzel text-[9px] font-bold tracking-[0.22em] uppercase mb-0.5"
@@ -256,7 +256,6 @@ function GameRow({ game }: { game: Game }) {
         </div>
       </div>
 
-      {/* CTA */}
       <div className="flex-shrink-0">
         {isAvailable ? (
           <div
@@ -266,7 +265,7 @@ function GameRow({ game }: { game: Game }) {
               boxShadow: `0 0 18px ${game.accentColor}55`,
             }}
           >
-            今すぐ<br />遊ぶ →
+            今すぐ<br />遅ぶ →
           </div>
         ) : (
           <div
@@ -299,13 +298,18 @@ function GameRow({ game }: { game: Game }) {
 }
 
 export default function App() {
-  if (window.location.pathname === '/pig-tail') {
+  const path = window.location.pathname
+
+  if (path === '/pig-tail') {
     return (
       <SafeRender>
         <PigTailGame />
       </SafeRender>
     )
   }
+  if (path === '/privacy-policy') return <PrivacyPolicy />
+  if (path === '/terms') return <Terms />
+  if (path === '/contact') return <Contact />
 
   const available = games.filter(g => g.status === 'available')
   const comingSoon = games.filter(g => g.status === 'coming-soon')
@@ -316,7 +320,6 @@ export default function App() {
         <UpdatePrompt />
       </SafeRender>
 
-      {/* Header */}
       <header
         className="sticky top-0 z-20 flex items-center justify-between px-4 py-3"
         style={{
@@ -336,7 +339,6 @@ export default function App() {
           >
             Board Game Collection
           </p>
-          {/* Diamond separator */}
           <div className="flex items-center justify-center gap-2 my-0.5">
             <div style={{ height: '1px', width: '28px', background: 'linear-gradient(to right, transparent, #b8922a55)' }} />
             <div style={{ width: '4px', height: '4px', background: '#b8922a88', transform: 'rotate(45deg)' }} />
@@ -351,7 +353,6 @@ export default function App() {
         </div>
       </header>
 
-      {/* Hero */}
       <section className="relative px-5 pt-10 pb-7 overflow-hidden">
         <div
           className="absolute right-[-8px] top-[-4px] text-[110px] select-none pointer-events-none leading-none"
@@ -370,7 +371,7 @@ export default function App() {
           className="font-sans-jp text-xs mb-1.5 relative z-10"
           style={{ color: 'rgba(255,255,255,0.38)' }}
         >
-          ブラウザで遊べる
+          ブラウザで遅べる
         </p>
         <h2
           className="font-serif-jp font-bold text-[32px] leading-tight mb-3 relative z-10"
@@ -387,13 +388,11 @@ export default function App() {
         </p>
       </section>
 
-      {/* Separator */}
       <div
         className="mx-5 mb-5"
         style={{ height: '1px', background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.07), transparent)' }}
       />
 
-      {/* Game list */}
       <main className="px-4 pb-8 max-w-xl mx-auto">
         <div className="flex flex-col gap-3">
           {available.map(game => (
@@ -427,6 +426,35 @@ export default function App() {
           </div>
         )}
       </main>
+
+      <footer
+        className="px-5 py-8 text-center"
+        style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}
+      >
+        <p className="font-cinzel text-[10px] font-bold tracking-[0.25em] uppercase mb-3" style={{ color: '#b8922a' }}>
+          ボドゲ広場
+        </p>
+        <nav className="flex justify-center gap-5 mb-4">
+          {[
+            { label: 'プライバシーポリシー', path: '/privacy-policy' },
+            { label: '利用規約', path: '/terms' },
+            { label: 'お問い合わせ', path: '/contact' },
+          ].map(({ label, path }) => (
+            <a
+              key={path}
+              href={path}
+              onClick={e => { e.preventDefault(); window.location.assign(path) }}
+              className="font-sans-jp text-[11px] hover:opacity-80 transition-opacity"
+              style={{ color: 'rgba(255,255,255,0.35)' }}
+            >
+              {label}
+            </a>
+          ))}
+        </nav>
+        <p className="font-sans-jp text-[10px]" style={{ color: 'rgba(255,255,255,0.18)' }}>
+          © 2024 ボドゲ広場
+        </p>
+      </footer>
     </div>
   )
 }
