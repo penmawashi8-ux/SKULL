@@ -600,14 +600,10 @@ export default function App() {
           </h1>
         </div>
         <button
-          className="w-9 h-9 flex items-center justify-center text-white/60 text-xl relative"
+          className="w-9 h-9 flex items-center justify-center text-white/60 text-xl"
           onClick={() => setNoticeOpen(true)}
         >
           🔔
-          <span
-            className="absolute top-1 right-1 w-2 h-2 rounded-full"
-            style={{ background: '#dc2626' }}
-          />
         </button>
       </header>
 
