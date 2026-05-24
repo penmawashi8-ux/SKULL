@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ページワンのルールと遊び方｜特殊カード一覧と攻略【オンライン無料】 - ボドゲ広場</title>
-  <meta name="description" content="「ページワン」のルール・特殊カードの効果・遊び方を完全解説。最後の1枚で「ページワン！」の宣言が肝心。ブラウザで無料・登録不要でオンライン対戦できます。1〜4人対応。" />
+  <title>ページワンのルールと遊び方｜宣言・特殊カード完全解説【オンライン無料】 - ボドゲ広場</title>
+  <meta name="description" content="ページワンのルールを完全解説。同じマークを出していき、残り1枚で「ページワン！」、最後の1枚で「ストップ！」の2段階宣言がポイント。ブラウザで無料・登録不要でオンライン対戦できます。" />
   <meta property="og:type" content="article" />
   <meta property="og:url" content="https://boardgamecat.com/blog/pageone-online-free.html" />
-  <meta property="og:title" content="ページワンのルールと遊び方｜特殊カード一覧と攻略【オンライン無料】 - ボドゲ広場" />
-  <meta property="og:description" content="「ページワン」のルール・特殊カードの効果・遊び方を完全解説。ブラウザで無料・登録不要でオンライン対戦できます。" />
+  <meta property="og:title" content="ページワンのルールと遊び方｜宣言・特殊カード完全解説【オンライン無料】 - ボドゲ広場" />
+  <meta property="og:description" content="ページワンのルールを完全解説。同じマークを出していき、「ページワン！」「ストップ！」の2段階宣言がポイント。ブラウザで無料・登録不要。" />
   <meta property="og:image" content="https://boardgamecat.com/og-image.png" />
   <meta property="og:locale" content="ja_JP" />
   <link rel="canonical" href="https://boardgamecat.com/blog/pageone-online-free.html" />
@@ -19,8 +19,8 @@
   {
     "@context": "https://schema.org",
     "@type": "Article",
-    "headline": "ページワンのルールと遊び方｜特殊カード一覧と攻略【オンライン無料】",
-    "description": "「ページワン」のルール・特殊カードの効果・遊び方を完全解説。ブラウザで無料・登録不要でオンライン対戦できます。",
+    "headline": "ページワンのルールと遊び方｜宣言・特殊カード完全解説【オンライン無料】",
+    "description": "ページワンのルールを完全解説。同じマークを出していき、「ページワン！」「ストップ！」の2段階宣言がポイント。ブラウザで無料・登録不要。",
     "url": "https://boardgamecat.com/blog/pageone-online-free.html",
     "datePublished": "2026-05-24",
     "publisher": { "@type": "Organization", "name": "ボドゲ広場", "url": "https://boardgamecat.com" },
@@ -58,6 +58,10 @@
     .step-num { background: #3b82f6; color: #fff; font-size: 12px; font-weight: 700; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
     .step-body { font-size: 14px; color: rgba(255,255,255,0.75); line-height: 1.75; }
     .step-body strong { color: #fff; }
+    .declare-box { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0 24px; }
+    .declare-card { background: linear-gradient(135deg, #0f1e3a 0%, #162848 100%); border: 1px solid rgba(59,130,246,0.25); border-radius: 12px; padding: 16px; text-align: center; }
+    .declare-word { font-family: 'Noto Serif JP', serif; font-size: 20px; font-weight: 900; color: #e2c97e; margin-bottom: 6px; }
+    .declare-timing { font-size: 12px; color: rgba(255,255,255,0.55); line-height: 1.6; }
     .card-table { width: 100%; border-collapse: collapse; margin: 16px 0 24px; }
     .card-table th { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.4); padding: 8px 12px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.08); }
     .card-table td { font-size: 13px; color: rgba(255,255,255,0.7); padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.06); vertical-align: top; }
@@ -66,6 +70,9 @@
     .tip-box { background: rgba(184,146,42,0.08); border: 1px solid rgba(184,146,42,0.25); border-radius: 12px; padding: 16px 18px; margin: 24px 0; }
     .tip-label { font-size: 10px; letter-spacing: 0.2em; color: #b8922a; font-weight: 700; margin-bottom: 8px; }
     .tip-box p { font-size: 13px; color: rgba(255,255,255,0.65); margin: 0; }
+    .warn-box { background: rgba(239,68,68,0.06); border: 1px solid rgba(239,68,68,0.2); border-radius: 12px; padding: 16px 18px; margin: 20px 0; }
+    .warn-label { font-size: 10px; letter-spacing: 0.2em; color: #ef4444; font-weight: 700; margin-bottom: 8px; }
+    .warn-box p { font-size: 13px; color: rgba(255,255,255,0.65); margin: 0; }
     .cta { display: block; background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: #fff; text-align: center; padding: 18px 24px; border-radius: 14px; font-weight: 700; font-size: 16px; margin: 36px 0 20px; box-shadow: 0 0 24px rgba(59,130,246,0.4); transition: opacity 0.2s; }
     .cta:hover { opacity: 0.9; }
     .cta-sub { font-size: 11px; font-weight: 400; opacity: 0.8; display: block; margin-top: 4px; }
@@ -96,50 +103,69 @@
   <div class="container">
     <div class="article-header">
       <span class="tag">トランプ・遊び方</span>
-      <h1>ページワンのルールと遊び方<br>特殊カード一覧と攻略【オンライン無料】</h1>
+      <h1>ページワンのルールと遊び方<br>宣言・特殊カード完全解説【オンライン無料】</h1>
       <p class="meta">2026.05.24 ｜ ボドゲ広場</p>
     </div>
     <div class="divider"></div>
 
     <div class="lead">
-      「ページワン」は、場のカードと同じマークか同じ数字のカードを出して手札をなくすトランプゲームです。残り1枚になったら「ページワン！」と宣言するのが特徴。特殊カードの効果を使いこなすことが勝利のカギ。ボドゲ広場では<strong>ブラウザで無料・登録不要</strong>でオンライン対戦ができます。
+      「ページワン」は、場のカードと<strong>同じマーク</strong>のカードを順番に出していき、手札をなくすことを目指すトランプゲームです。残り1枚になったら「ページワン！」、最後の1枚を出すときは「ストップ！」と宣言する2段階宣言がこのゲーム最大の特徴。ボドゲ広場では<strong>ブラウザで無料・登録不要</strong>でオンライン対戦ができます。
     </div>
 
     <div class="info-box">
       <p class="info-box-title">ゲーム基本情報</p>
       <div class="info-grid">
-        <div class="info-item"><strong>プレイ人数</strong>1〜4人</div>
-        <div class="info-item"><strong>プレイ時間</strong>約15〜30分</div>
-        <div class="info-item"><strong>ジャンル</strong>トランプ・特殊カード</div>
+        <div class="info-item"><strong>プレイ人数</strong>2〜8人</div>
+        <div class="info-item"><strong>使用カード</strong>ジョーカー入り53枚</div>
+        <div class="info-item"><strong>ジャンル</strong>トランプゲーム</div>
         <div class="info-item"><strong>料金</strong>無料（登録不要）</div>
       </div>
     </div>
 
     <h2>ページワンとは？</h2>
-    <p>ページワンは日本で昔から遊ばれているトランプゲームです。場に出ているカードと「同じマーク（スート）」または「同じ数字」のカードを出せます。手札をすべて出し切ったプレイヤーが勝ちです。</p>
-    <p>最後の1枚を出す前に「ページワン！」と宣言しなければならず、忘れると山札から2枚引くペナルティがあります。</p>
+    <p>ページワンは日本で広く親しまれているトランプゲームです。場に出たカードと<strong>同じマーク（スート）</strong>のカードを出していきます。数字は関係なく、マークだけが一致していればOKです。</p>
+    <p>手札をすべて出し切ったプレイヤーが勝ちですが、「ページワン！」と「ストップ！」の2つの宣言を忘れると大量ドローのペナルティが待っています。</p>
 
     <h2>基本ルール</h2>
 
     <div class="step">
       <span class="step-num">1</span>
-      <span class="step-body">各プレイヤーに7枚のカードを配る。残りは山札として裏向きに置き、1枚表向きにして場札とする。</span>
+      <span class="step-body">全員に<strong>4枚ずつ</strong>カードを配る。残りは山札として裏向きに置く。</span>
     </div>
     <div class="step">
       <span class="step-num">2</span>
-      <span class="step-body">手番のプレイヤーは<strong>場札と同じマーク（スート）か同じ数字</strong>のカードを1枚出す。出せなければ山札から1枚引く。</span>
+      <span class="step-body">最初のプレイヤーが手札から1枚を場に出す。時計回りで順番に進む。</span>
     </div>
     <div class="step">
       <span class="step-num">3</span>
-      <span class="step-body">手札が残り1枚になった瞬間に<strong>「ページワン！」と宣言</strong>する。宣言を忘れると山札から2枚引くペナルティ。</span>
+      <span class="step-body">手番のプレイヤーは<strong>場のカードと同じマーク</strong>のカードを1枚出す。出せなければ、出せるカードが引けるまで山札から引き続ける。</span>
     </div>
     <div class="step">
       <span class="step-num">4</span>
-      <span class="step-body">手札をすべて出し切ったプレイヤーが勝ち。</span>
+      <span class="step-body">手札が残り1枚になるカードを出すとき<strong>「ページワン！」</strong>と宣言。さらに最後の1枚を出すとき<strong>「ストップ！」</strong>と宣言して上がり。</span>
     </div>
 
-    <h2>特殊カード一覧</h2>
-    <p>ページワンには特殊な効果を持つカードがあります。これらを使いこなすことが勝負のポイントです。</p>
+    <h2>2段階宣言のルール</h2>
+    <p>ページワン最大のポイントがこの2段階宣言です。タイミングを間違えると大量ペナルティになるので注意しましょう。</p>
+
+    <div class="declare-box">
+      <div class="declare-card">
+        <div class="declare-word">ページワン！</div>
+        <div class="declare-timing">手札が残り1枚になる<br>カードを出すとき</div>
+      </div>
+      <div class="declare-card">
+        <div class="declare-word">ストップ！</div>
+        <div class="declare-timing">手札の最後の1枚を<br>出して上がるとき</div>
+      </div>
+    </div>
+
+    <div class="warn-box">
+      <p class="warn-label">PENALTY</p>
+      <p>「ページワン！」または「ストップ！」の宣言を忘れて他のプレイヤーに指摘されると、山札から<strong>5枚</strong>引くペナルティになります。宣言は必ずカードを出すと同時に行いましょう。</p>
+    </div>
+
+    <h2>特殊カード</h2>
+    <p>ジョーカーだけが特殊な効果を持ちます。</p>
 
     <table class="card-table">
       <thead>
@@ -150,46 +176,26 @@
       </thead>
       <tbody>
         <tr>
-          <td><span class="card-name">1（A）</span></td>
-          <td>マークを任意のマークに変更できる。手札整理に強力。</td>
-        </tr>
-        <tr>
-          <td><span class="card-name">2</span></td>
-          <td>次のプレイヤーは山札から2枚引いて手番をスキップ。重ねると効果が加算される。</td>
-        </tr>
-        <tr>
-          <td><span class="card-name">8</span></td>
-          <td>次のプレイヤーの手番をスキップ。</td>
-        </tr>
-        <tr>
-          <td><span class="card-name">11（J）</span></td>
-          <td>任意のプレイヤーに手札を1枚渡せる。不要なカードを押し付けるのに使える。</td>
-        </tr>
-        <tr>
-          <td><span class="card-name">12（Q）</span></td>
-          <td>ゲームの進行方向を逆転させる。</td>
-        </tr>
-        <tr>
-          <td><span class="card-name">13（K）</span></td>
-          <td>次のプレイヤーは山札から4枚引いて手番をスキップ。</td>
+          <td><span class="card-name">ジョーカー</span></td>
+          <td>どのマークの場面でも出せる。出したプレイヤーが次のマークを自由に指定でき、次のプレイヤーは山札から4枚引かなければならない。</td>
         </tr>
       </tbody>
     </table>
 
     <h2>勝つためのコツ</h2>
 
-    <h3>「1（A）」は温存する</h3>
-    <p>マークを自由に変えられる1は最強の特殊カードです。手詰まりになったときや、ページワン宣言後に使うと効果的です。</p>
+    <h3>ジョーカーは温存する</h3>
+    <p>ジョーカーは唯一の万能カードです。手詰まりのときはもちろん、「ページワン！」宣言後の最終局面で使うと、相手に4枚引かせながら自分が上がれる強力な一手になります。</p>
 
-    <h3>「2」「K」は序盤より終盤に</h3>
-    <p>ドロー系カードは相手の手札が少なくなった終盤に使うと大きなダメージを与えられます。序盤で使い切らないよう注意しましょう。</p>
+    <h3>相手の宣言を聞き逃さない</h3>
+    <p>誰かが「ページワン！」と宣言したら、次の手番でジョーカーや有効なカードで攻撃するチャンスです。逆に宣言を忘れている相手がいたら即座に指摘しましょう。</p>
 
-    <h3>ページワン宣言のタイミング</h3>
-    <p>残り1枚になった瞬間に宣言が必要です。オンライン対戦では自動で宣言を促す場合もありますが、忘れないよう意識しておきましょう。</p>
+    <h3>宣言のタイミングを体に覚えさせる</h3>
+    <p>ゲームに夢中になると宣言を忘れがちです。「カードを出す＝宣言する」をセットで意識するようにしましょう。特に「ページワン！」と「ストップ！」を両方忘れると10枚ドローになってしまいます。</p>
 
     <div class="tip-box">
       <p class="tip-label">POINT</p>
-      <p>相手がページワン宣言をしたら、すぐに2やKで追い打ちをかけるのが定石です。手札が増えればそれだけ逆転のチャンスが生まれます。</p>
+      <p>手札が少なくなってきたら、相手も残り枚数を把握しています。あえてゆっくりカードを出してから宣言するより、テンポよく宣言することで相手の対応を遅らせましょう。</p>
     </div>
 
     <h2>オンラインで無料プレイ</h2>
