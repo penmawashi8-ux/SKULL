@@ -21,6 +21,26 @@
     <priority>0.4</priority>
   </url>
   <url>
+    <loc>https://boardgamecat.com/blog/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://boardgamecat.com/blog/free-online-boardgames.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://boardgamecat.com/blog/pigtail-online-free.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://boardgamecat.com/blog/pageone-online-free.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://bomb.boardgamecat.com/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>

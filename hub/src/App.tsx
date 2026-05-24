@@ -510,6 +510,7 @@ function Drawer({ open, onClose }: { open: boolean; onClose: () => void }) {
           </p>
           <div className="flex flex-col gap-1">
             {[
+              { label: 'ブログ', path: '/blog/' },
               { label: 'プライバシーポリシー', path: '/privacy-policy' },
               { label: '利用規約', path: '/terms' },
               { label: 'お問い合わせ', path: '/contact' },
@@ -705,6 +706,7 @@ export default function App() {
         </p>
         <nav className="flex justify-center gap-5 mb-4">
           {[
+            { label: 'ブログ', path: '/blog/' },
             { label: 'プライバシーポリシー', path: '/privacy-policy' },
             { label: '利用規約', path: '/terms' },
             { label: 'お問い合わせ', path: '/contact' },
