@@ -1,5 +1,4 @@
 import { UpdatePrompt } from './components/UpdatePrompt'
-import PigTailGame from './games/PigTailGame'
 import PrivacyPolicy from './pages/PrivacyPolicy'
 import Terms from './pages/Terms'
 import Contact from './pages/Contact'
@@ -542,13 +541,6 @@ function Drawer({ open, onClose }: { open: boolean; onClose: () => void }) {
 export default function App() {
   const path = window.location.pathname
 
-  if (path === '/pig-tail') {
-    return (
-      <SafeRender>
-        <PigTailGame />
-      </SafeRender>
-    )
-  }
   if (path === '/privacy-policy') return <PrivacyPolicy />
   if (path === '/terms') return <Terms />
   if (path === '/contact') return <Contact />
