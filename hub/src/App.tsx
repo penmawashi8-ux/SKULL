@@ -700,7 +700,7 @@ export default function App() {
         <p className="font-cinzel text-[10px] font-bold tracking-[0.25em] uppercase mb-3" style={{ color: '#b8922a' }}>
           ボドゲ広場
         </p>
-        <nav className="flex justify-center gap-5 mb-4">
+        <nav className="flex flex-wrap justify-center gap-x-5 gap-y-2.5 mb-4">
           {[
             { label: 'ブログ', path: '/blog/' },
             { label: '企業情報', path: '/about' },
@@ -712,7 +712,7 @@ export default function App() {
               key={path}
               href={path}
               onClick={e => { e.preventDefault(); window.location.assign(path) }}
-              className="font-sans-jp text-[11px] hover:opacity-80 transition-opacity"
+              className="font-sans-jp text-[11px] hover:opacity-80 transition-opacity whitespace-nowrap"
               style={{ color: 'rgba(255,255,255,0.45)' }}
             >
               {label}
