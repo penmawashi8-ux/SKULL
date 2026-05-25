@@ -515,14 +515,15 @@ function Drawer({ open, onClose }: { open: boolean; onClose: () => void }) {
               { label: '利用規約', path: '/terms' },
               { label: 'お問い合わせ', path: '/contact' },
             ].map(({ label, path }) => (
-              <button
+              <a
                 key={path}
-                onClick={() => navigate(path)}
+                href={path}
+                onClick={e => { e.preventDefault(); navigate(path) }}
                 className="font-sans-jp text-left px-3 py-2.5 rounded-xl text-[13px] transition-all duration-150 active:scale-[0.98]"
-                style={{ color: 'rgba(255,255,255,0.5)', background: 'rgba(255,255,255,0.04)' }}
+                style={{ color: 'rgba(255,255,255,0.5)', background: 'rgba(255,255,255,0.04)', display: 'block' }}
               >
                 {label}
-              </button>
+              </a>
             ))}
           </div>
         </div>
