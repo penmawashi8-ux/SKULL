@@ -57,6 +57,8 @@
     .badge { font-size: 10px; color: rgba(255,255,255,0.55); background: rgba(255,255,255,0.07); padding: 2px 8px; border-radius: 20px; }
     .game-desc { font-size: 13px; color: rgba(255,255,255,0.65); line-height: 1.8; margin-bottom: 14px; }
     .game-link { display: inline-block; font-size: 13px; font-weight: 700; padding: 9px 18px; border-radius: 10px; color: #fff; }
+    .game-icon-wrap { display: flex; justify-content: center; margin-bottom: 14px; }
+    .game-icon { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; }
     .tip-box { background: rgba(184,146,42,0.08); border: 1px solid rgba(184,146,42,0.25); border-radius: 12px; padding: 16px 18px; margin: 24px 0; }
     .tip-label { font-size: 10px; letter-spacing: 0.2em; color: #b8922a; font-weight: 700; margin-bottom: 8px; }
     .tip-box p { font-size: 13px; color: rgba(255,255,255,0.65); margin: 0; }
@@ -102,6 +104,9 @@
     <h2>おすすめ5選</h2>
 
     <div class="game-card" style="background: linear-gradient(135deg, #2e1515 0%, #3d1a1a 100%);">
+      <div class="game-icon-wrap">
+        <img src="/icons/bomb.svg" alt="BOMB ゲームアイコン" class="game-icon" />
+      </div>
       <div class="game-card-header">
         <div>
           <p class="game-num">No.1</p>
@@ -120,6 +125,9 @@
     </div>
 
     <div class="game-card" style="background: linear-gradient(135deg, #2e1525 0%, #3d1832 100%);">
+      <div class="game-icon-wrap">
+        <img src="/icons/pig-tail.svg" alt="ぶたのしっぽ ゲームアイコン" class="game-icon" />
+      </div>
       <div class="game-card-header">
         <div>
           <p class="game-num">No.2</p>
@@ -138,6 +146,9 @@
     </div>
 
     <div class="game-card" style="background: linear-gradient(135deg, #0f1e3a 0%, #162848 100%);">
+      <div class="game-icon-wrap">
+        <img src="/icons/page-one.svg" alt="ページワン ゲームアイコン" class="game-icon" />
+      </div>
       <div class="game-card-header">
         <div>
           <p class="game-num">No.3</p>
@@ -156,6 +167,9 @@
     </div>
 
     <div class="game-card" style="background: linear-gradient(135deg, #0f2d1e 0%, #163d28 100%);">
+      <div class="game-icon-wrap">
+        <img src="/icons/coup.svg" alt="謀略 ゲームアイコン" class="game-icon" />
+      </div>
       <div class="game-card-header">
         <div>
           <p class="game-num">No.4</p>
@@ -174,6 +188,9 @@
     </div>
 
     <div class="game-card" style="background: linear-gradient(135deg, #261800 0%, #382400 100%);">
+      <div class="game-icon-wrap">
+        <img src="/icons/keiba.svg" alt="バーチャル競馬 ゲームアイコン" class="game-icon" />
+      </div>
       <div class="game-card-header">
         <div>
           <p class="game-num">No.5</p>
@@ -187,7 +204,7 @@
         <span class="badge">競馬</span>
         <span class="badge">バーチャル</span>
       </div>
-      <p class="game-desc">馬を選んで予想して観戦するバーチャル競馬ゲーム。短時間でサクッと楽しめて、スキマ時間にも最適です。予想の読み合いを友達と楽しむのもおすすめ。1人でも複数人でも楽しめます。</p>
+      <p class="game-desc">馬を選んで予想して観戦するバーチャル競馬ゲーム。短時間でサクッと楽しめて、スキマ時間にも最適です。予想の読み合いを友達と楽しむのもおすすめ。1人でも複数人でも楽しめます。実際の賭けや金銭のやりとりは一切なく、純粋なゲームです。</p>
       <a href="https://gamekeiba.boardgamecat.com" class="game-link" style="background: #d97706;">今すぐ遊ぶ →</a>
     </div>
 
@@ -229,8 +246,10 @@
     <div class="footer-links">
       <a href="/">トップ</a>
       <a href="/blog/">ブログ</a>
+      <a href="/about">企業情報</a>
       <a href="/privacy-policy">プライバシーポリシー</a>
       <a href="/terms">利用規約</a>
+      <a href="/contact">お問い合わせ</a>
     </div>
     <p class="footer-copy">© 2026 ボドゲ広場</p>
   </footer>

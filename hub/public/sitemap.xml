@@ -21,6 +21,11 @@
     <priority>0.4</priority>
   </url>
   <url>
+    <loc>https://boardgamecat.com/about</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.4</priority>
+  </url>
+  <url>
     <loc>https://boardgamecat.com/blog/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>

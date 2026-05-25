@@ -2,6 +2,7 @@ import { UpdatePrompt } from './components/UpdatePrompt'
 import PrivacyPolicy from './pages/PrivacyPolicy'
 import Terms from './pages/Terms'
 import Contact from './pages/Contact'
+import About from './pages/About'
 import { Component, useState, type ReactNode } from 'react'
 
 class SafeRender extends Component<{ children: ReactNode }, { hasError: boolean }> {
@@ -82,7 +83,7 @@ const games: Game[] = [
     name: 'バーチャル競馬',
     nameEn: 'VIRTUAL KEIBA',
     symbol: 'VK',
-    description: '馬を選んで予想して観戦！バーチャル競馬で白熱のゴール勝負を楽しもう。',
+    description: '馬を選んで予想して観戦！バーチャル競馬で白熱のゴール勝負を楽しもう。実際の賭けや金銭のやりとりは一切なく、純粋にゲームとして楽しめます。',
     status: 'available',
     url: 'https://gamekeiba.boardgamecat.com',
     accentColor: '#d97706',
@@ -510,6 +511,7 @@ function Drawer({ open, onClose }: { open: boolean; onClose: () => void }) {
           <div className="flex flex-col gap-1">
             {[
               { label: 'ブログ', path: '/blog/' },
+              { label: '企業情報', path: '/about' },
               { label: 'プライバシーポリシー', path: '/privacy-policy' },
               { label: '利用規約', path: '/terms' },
               { label: 'お問い合わせ', path: '/contact' },
@@ -544,6 +546,7 @@ export default function App() {
   if (path === '/privacy-policy') return <PrivacyPolicy />
   if (path === '/terms') return <Terms />
   if (path === '/contact') return <Contact />
+  if (path === '/about') return <About />
 
   const [genre, setGenre] = useState<Genre>('all')
   const [drawerOpen, setDrawerOpen] = useState(false)
@@ -700,6 +703,7 @@ export default function App() {
         <nav className="flex justify-center gap-5 mb-4">
           {[
             { label: 'ブログ', path: '/blog/' },
+            { label: '企業情報', path: '/about' },
             { label: 'プライバシーポリシー', path: '/privacy-policy' },
             { label: '利用規約', path: '/terms' },
             { label: 'お問い合わせ', path: '/contact' },
