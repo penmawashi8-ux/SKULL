@@ -39,7 +39,6 @@ export default function Contact() {
       <main className="px-5 pt-10 pb-16 max-w-xl mx-auto">
         <p className="font-sans-jp text-[13px] leading-relaxed mb-8" style={{ color: 'rgba(255,255,255,0.55)' }}>
           ボドゲ広場へのご質問・ご意見・不具合報告など、お気軽にお問い合わせください。
-          通常3〜5営業日以内にご返信いたします。
         </p>
 
         <a
@@ -65,22 +64,20 @@ export default function Contact() {
           </a>
         </div>
 
-        <div className="mt-10 flex flex-col gap-4">
-          {[
-            { icon: '🐛', label: '不具合・バグ報告' },
-            { icon: '💬', label: 'ゲームに関するご質問' },
-            { icon: '💡', label: 'ご要望・ご提案' },
-            { icon: '📣', label: '広告・掲載に関するご相談' },
-          ].map(({ icon, label }) => (
-            <div
-              key={label}
-              className="flex items-center gap-3 px-4 py-3 rounded-xl"
-              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
-            >
-              <span className="text-xl">{icon}</span>
-              <span className="font-sans-jp text-[13px]" style={{ color: 'rgba(255,255,255,0.55)' }}>{label}</span>
-            </div>
-          ))}
+        <div className="mt-10">
+          <p className="font-sans-jp text-[11px] mb-3" style={{ color: 'rgba(255,255,255,0.3)' }}>対応内容</p>
+          <ul className="flex flex-col gap-2">
+            {['不具合・バグ報告', 'ゲームに関するご質問', 'ご要望・ご提案', '広告・掲載に関するご相談'].map(label => (
+              <li
+                key={label}
+                className="font-sans-jp text-[13px] flex items-center gap-2"
+                style={{ color: 'rgba(255,255,255,0.45)' }}
+              >
+                <span style={{ color: '#b8922a' }}>·</span>
+                {label}
+              </li>
+            ))}
+          </ul>
         </div>
 
         <p className="font-sans-jp text-[11px] mt-8 leading-relaxed text-center" style={{ color: 'rgba(255,255,255,0.25)' }}>
