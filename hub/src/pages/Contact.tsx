@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 const CONTACT_EMAIL = 'boardgamecat@yahoo.co.jp'
+const FORMSPREE_ENDPOINT = 'https://formspree.io/f/boardgamecat'
 
 function PageHeader({ title }: { title: string }) {
   return (
@@ -53,20 +54,27 @@ export default function Contact() {
     return e
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     const errs = validate()
     if (Object.keys(errs).length > 0) { setErrors(errs); return }
     setErrors({})
     setFormState('submitting')
 
-    const subject = encodeURIComponent(`[ボドゲ広場] ${category}のお問い合わせ - ${name}様`)
-    const body = encodeURIComponent(
-      `【お名前】\n${name}\n\n【メールアドレス】\n${email}\n\n【お問い合わせ種別】\n${category}\n\n【内容】\n${message}`
-    )
-    window.location.href = `mailto:${CONTACT_EMAIL}?subject=${subject}&body=${body}`
-
-    setTimeout(() => setFormState('sent'), 500)
+    try {
+      const res = await fetch(FORMSPREE_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, category, message }),
+      })
+      if (res.ok) {
+        setFormState('sent')
+      } else {
+        setFormState('error')
+      }
+    } catch {
+      setFormState('error')
+    }
   }
 
   const inputStyle: React.CSSProperties = {
@@ -94,13 +102,12 @@ export default function Contact() {
       <div className="min-h-screen" style={{ background: '#09090f' }}>
         <PageHeader title="お問い合わせ" />
         <div className="flex flex-col items-center justify-center px-5 pt-20 pb-16 text-center">
-          <div className="text-5xl mb-5">✉️</div>
+          <div className="text-5xl mb-5">✅</div>
           <h2 className="font-serif-jp font-bold text-xl text-white mb-3">
-            メールアプリが開きました
+            送信完了しました
           </h2>
           <p className="font-sans-jp text-[13px] leading-relaxed mb-8" style={{ color: 'rgba(255,255,255,0.5)' }}>
-            メールアプリからそのまま送信してください。<br />
-            お問い合わせ内容は自動的に入力されています。<br />
+            お問い合わせありがとうございます。<br />
             通常3〜5営業日以内にご返信いたします。
           </p>
           <button
@@ -109,6 +116,33 @@ export default function Contact() {
             style={{ background: '#b8922a' }}
           >
             ホームに戻る
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  if (formState === 'error') {
+    return (
+      <div className="min-h-screen" style={{ background: '#09090f' }}>
+        <PageHeader title="お問い合わせ" />
+        <div className="flex flex-col items-center justify-center px-5 pt-20 pb-16 text-center">
+          <div className="text-5xl mb-5">⚠️</div>
+          <h2 className="font-serif-jp font-bold text-xl text-white mb-3">
+            送信に失敗しました
+          </h2>
+          <p className="font-sans-jp text-[13px] leading-relaxed mb-8" style={{ color: 'rgba(255,255,255,0.5)' }}>
+            お手数ですが、直接メールにてご連絡ください。<br />
+            <a href={`mailto:${CONTACT_EMAIL}`} className="underline mt-2 inline-block" style={{ color: '#b8922a' }}>
+              {CONTACT_EMAIL}
+            </a>
+          </p>
+          <button
+            onClick={() => setFormState('idle')}
+            className="font-sans-jp px-6 py-3 rounded-xl text-sm font-bold text-white"
+            style={{ background: '#b8922a' }}
+          >
+            もう一度試す
           </button>
         </div>
       </div>
@@ -253,7 +287,7 @@ export default function Contact() {
             className="font-serif-jp w-full py-3.5 rounded-xl text-[15px] font-bold text-white transition-opacity disabled:opacity-50"
             style={{ background: 'linear-gradient(135deg, #b8922a, #d4a93a)', boxShadow: '0 0 24px rgba(184,146,42,0.3)' }}
           >
-            {formState === 'submitting' ? '送信中...' : 'メールで送信する'}
+            {formState === 'submitting' ? '送信中...' : '送信する'}
           </button>
         </form>
       </main>

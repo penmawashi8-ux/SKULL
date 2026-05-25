@@ -1,8 +1,8 @@
 import { UpdatePrompt } from './components/UpdatePrompt'
-import PigTailGame from './games/PigTailGame'
 import PrivacyPolicy from './pages/PrivacyPolicy'
 import Terms from './pages/Terms'
 import Contact from './pages/Contact'
+import About from './pages/About'
 import { Component, useState, type ReactNode } from 'react'
 
 class SafeRender extends Component<{ children: ReactNode }, { hasError: boolean }> {
@@ -83,7 +83,7 @@ const games: Game[] = [
     name: 'バーチャル競馬',
     nameEn: 'VIRTUAL KEIBA',
     symbol: 'VK',
-    description: '馬を選んで予想して観戦！バーチャル競馬で白熱のゴール勝負を楽しもう。',
+    description: '馬を選んで予想して観戦！バーチャル競馬で白熱のゴール勝負を楽しもう。実際の賭けや金銭のやりとりは一切なく、純粋にゲームとして楽しめます。',
     status: 'available',
     url: 'https://gamekeiba.boardgamecat.com',
     accentColor: '#d97706',
@@ -510,18 +510,21 @@ function Drawer({ open, onClose }: { open: boolean; onClose: () => void }) {
           </p>
           <div className="flex flex-col gap-1">
             {[
+              { label: 'ブログ', path: '/blog/' },
+              { label: '企業情報', path: '/about' },
               { label: 'プライバシーポリシー', path: '/privacy-policy' },
               { label: '利用規約', path: '/terms' },
               { label: 'お問い合わせ', path: '/contact' },
             ].map(({ label, path }) => (
-              <button
+              <a
                 key={path}
-                onClick={() => navigate(path)}
+                href={path}
+                onClick={e => { e.preventDefault(); navigate(path) }}
                 className="font-sans-jp text-left px-3 py-2.5 rounded-xl text-[13px] transition-all duration-150 active:scale-[0.98]"
-                style={{ color: 'rgba(255,255,255,0.5)', background: 'rgba(255,255,255,0.04)' }}
+                style={{ color: 'rgba(255,255,255,0.5)', background: 'rgba(255,255,255,0.04)', display: 'block' }}
               >
                 {label}
-              </button>
+              </a>
             ))}
           </div>
         </div>
@@ -540,16 +543,10 @@ function Drawer({ open, onClose }: { open: boolean; onClose: () => void }) {
 export default function App() {
   const path = window.location.pathname
 
-  if (path === '/pig-tail') {
-    return (
-      <SafeRender>
-        <PigTailGame />
-      </SafeRender>
-    )
-  }
   if (path === '/privacy-policy') return <PrivacyPolicy />
   if (path === '/terms') return <Terms />
   if (path === '/contact') return <Contact />
+  if (path === '/about') return <About />
 
   const [genre, setGenre] = useState<Genre>('all')
   const [drawerOpen, setDrawerOpen] = useState(false)
@@ -705,6 +702,8 @@ export default function App() {
         </p>
         <nav className="flex justify-center gap-5 mb-4">
           {[
+            { label: 'ブログ', path: '/blog/' },
+            { label: '企業情報', path: '/about' },
             { label: 'プライバシーポリシー', path: '/privacy-policy' },
             { label: '利用規約', path: '/terms' },
             { label: 'お問い合わせ', path: '/contact' },
