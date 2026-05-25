@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ぶたのしっぽのルールと遊び方｜4種類集めてTOUCH！脱落型スピードゲーム - ボドゲ広場</title>
-  <meta name="description" content="ボドゲ広場「ぶたのしっぽ」のルール完全解説。全員同時にカードを回し、同じ数字が4種類揃ったら3秒以内にTOUCHボタンを押す！最後の1人が負け。B・U・T・A4文字で脱落するスピード系カードゲームです。" />
+  <title>ぶたのしっぽのルールと遊び方｜スートが揃ったら山を取る！無料オンラインプレイ - ボドゲ広場</title>
+  <meta name="description" content="「ぶたのしっぽ」のルール完全解説。カードのマーク（スート）が前のカードと一致したら山を取るシンプルなトランプゲーム。数字一致のオプションルールや、勝つためのコツも紹介。ボドゲ広場でブラウザ無料プレイ可能。" />
   <meta property="og:type" content="article" />
   <meta property="og:url" content="https://boardgamecat.com/blog/pigtail-online-free.html" />
-  <meta property="og:title" content="ぶたのしっぽのルールと遊び方｜4種類集めてTOUCH！脱落型スピードゲーム - ボドゲ広場" />
-  <meta property="og:description" content="全員同時にカードを回して4種類揃えたらTOUCH！最後に押した人がペナルティ。BUTA4文字で脱落する独自ルール解説。" />
+  <meta property="og:title" content="ぶたのしっぽのルールと遊び方｜スートが揃ったら山を取る！無料オンラインプレイ - ボドゲ広場" />
+  <meta property="og:description" content="カードのマーク（スート）が一致したら山を取るトランプゲーム「ぶたのしっぽ」のルール解説。ブラウザで無料・登録不要。" />
   <meta property="og:image" content="https://boardgamecat.com/og-image.png" />
   <meta property="og:locale" content="ja_JP" />
   <link rel="canonical" href="https://boardgamecat.com/blog/pigtail-online-free.html" />
@@ -19,8 +19,8 @@
   {
     "@context": "https://schema.org",
     "@type": "Article",
-    "headline": "ぶたのしっぽのルールと遊び方｜4種類集めてTOUCH！脱落型スピードゲーム",
-    "description": "ボドゲ広場「ぶたのしっぽ」のルール完全解説。全員同時にカードを回し、4種類揃ったら3秒以内にTOUCHボタンを押す脱落型スピードゲーム。",
+    "headline": "ぶたのしっぽのルールと遊び方｜スートが揃ったら山を取る！無料オンラインプレイ",
+    "description": "カードのマーク（スート）が一致したら山を取るトランプゲーム「ぶたのしっぽ」のルール解説。ブラウザで無料・登録不要。",
     "url": "https://boardgamecat.com/blog/pigtail-online-free.html",
     "datePublished": "2026-05-24",
     "publisher": { "@type": "Organization", "name": "ボドゲ広場", "url": "https://boardgamecat.com" },
@@ -58,27 +58,20 @@
     .step-num { background: #ec4899; color: #fff; font-size: 12px; font-weight: 700; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
     .step-body { font-size: 14px; color: rgba(255,255,255,0.75); line-height: 1.75; }
     .step-body strong { color: #fff; }
-    .phase-box { border-radius: 12px; padding: 16px 18px; margin-bottom: 12px; border: 1px solid rgba(236,72,153,0.2); background: linear-gradient(135deg, #2e1525 0%, #3d1832 100%); }
-    .phase-label { font-size: 10px; letter-spacing: 0.2em; color: #ec4899; font-weight: 700; margin-bottom: 6px; text-transform: uppercase; }
-    .phase-title { font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 8px; }
-    .phase-body { font-size: 13px; color: rgba(255,255,255,0.65); line-height: 1.75; }
-    .penalty-display { display: flex; gap: 6px; margin: 16px 0 24px; }
-    .penalty-letter { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 900; font-family: 'Noto Serif JP', serif; }
-    .penalty-letter.active { background: #ef4444; color: #fff; }
-    .penalty-letter.inactive { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.2); }
-    .penalty-row { display: flex; flex-direction: column; gap: 4px; }
-    .penalty-name { font-size: 11px; color: rgba(255,255,255,0.4); }
-    .cpu-table { width: 100%; border-collapse: collapse; margin: 16px 0 24px; }
-    .cpu-table th { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.4); padding: 8px 12px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.08); }
-    .cpu-table td { font-size: 13px; color: rgba(255,255,255,0.7); padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.06); vertical-align: top; }
-    .cpu-table tr:last-child td { border-bottom: none; }
-    .cpu-name { font-weight: 700; color: #fff; }
+    .color-demo { display: flex; gap: 12px; margin: 16px 0 24px; }
+    .color-card { flex: 1; border-radius: 12px; padding: 16px; text-align: center; }
+    .color-card.red { background: linear-gradient(135deg, #3d0a0a 0%, #5a1010 100%); border: 1px solid rgba(239,68,68,0.3); }
+    .color-card.black { background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 100%); border: 1px solid rgba(255,255,255,0.15); }
+    .color-label { font-size: 10px; letter-spacing: 0.2em; font-weight: 700; margin-bottom: 8px; }
+    .color-card.red .color-label { color: #ef4444; }
+    .color-card.black .color-label { color: rgba(255,255,255,0.5); }
+    .color-suits { font-size: 22px; letter-spacing: 4px; }
+    .option-box { background: rgba(59,130,246,0.06); border: 1px solid rgba(59,130,246,0.2); border-radius: 12px; padding: 16px 18px; margin: 20px 0; }
+    .option-label { font-size: 10px; letter-spacing: 0.2em; color: #3b82f6; font-weight: 700; margin-bottom: 8px; }
+    .option-box p { font-size: 13px; color: rgba(255,255,255,0.65); margin: 0; }
     .tip-box { background: rgba(184,146,42,0.08); border: 1px solid rgba(184,146,42,0.25); border-radius: 12px; padding: 16px 18px; margin: 24px 0; }
     .tip-label { font-size: 10px; letter-spacing: 0.2em; color: #b8922a; font-weight: 700; margin-bottom: 8px; }
     .tip-box p { font-size: 13px; color: rgba(255,255,255,0.65); margin: 0; }
-    .warn-box { background: rgba(239,68,68,0.06); border: 1px solid rgba(239,68,68,0.2); border-radius: 12px; padding: 16px 18px; margin: 20px 0; }
-    .warn-label { font-size: 10px; letter-spacing: 0.2em; color: #ef4444; font-weight: 700; margin-bottom: 8px; }
-    .warn-box p { font-size: 13px; color: rgba(255,255,255,0.65); margin: 0; }
     .cta { display: block; background: linear-gradient(135deg, #ec4899, #c026a0); color: #fff; text-align: center; padding: 18px 24px; border-radius: 14px; font-weight: 700; font-size: 16px; margin: 36px 0 20px; box-shadow: 0 0 24px rgba(236,72,153,0.4); transition: opacity 0.2s; }
     .cta:hover { opacity: 0.9; }
     .cta-sub { font-size: 11px; font-weight: 400; opacity: 0.8; display: block; margin-top: 4px; }
@@ -108,141 +101,92 @@
 
   <div class="container">
     <div class="article-header">
-      <span class="tag">遊び方・ルール</span>
-      <h1>ぶたのしっぽのルールと遊び方<br>4種類集めてTOUCH！脱落型スピードゲーム</h1>
+      <span class="tag">トランプ・遊び方</span>
+      <h1>ぶたのしっぽのルールと遊び方<br>スートが揃ったら山を取る！オンラインで無料プレイ</h1>
       <p class="meta">2026.05.24 ｜ ボドゲ広場</p>
     </div>
     <div class="divider"></div>
 
     <div class="lead">
-      ボドゲ広場の「ぶたのしっぽ」は、<strong>全員が同時にカードを1枚選んで左隣に回し</strong>、同じ数字のカードが4種類（♠♥♦♣）揃った瞬間に<strong>3秒以内にTOUCHボタンを押す</strong>スピード系カードゲームです。最後に押したプレイヤーがペナルティを受け、<strong>B・U・T・Aの4文字が揃うと脱落</strong>。最後まで生き残った1人が勝ちです。
+      「ぶたのしっぽ」は、順番にカードをめくって中央に積んでいき、<strong>出たカードのマーク（スート）が直前のカードと一致したら山を全部もらう</strong>シンプルなトランプゲームです。手札を一番少なく抑えた人が勝ち。ルールが簡単なので子どもから大人まで誰でもすぐ楽しめます。ボドゲ広場では<strong>ブラウザで無料・登録不要</strong>でオンライン対戦ができます。
     </div>
 
     <div class="info-box">
       <p class="info-box-title">ゲーム基本情報</p>
       <div class="info-grid">
-        <div class="info-item"><strong>プレイ人数</strong>2〜4人（CPU 1〜3体）</div>
-        <div class="info-item"><strong>ゲーム形式</strong>脱落型・最後の1人が優勝</div>
-        <div class="info-item"><strong>ジャンル</strong>スピード系カードゲーム</div>
+        <div class="info-item"><strong>プレイ人数</strong>3〜6人</div>
+        <div class="info-item"><strong>使用カード</strong>52枚（ジョーカーなし）</div>
+        <div class="info-item"><strong>ジャンル</strong>トランプ・パーティ</div>
         <div class="info-item"><strong>料金</strong>無料（登録不要）</div>
       </div>
     </div>
 
     <h2>ぶたのしっぽとは？</h2>
-    <p>ボドゲ広場の「ぶたのしっぽ」は、<strong>全員同時にカードを選んで回す</strong>という独特なシステムが特徴のカードゲームです。自分だけでなく相手も同時に動くため、どのカードを渡すか・どのカードを受け取るかの読み合いが生まれます。</p>
-    <p>カードを回し続けているうちに、誰かの手札に同じ数字の♠♥♦♣が4枚揃う瞬間が来ます。そうなったら即座に<strong>TOUCHボタン</strong>を押す競争が始まります。押すのが最も遅かった1人だけがペナルティを受ける、シンプルだけど緊張感のある一発逆転型ゲームです。</p>
+    <p>「ぶたのしっぽ」は、場に円形に広げた裏向きのカードを順番に1枚ずつめくり、中央の捨て山に積んでいくトランプゲームです。めくったカードのスート（マーク）が直前のカードと同じ場合、その山をまるごと引き取らなければなりません。</p>
+    <p>取ったカードは手元に加わり続けるので、山を取るほど不利になります。全員が一巡し終わったときに<strong>手持ちのカードが最も少ないプレイヤーが勝ち</strong>です。運の要素が強いぶん、誰でも逆転できる盛り上がりやすいゲームです。</p>
 
-    <h2>ゲームの準備</h2>
-    <p>ゲーム開始前に、対戦するCPUの数を <strong>1体・2体・3体</strong> から選びます。CPUが多いほど展開が速く、予測しにくくなります。はじめての方はCPU 1体から試してみましょう。</p>
-    <p>スタートボタンを押すと、プレイヤー数分のランダムな数字（A〜Kから選ばれる）に対して各数字の♠♥♦♣ 4枚セットが作られ、全員の手札に4枚ずつ配られます。</p>
+    <h2>スート（マーク）の種類</h2>
+    <p>ぶたのしっぽで山を取るかどうかは<strong>スート（マーク）が一致するかどうか</strong>だけで決まります。4種類のスートをしっかり覚えておきましょう。</p>
 
-    <h2>ゲームの流れ（4つのフェーズ）</h2>
-
-    <div class="phase-box">
-      <p class="phase-label">Phase 1</p>
-      <p class="phase-title">SELECTING ― カードを1枚選ぶ</p>
-      <p class="phase-body">自分の手札4枚の中から、左隣に渡したいカードを1枚タップして選びます。全員が選ぶのを待ってから次のフェーズに進みます。どのカードを渡すかが戦略のカギ——持ちたい数字は渡さず、いらない数字を流しましょう。</p>
-    </div>
-
-    <div class="phase-box">
-      <p class="phase-label">Phase 2</p>
-      <p class="phase-title">PASSING ― 全員同時にカードが動く</p>
-      <p class="phase-body">全員が選んだカードが一斉に左隣に渡されます。このとき手札の中身が更新されます。渡された後、誰かが4種類揃っていればすぐにTOUCHフェーズへ。揃っていなければ次のSELECTINGに戻ります。</p>
-    </div>
-
-    <div class="phase-box" style="border-color: rgba(239,68,68,0.3); background: linear-gradient(135deg, #2a1010 0%, #3d1515 100%);">
-      <p class="phase-label" style="color: #ef4444;">Phase 3</p>
-      <p class="phase-title">TOUCHING ― 3秒以内にTOUCH！</p>
-      <p class="phase-body">誰かの手札に同じ数字の4種類（♠♥♦♣）が揃った瞬間、画面に<strong>TOUCHボタン</strong>が表示されカウントダウンが始まります。3秒以内に全員がTOUCHボタンを押さなければなりません。<strong>最後に押した1人だけ</strong>がペナルティを受けます。</p>
-    </div>
-
-    <div class="phase-box">
-      <p class="phase-label">Phase 4</p>
-      <p class="phase-title">RESULT ― ペナルティと結果発表</p>
-      <p class="phase-body">誰が最後に押したかが表示され、そのプレイヤーのペナルティが1つ増えます。BUTAが完成したプレイヤーは脱落します。脱落者が出た場合は残ったプレイヤーに新しいカードが配られ、ゲームが続きます。</p>
-    </div>
-
-    <h2>BUTAペナルティシステム</h2>
-    <p>TOUCHが最も遅かったプレイヤーは、ペナルティが1段階進みます。ペナルティは <strong>B → U → T → A</strong> の順に蓄積されます。</p>
-
-    <div class="penalty-display">
-      <div class="penalty-row">
-        <span class="penalty-name">ペナルティなし</span>
-        <div style="display:flex;gap:6px;margin-top:4px;">
-          <div class="penalty-letter inactive">B</div>
-          <div class="penalty-letter inactive">U</div>
-          <div class="penalty-letter inactive">T</div>
-          <div class="penalty-letter inactive">A</div>
-        </div>
+    <div class="color-demo">
+      <div class="color-card red">
+        <p class="color-label">RED SUITS · 赤</p>
+        <div class="color-suits">♥ ♦</div>
       </div>
-    </div>
-    <div class="penalty-display">
-      <div class="penalty-row">
-        <span class="penalty-name">3回ペナルティを受けた状態（次でBUTA完成＝脱落）</span>
-        <div style="display:flex;gap:6px;margin-top:4px;">
-          <div class="penalty-letter active">B</div>
-          <div class="penalty-letter active">U</div>
-          <div class="penalty-letter active">T</div>
-          <div class="penalty-letter inactive">A</div>
-        </div>
+      <div class="color-card black">
+        <p class="color-label">BLACK SUITS · 黒</p>
+        <div class="color-suits">♠ ♣</div>
       </div>
     </div>
 
-    <div class="warn-box">
-      <p class="warn-label">BUTA完成＝脱落</p>
-      <p>4回ペナルティを受けてBUTAが完成すると、そのプレイヤーはゲームから脱落します。脱落後は残ったプレイヤーにカードが再配布され、ゲームが継続されます。</p>
+    <p>スートは♠（スペード）・♥（ハート）・♦（ダイヤ）・♣（クラブ）の4種類。前のカードと今めくったカードが<strong>同じスート</strong>（例：♥→♥ や ♠→♠）なら山を取る、それだけが基本ルールです。</p>
+
+    <h2>基本ルール</h2>
+
+    <div class="step">
+      <span class="step-num">1</span>
+      <span class="step-body">ジョーカーを除いた<strong>52枚</strong>を円形に裏向きに並べる。</span>
+    </div>
+    <div class="step">
+      <span class="step-num">2</span>
+      <span class="step-body">最初のプレイヤーから時計回りに、円の中から<strong>カードを1枚めくり</strong>中央の山に表向きで置く。</span>
+    </div>
+    <div class="step">
+      <span class="step-num">3</span>
+      <span class="step-body">めくったカードのスートが<strong>直前のカードと同じスート</strong>（♠→♠、♥→♥、♦→♦、♣→♣のいずれか）なら、中央の山を全部引き取って手元に加える。</span>
+    </div>
+    <div class="step">
+      <span class="step-num">4</span>
+      <span class="step-body">全員が円のカードをめくり終えたらゲーム終了。手元のカードが<strong>最も少ないプレイヤーが勝ち</strong>。</span>
     </div>
 
-    <h2>CPU対戦相手について</h2>
-    <p>ボドゲ広場のぶたのしっぽには、3体のCPUキャラクターが登場します。</p>
+    <h2>オプションルール：数字一致でも山を取る</h2>
+    <p>プレイヤー間で合意すれば、スートだけでなく<strong>数字（ランク）が同じ場合も山を取る</strong>という追加ルールを使うことができます。例えば前のカードが♥の7で次のカードが♠の7なら、通常はスートが違うので取らなくていいですが、このオプションルールを採用していると取らなければなりません。</p>
 
-    <table class="cpu-table">
-      <thead>
-        <tr>
-          <th>名前</th>
-          <th>TOUCH反応の傾向</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><span class="cpu-name">ぶー太</span></td>
-          <td>CPU1番手。標準的な反応速度。</td>
-        </tr>
-        <tr>
-          <td><span class="cpu-name">こぶ太</span></td>
-          <td>CPU2番手。3体いる場合は中間の反応速度。</td>
-        </tr>
-        <tr>
-          <td><span class="cpu-name">ぶーこ</span></td>
-          <td>CPU3番手。3体いる場合は最後に登場。</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <p>CPUは4種類揃えた本人（トリガープレイヤー）ほど速く反応し、そうでないプレイヤーはやや遅れて反応する傾向があります。自分で4種類揃えた場合は特に素早くTOUCHを押す必要があります。</p>
+    <div class="option-box">
+      <p class="option-label">OPTION RULE</p>
+      <p>数字が一致した場合も山を取る。色と数字のどちらか一方でも一致すれば取得。このルールを使うと山を取る頻度が上がり、よりスリリングな展開になります。</p>
+    </div>
 
     <h2>勝つためのコツ</h2>
 
-    <h3>自分が揃える数字を1種類に絞る</h3>
-    <p>手札に同じ数字が2〜3枚来ている場合は、その数字を集め続けるのが基本戦略です。いらない別の数字のカードを積極的に左に流しましょう。</p>
+    <h3>直前のスートを把握する</h3>
+    <p>直前のカードのスートを常に確認しておくことが基本です。中央の山の一番上のカードを覚えておき、自分がめくったカードのスートが一致したら潔く取りましょう。オンラインでは画面に直前のカードが表示されているので確認しやすいです。</p>
 
-    <h3>画面から目を離さない</h3>
-    <p>TOUCHフェーズは突然来ます。カードを選んでいる最中も、常に画面全体を見る習慣をつけましょう。3秒は短いようで、気が抜けていると確実に最後になります。</p>
+    <h3>山が大きいほど痛い</h3>
+    <p>中央に積み上がった山が多いほど、そこで色が一致したときのダメージが大きくなります。山が多くなってきたら次の自分の番が巡ってくる前に誰かが取ってくれることを祈りましょう。</p>
 
-    <h3>自分が揃えたときこそ速く押す</h3>
-    <p>自分の手に4種類が揃った場合、システムが即座にTOUCHフェーズに入ります。揃えた本人も押さないとペナルティを受けます。「揃えた＝TOUCH」を反射的にセットで行えるよう意識しましょう。</p>
-
-    <h3>BUTAが溜まっているプレイヤーに注目</h3>
-    <p>B・U・Tと3文字溜まっている相手は、次のペナルティで脱落します。そういった相手がいる局面では、あなたのTOUCHが遅れさえしなければ脱落を誰かに押し付けられます。逆に自分がB・U・Tのときは一番慎重にTOUCHしましょう。</p>
+    <h3>手持ちが多くなっても諦めない</h3>
+    <p>ぶたのしっぽは運の要素が強く、後半に一度も山を取らずに逆転することも十分あります。手持ちが多くなっても、残りのめくり枚数次第では最後まで差が縮まります。</p>
 
     <div class="tip-box">
       <p class="tip-label">POINT</p>
-      <p>ぶたのしっぽは「最初に揃えた人が有利」なゲームではなく、「最後にTOUCHした人だけが不利」なゲームです。4種類揃えることより、揃えた後に素早くTOUCHすることの方が重要です。</p>
+      <p>山を取るかどうかは完全に運（めくったカードの色次第）なので、プレイヤー全員が同じ条件で戦います。ルールが単純で初心者でも大人数でも盛り上がれるのがこのゲームの魅力です。</p>
     </div>
 
     <h2>オンラインで無料プレイ</h2>
-    <p>ボドゲ広場のぶたのしっぽはブラウザのみで動作します。アプリのインストールや会員登録は不要です。スマートフォン・タブレット・PCいずれでもプレイできます。</p>
-    <p>TOUCHボタンはスマートフォンのタップでもPCのクリックでも反応します。素早い操作のためにはスマートフォンでのプレイがおすすめです。</p>
+    <p>ボドゲ広場のぶたのしっぽはブラウザのみで動作します。アプリのインストールや会員登録は不要で、スマートフォン・タブレット・PCいずれでもプレイできます。</p>
+    <p>URLを友達に送るだけですぐにオンライン対戦が始められます。離れた場所にいる人ともその場でゲームができます。</p>
 
     <a href="https://buta.boardgamecat.com" class="cta">
       ぶたのしっぽを今すぐ無料で遊ぶ →
