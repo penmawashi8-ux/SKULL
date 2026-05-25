@@ -1,3 +1,5 @@
+import { useCanonical } from '../useCanonical'
+
 const LAST_UPDATED = '2026年5月22日'
 
 function PageHeader({ title }: { title: string }) {
@@ -31,6 +33,7 @@ function PageHeader({ title }: { title: string }) {
 }
 
 export default function PrivacyPolicy() {
+  useCanonical('/privacy-policy')
   return (
     <div className="min-h-screen" style={{ background: '#09090f', color: 'rgba(255,255,255,0.82)' }}>
       <PageHeader title="プライバシーポリシー" />

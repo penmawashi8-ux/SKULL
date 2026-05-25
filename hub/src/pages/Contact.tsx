@@ -1,3 +1,5 @@
+import { useCanonical } from '../useCanonical'
+
 const CONTACT_EMAIL = 'boardgamecat@yahoo.co.jp'
 const GOOGLE_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLScgSAt1yIK0c71bqyfjSdxJejm8sUWkzzebX1d_7-uEFZsv9g/viewform'
 
@@ -32,6 +34,7 @@ function PageHeader({ title }: { title: string }) {
 }
 
 export default function Contact() {
+  useCanonical('/contact')
   return (
     <div className="min-h-screen" style={{ background: '#09090f' }}>
       <PageHeader title="お問い合わせ" />

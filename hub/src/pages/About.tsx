@@ -1,3 +1,5 @@
+import { useCanonical } from '../useCanonical'
+
 const LAST_UPDATED = '2026年5月25日'
 const CONTACT_EMAIL = 'boardgamecat@yahoo.co.jp'
 
@@ -32,6 +34,7 @@ function PageHeader({ title }: { title: string }) {
 }
 
 export default function About() {
+  useCanonical('/about')
   return (
     <div className="min-h-screen" style={{ background: '#09090f', color: 'rgba(255,255,255,0.82)' }}>
       <PageHeader title="企業情報・運営者情報" />

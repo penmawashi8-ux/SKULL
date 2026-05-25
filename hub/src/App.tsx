@@ -3,6 +3,7 @@ import PrivacyPolicy from './pages/PrivacyPolicy'
 import Terms from './pages/Terms'
 import Contact from './pages/Contact'
 import About from './pages/About'
+import { useCanonical } from './useCanonical'
 import { Component, useState, type ReactNode } from 'react'
 
 class SafeRender extends Component<{ children: ReactNode }, { hasError: boolean }> {
@@ -548,6 +549,7 @@ export default function App() {
   if (path === '/contact') return <Contact />
   if (path === '/about') return <About />
 
+  useCanonical('/')
   const [genre, setGenre] = useState<Genre>('all')
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [noticeOpen, setNoticeOpen] = useState(false)
