@@ -7,24 +7,24 @@ function PageHeader({ title }: { title: string }) {
     <header
       className="sticky top-0 z-20 flex items-center px-4 py-3 gap-3"
       style={{
-        background: 'rgba(9,9,15,0.92)',
+        background: 'rgba(26, 28, 48, 0.95)',
         backdropFilter: 'blur(24px)',
         WebkitBackdropFilter: 'blur(24px)',
-        borderBottom: '1px solid rgba(255,255,255,0.05)',
+        borderBottom: '2px solid rgba(255,255,255,0.07)',
       }}
     >
       <a
         href="/"
         onClick={e => { e.preventDefault(); window.location.assign('/') }}
-        className="w-9 h-9 flex items-center justify-center rounded-xl text-white/50 hover:text-white/80 transition-colors text-sm"
-        style={{ background: 'rgba(255,255,255,0.05)' }}
+        className="w-9 h-9 flex items-center justify-center rounded-2xl text-white/55 hover:text-white/85 transition-colors text-sm font-bold"
+        style={{ background: 'rgba(255,255,255,0.07)' }}
         aria-label="ホームに戻る"
       >
         ←
       </a>
       <div>
-        <p className="font-cinzel text-[8px] font-bold tracking-[0.25em] uppercase" style={{ color: '#b8922a' }}>
-          ボドゲ広場
+        <p className="font-cinzel text-[8px] font-bold tracking-[0.25em] uppercase" style={{ color: 'rgba(255,255,255,0.38)' }}>
+          ✦ ボドゲ広場
         </p>
         <h1 className="font-serif-jp font-bold text-[13px] text-white">{title}</h1>
       </div>
@@ -35,7 +35,7 @@ function PageHeader({ title }: { title: string }) {
 export default function Terms() {
   useCanonical('/terms')
   return (
-    <div className="min-h-screen" style={{ background: '#09090f', color: 'rgba(255,255,255,0.82)' }}>
+    <div className="min-h-screen" style={{ background: '#1a1c30', color: 'rgba(255,255,255,0.82)' }}>
       <PageHeader title="利用規約" />
 
       <main className="px-5 pt-8 pb-16 max-w-2xl mx-auto">
@@ -110,7 +110,7 @@ export default function Terms() {
               href="/privacy-policy"
               onClick={e => { e.preventDefault(); window.location.assign('/privacy-policy') }}
               className="underline hover:opacity-80 transition-opacity"
-              style={{ color: '#b8922a' }}
+              style={{ color: '#ffd43b' }}
             >
               プライバシーポリシー
             </a>
@@ -165,7 +165,7 @@ export default function Terms() {
               href="/contact"
               onClick={e => { e.preventDefault(); window.location.assign('/contact') }}
               className="underline hover:opacity-80 transition-opacity"
-              style={{ color: '#b8922a' }}
+              style={{ color: '#ffd43b' }}
             >
               お問い合わせページ
             </a>
@@ -182,7 +182,7 @@ function Section({ title, children, last }: { title: string; children: React.Rea
     <section className={last ? 'mb-0' : 'mb-8'}>
       <h2
         className="font-serif-jp font-bold text-[15px] mb-3 pb-2"
-        style={{ color: '#e2c97e', borderBottom: '1px solid rgba(184,146,42,0.2)' }}
+        style={{ color: '#fde68a', borderBottom: '1px solid rgba(255,212,59,0.2)' }}
       >
         {title}
       </h2>

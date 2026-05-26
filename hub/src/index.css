@@ -6,14 +6,17 @@
 
 body {
   margin: 0;
-  font-family: 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
-  background: #09090f;
+  font-family: 'M PLUS Rounded 1c', 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', sans-serif;
+  background: #1a1c30;
   -webkit-font-smoothing: antialiased;
 }
 
-.font-cinzel   { font-family: 'Cinzel', serif; }
-.font-serif-jp { font-family: 'Noto Serif JP', 'Hiragino Mincho ProN', serif; }
-.font-sans-jp  { font-family: 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', sans-serif; }
+/* Nunito for English branding / headings */
+.font-cinzel   { font-family: 'Nunito', 'M PLUS Rounded 1c', sans-serif; }
+/* M PLUS Rounded 1c for Japanese headings */
+.font-serif-jp { font-family: 'M PLUS Rounded 1c', 'Noto Sans JP', sans-serif; }
+/* M PLUS Rounded 1c for body / UI text */
+.font-sans-jp  { font-family: 'M PLUS Rounded 1c', 'Noto Sans JP', sans-serif; }
 
 @keyframes fadeSlideUp {
   from { opacity: 0; transform: translateY(12px); }
@@ -30,3 +33,27 @@ body {
 .card-enter:nth-child(5)  { animation-delay: 0.20s; }
 .card-enter:nth-child(6)  { animation-delay: 0.24s; }
 .card-enter:nth-child(7)  { animation-delay: 0.28s; }
+
+/* Play button hover lift */
+.play-btn {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.play-btn:hover {
+  transform: translateY(-3px) scale(1.04);
+}
+
+/* Sparkle twinkle animation */
+@keyframes sparkle {
+  0%, 100% { opacity: 0.5; transform: scale(0.9) rotate(0deg); }
+  50%       { opacity: 1;   transform: scale(1.2) rotate(15deg); }
+}
+.sparkle-1 { animation: sparkle 2.4s ease-in-out infinite; }
+.sparkle-2 { animation: sparkle 1.9s ease-in-out infinite 0.6s; }
+.sparkle-3 { animation: sparkle 2.8s ease-in-out infinite 1.1s; }
+
+/* Subtle float for decorative dice/card */
+@keyframes floatDeco {
+  0%, 100% { transform: translateY(0) rotate(-18deg); }
+  50%       { transform: translateY(-6px) rotate(-14deg); }
+}
+.float-deco { animation: floatDeco 4s ease-in-out infinite; }
