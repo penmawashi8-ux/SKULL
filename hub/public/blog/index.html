@@ -14,7 +14,7 @@
   <link rel="canonical" href="https://boardgamecat.com/blog/" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@700;900&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=M+PLUS+Rounded+1c:wght@400;700;800&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet" />
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -27,32 +27,32 @@
   </script>
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-    body { background: #16162a; color: #fff; font-family: 'Noto Sans JP', sans-serif; line-height: 1.8; -webkit-font-smoothing: antialiased; }
+    body { background: #1a1c30; color: #fff; font-family: 'M PLUS Rounded 1c', 'Noto Sans JP', sans-serif; line-height: 1.8; -webkit-font-smoothing: antialiased; }
     a { color: inherit; text-decoration: none; }
-    header { background: rgba(22,22,42,0.95); border-bottom: 1px solid rgba(255,255,255,0.08); padding: 14px 20px; position: sticky; top: 0; z-index: 10; backdrop-filter: blur(20px); }
+    header { background: rgba(26,28,48,0.95); border-bottom: 2px solid rgba(255,255,255,0.07); padding: 14px 20px; position: sticky; top: 0; z-index: 10; backdrop-filter: blur(20px); }
     .header-inner { max-width: 720px; margin: 0 auto; display: flex; align-items: center; gap: 12px; }
     .home-link { font-size: 12px; color: rgba(255,255,255,0.45); }
-    .home-link:hover { color: #b8922a; }
+    .home-link:hover { color: #ffd43b; }
     .sep { color: rgba(255,255,255,0.2); font-size: 12px; }
     .current { font-size: 12px; color: rgba(255,255,255,0.6); }
     .logo-wrap { text-align: center; }
-    .logo-sub { font-size: 9px; letter-spacing: 0.3em; text-transform: uppercase; color: #b8922a; display: block; }
-    .logo { font-size: 15px; font-weight: 700; color: #fff; font-family: 'Noto Serif JP', serif; }
+    .logo-sub { font-size: 9px; letter-spacing: 0.3em; text-transform: uppercase; color: #ffd43b; display: block; }
+    .logo { font-size: 15px; font-weight: 700; color: #fff; font-family: 'M PLUS Rounded 1c', sans-serif; }
     .container { max-width: 720px; margin: 0 auto; padding: 0 20px; }
     .hero { padding: 40px 20px 32px; text-align: center; max-width: 720px; margin: 0 auto; }
-    .hero-label { font-size: 9px; letter-spacing: 0.35em; text-transform: uppercase; color: #b8922a; display: block; margin-bottom: 10px; }
-    h1 { font-family: 'Noto Serif JP', serif; font-size: 24px; font-weight: 900; color: #e2c97e; margin-bottom: 12px; line-height: 1.5; }
+    .hero-label { font-size: 9px; letter-spacing: 0.35em; text-transform: uppercase; color: #ffd43b; display: block; margin-bottom: 10px; }
+    h1 { font-family: 'M PLUS Rounded 1c', sans-serif; font-size: 24px; font-weight: 900; color: #ffffff; margin-bottom: 12px; line-height: 1.5; }
     .hero-desc { font-size: 13px; color: rgba(255,255,255,0.5); }
     .divider { height: 1px; background: linear-gradient(to right, transparent, rgba(255,255,255,0.1), transparent); margin: 8px 20px 28px; }
     .articles { display: flex; flex-direction: column; gap: 16px; padding-bottom: 60px; }
-    .article-card { display: block; background: linear-gradient(135deg, #1e1b3a 0%, #1a1835 100%); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 20px; transition: border-color 0.2s, transform 0.15s; }
-    .article-card:hover { border-color: rgba(184,146,42,0.4); transform: translateY(-1px); }
-    .article-tag { font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: #b8922a; display: block; margin-bottom: 8px; }
-    .article-title { font-family: 'Noto Serif JP', serif; font-size: 16px; font-weight: 700; color: #fff; line-height: 1.5; margin-bottom: 8px; }
+    .article-card { display: block; background: linear-gradient(135deg, #1e2248 0%, #181b38 100%); border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 20px; transition: border-color 0.2s, transform 0.15s; }
+    .article-card:hover { border-color: rgba(255,212,59,0.3); transform: translateY(-1px); }
+    .article-tag { font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: #ffd43b; display: block; margin-bottom: 8px; }
+    .article-title { font-family: 'M PLUS Rounded 1c', sans-serif; font-size: 16px; font-weight: 700; color: #fff; line-height: 1.5; margin-bottom: 8px; }
     .article-desc { font-size: 12px; color: rgba(255,255,255,0.5); line-height: 1.7; }
     .article-meta { font-size: 11px; color: rgba(255,255,255,0.3); margin-top: 10px; }
-    footer { border-top: 1px solid rgba(255,255,255,0.08); padding: 32px 20px; text-align: center; }
-    .footer-logo { font-size: 11px; color: #b8922a; letter-spacing: 0.2em; margin-bottom: 10px; }
+    footer { border-top: 2px solid rgba(255,255,255,0.06); padding: 32px 20px; text-align: center; }
+    .footer-logo { font-size: 11px; color: #ffd43b; letter-spacing: 0.2em; margin-bottom: 10px; }
     .footer-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 20px; margin-bottom: 14px; }
     .footer-links a { font-size: 11px; color: rgba(255,255,255,0.4); white-space: nowrap; }
     .footer-links a:hover { color: rgba(255,255,255,0.7); }
