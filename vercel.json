@@ -12,6 +12,11 @@
       "headers": { "Cache-Control": "no-cache, no-store, must-revalidate" },
       "continue": true
     },
+    {
+      "src": "/sitemap.xml",
+      "headers": { "Content-Type": "application/xml; charset=utf-8" },
+      "continue": true
+    },
     { "handle": "filesystem" },
     { "src": "/(.*)", "dest": "/index.html" }
   ]
