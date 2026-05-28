@@ -3,6 +3,7 @@
   "outputDirectory": "dist",
   "routes": [
     { "src": "/ads.txt", "dest": "/ads.txt" },
+    { "src": "/sitemap.xml", "dest": "/sitemap.xml", "headers": { "Content-Type": "application/xml; charset=utf-8" } },
     { "handle": "filesystem" },
     { "src": "/(.*)", "dest": "/index.html" }
   ]
