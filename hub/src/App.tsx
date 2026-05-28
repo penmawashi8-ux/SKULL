@@ -19,7 +19,7 @@ class SafeRender extends Component<{ children: ReactNode }, { hasError: boolean 
 const BOMB_GAME_URL = 'https://bomb.boardgamecat.com'
 
 type GameStatus = 'available' | 'coming-soon'
-type Genre = 'all' | 'trump' | 'bluff' | 'other'
+type Genre = 'all' | 'trump' | 'bluff' | 'solo' | 'other'
 
 interface Game {
   id: string
@@ -40,6 +40,7 @@ const GENRES: { id: Genre; label: string }[] = [
   { id: 'all',   label: 'すべて' },
   { id: 'bluff', label: 'ブラフ' },
   { id: 'trump', label: 'トランプ' },
+  { id: 'solo',  label: '1人用' },
   { id: 'other', label: 'その他' },
 ]
 
@@ -47,6 +48,7 @@ const GENRE_COLORS: Record<Genre, string> = {
   all:   '#ffd43b',
   bluff: '#c084fc',
   trump: '#60a5fa',
+  solo:  '#fde68a',
   other: '#34d399',
 }
 
@@ -54,7 +56,8 @@ function matchGenre(game: Game, genre: Genre): boolean {
   if (genre === 'all') return true
   if (genre === 'bluff') return game.tags.includes('ブラフ')
   if (genre === 'trump') return game.tags.includes('トランプ')
-  return !game.tags.includes('ブラフ') && !game.tags.includes('トランプ')
+  if (genre === 'solo') return game.tags.includes('1人用')
+  return !game.tags.includes('ブラフ') && !game.tags.includes('トランプ') && !game.tags.includes('1人用')
 }
 
 const games: Game[] = [
