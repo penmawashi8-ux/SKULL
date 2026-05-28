@@ -157,6 +157,20 @@ const games: Game[] = [
     tags: ['対戦', '戦略', 'β版'],
   },
   {
+    id: 'poko-light',
+    name: 'ポコっとライト',
+    nameEn: 'POKO LIGHT',
+    symbol: 'PL',
+    description: '全部のライトを点けたらクリア！ライツオフに似たルールの完全1人用パズルゲーム。',
+    status: 'available',
+    url: 'https://poko.boardgamecat.com',
+    accentColor: '#fde68a',
+    cardBg: 'linear-gradient(135deg, #3d2900 0%, #b45309 100%)',
+    players: '1人',
+    duration: '数分〜',
+    tags: ['パズル', '1人用'],
+  },
+  {
     id: 'tbd-1',
     name: '？？？',
     nameEn: 'TBD',
@@ -367,6 +381,12 @@ function GameRow({ game }: { game: Game }) {
 }
 
 const NOTICES = [
+  {
+    id: 0,
+    date: '2026.05.28',
+    title: 'ポコっとライト 公開',
+    body: '完全1人用パズルゲーム「ポコっとライト」を公開しました。全部のライトを点けてクリアを目指せ！',
+  },
   {
     id: 1,
     date: '2026.05.22',
