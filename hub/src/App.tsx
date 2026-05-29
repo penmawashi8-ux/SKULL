@@ -164,7 +164,7 @@ const games: Game[] = [
     name: 'ポコっとライト',
     nameEn: 'POKO LIGHT',
     symbol: 'PL',
-    description: '全部のライトを点けたらクリア！ライツオフに似たルールの完全1人用パズルゲーム。',
+    description: '全部のライトを点けたらクリア！完全1人用パズルゲーム。',
     status: 'available',
     url: 'https://poko.boardgamecat.com',
     accentColor: '#fde68a',
