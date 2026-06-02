@@ -119,6 +119,11 @@ export default function handler(_req: any, res: any) {
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://boardgamecat.com/blog/poko-light-strategy.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://boardgamecat.com/blog/friends-online-boardgame.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
