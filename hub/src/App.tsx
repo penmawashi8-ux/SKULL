@@ -3,6 +3,7 @@ import PrivacyPolicy from './pages/PrivacyPolicy'
 import Terms from './pages/Terms'
 import Contact from './pages/Contact'
 import About from './pages/About'
+import Bbs from './pages/Bbs'
 import { useCanonical } from './useCanonical'
 import { Component, useState, type ReactNode } from 'react'
 
@@ -555,6 +556,7 @@ function Drawer({ open, onClose }: { open: boolean; onClose: () => void }) {
           </p>
           <div className="flex flex-col gap-1">
             {[
+              { label: '💬 掲示板', path: '/bbs' },
               { label: 'ブログ', path: '/blog/' },
               { label: '企業情報', path: '/about' },
               { label: 'プライバシーポリシー', path: '/privacy-policy' },
@@ -591,6 +593,7 @@ export default function App() {
   if (path === '/terms') return <Terms />
   if (path === '/contact') return <Contact />
   if (path === '/about') return <About />
+  if (path === '/bbs' || path.startsWith('/bbs/')) return <Bbs />
 
   useCanonical('/')
   const [genre, setGenre] = useState<Genre>('all')
@@ -788,6 +791,7 @@ export default function App() {
         </p>
         <nav className="flex flex-wrap justify-center gap-x-5 gap-y-2.5 mb-4">
           {[
+            { label: '💬 掲示板', path: '/bbs' },
             { label: 'ブログ', path: '/blog/' },
             { label: '企業情報', path: '/about' },
             { label: 'プライバシーポリシー', path: '/privacy-policy' },

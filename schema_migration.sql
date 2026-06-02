@@ -47,6 +47,71 @@ ALTER TABLE public.placed_discs
   CHECK (disc_type IN ('flower', 'bomb'));
 
 -- ============================================================
+-- BBS (掲示板) テーブル追加
+-- ============================================================
+
+-- スレッドテーブル
+CREATE TABLE IF NOT EXISTS public.bbs_threads (
+  id              uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
+  category        text        NOT NULL DEFAULT 'general',
+  title           text        NOT NULL,
+  body            text        NOT NULL,
+  author_name     text        NOT NULL DEFAULT '名無し',
+  reply_count     int         NOT NULL DEFAULT 0,
+  last_replied_at timestamptz NOT NULL DEFAULT now(),
+  created_at      timestamptz NOT NULL DEFAULT now()
+);
+
+-- 返信テーブル
+CREATE TABLE IF NOT EXISTS public.bbs_posts (
+  id          uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
+  thread_id   uuid        NOT NULL REFERENCES public.bbs_threads(id) ON DELETE CASCADE,
+  body        text        NOT NULL,
+  author_name text        NOT NULL DEFAULT '名無し',
+  created_at  timestamptz NOT NULL DEFAULT now()
+);
+
+-- RLS (匿名ユーザーも読み書き可)
+ALTER TABLE public.bbs_threads ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.bbs_posts   ENABLE ROW LEVEL SECURITY;
+
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies WHERE tablename='bbs_threads' AND policyname='bbs_threads_all'
+  ) THEN
+    CREATE POLICY "bbs_threads_all" ON public.bbs_threads FOR ALL USING (true) WITH CHECK (true);
+  END IF;
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies WHERE tablename='bbs_posts' AND policyname='bbs_posts_all'
+  ) THEN
+    CREATE POLICY "bbs_posts_all" ON public.bbs_posts FOR ALL USING (true) WITH CHECK (true);
+  END IF;
+END $$;
+
+-- 返信を挿入したらスレッドの reply_count / last_replied_at を更新するトリガー
+CREATE OR REPLACE FUNCTION public.bbs_on_post_insert()
+RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER AS $$
+BEGIN
+  UPDATE public.bbs_threads
+  SET reply_count     = reply_count + 1,
+      last_replied_at = NOW()
+  WHERE id = NEW.thread_id;
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trg_bbs_post_insert ON public.bbs_posts;
+CREATE TRIGGER trg_bbs_post_insert
+AFTER INSERT ON public.bbs_posts
+FOR EACH ROW EXECUTE FUNCTION public.bbs_on_post_insert();
+
+-- パフォーマンス用インデックス
+CREATE INDEX IF NOT EXISTS idx_bbs_threads_category_replied
+  ON public.bbs_threads (category, last_replied_at DESC);
+CREATE INDEX IF NOT EXISTS idx_bbs_posts_thread
+  ON public.bbs_posts (thread_id, created_at);
+
+-- ============================================================
 -- 確認クエリ（別で実行するとカラム一覧を確認できます）
 -- SELECT column_name, data_type FROM information_schema.columns
 --   WHERE table_schema = 'public' AND table_name = 'players'
