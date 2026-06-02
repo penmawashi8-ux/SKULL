@@ -9,6 +9,46 @@ export default function handler(_req: any, res: any) {
     <priority>1.0</priority>
   </url>
   <url>
+    <loc>https://boardgamecat.com/games/bomb</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://boardgamecat.com/games/pig-tail</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://boardgamecat.com/games/keiba</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://boardgamecat.com/games/page-one</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://boardgamecat.com/games/coup</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://boardgamecat.com/games/poko-light</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://boardgamecat.com/games/racing-board</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://boardgamecat.com/games/g-board-app</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://boardgamecat.com/privacy-policy</loc>
     <changefreq>monthly</changefreq>
     <priority>0.3</priority>
@@ -54,29 +94,34 @@ export default function handler(_req: any, res: any) {
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://bomb.boardgamecat.com/</loc>
+    <loc>https://boardgamecat.com/blog/bouryaku-online-free.html</loc>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://buta.boardgamecat.com/</loc>
+    <loc>https://boardgamecat.com/blog/virtual-keiba-guide.html</loc>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://gamekeiba.boardgamecat.com/</loc>
+    <loc>https://boardgamecat.com/blog/pigtail-strategy.html</loc>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://pageone.boardgamecat.com/</loc>
+    <loc>https://boardgamecat.com/blog/pageone-strategy.html</loc>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://bouryaku.boardgamecat.com/</loc>
+    <loc>https://boardgamecat.com/blog/bluff-game-tips.html</loc>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://boardgamecat.com/blog/friends-online-boardgame.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
   </url>
 </urlset>`);
 }
