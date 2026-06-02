@@ -3,6 +3,7 @@ import PrivacyPolicy from './pages/PrivacyPolicy'
 import Terms from './pages/Terms'
 import Contact from './pages/Contact'
 import About from './pages/About'
+import GameEmbed from './pages/GameEmbed'
 import { useCanonical } from './useCanonical'
 import { Component, useState, type ReactNode } from 'react'
 
@@ -369,12 +370,13 @@ function GameRow({ game }: { game: Game }) {
     </div>
   )
 
-  if (isAvailable && game.url) {
+  if (isAvailable) {
+    const gamePath = `/games/${game.id}`
     return (
       <a
-        href={game.url}
+        href={gamePath}
         className="block no-underline card-enter"
-        onClick={e => { e.preventDefault(); window.location.assign(game.url!) }}
+        onClick={e => { e.preventDefault(); window.location.assign(gamePath) }}
       >
         {inner}
       </a>
@@ -532,7 +534,7 @@ function Drawer({ open, onClose }: { open: boolean; onClose: () => void }) {
             {availableGames.map(g => (
               <button
                 key={g.id}
-                onClick={() => g.url && window.location.assign(g.url)}
+                onClick={() => window.location.assign(`/games/${g.id}`)}
                 className="flex items-center gap-3 px-3 py-2.5 rounded-2xl text-left transition-all duration-150 active:scale-[0.98]"
                 style={{ background: 'rgba(255,255,255,0.04)' }}
               >
@@ -591,6 +593,9 @@ export default function App() {
   if (path === '/terms') return <Terms />
   if (path === '/contact') return <Contact />
   if (path === '/about') return <About />
+
+  const gamesMatch = path.match(/^\/games\/(.+)$/)
+  if (gamesMatch) return <GameEmbed gameId={gamesMatch[1]} />
 
   useCanonical('/')
   const [genre, setGenre] = useState<Genre>('all')
