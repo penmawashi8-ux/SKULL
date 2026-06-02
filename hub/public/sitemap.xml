@@ -51,6 +51,36 @@
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://boardgamecat.com/blog/bouryaku-online-free.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://boardgamecat.com/blog/virtual-keiba-guide.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://boardgamecat.com/blog/pigtail-strategy.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://boardgamecat.com/blog/pageone-strategy.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://boardgamecat.com/blog/bluff-game-tips.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://boardgamecat.com/blog/friends-online-boardgame.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://bomb.boardgamecat.com/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
