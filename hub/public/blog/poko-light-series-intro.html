@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ポコっとライト攻略シリーズ①｜仕組みと基本ルールを理解しよう - ボドゲ広場</title>
+  <meta name="description" content="ポコっとライト攻略シリーズ第1回。タップで隣接マスが切り替わる仕組み、タップ順が関係ない理由、プラス型・クロス型・1列型のパターン、3×3〜6×6グリッドの概要を解説。" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="https://boardgamecat.com/blog/poko-light-series-intro.html" />
+  <meta property="og:title" content="ポコっとライト攻略シリーズ①｜仕組みと基本ルールを理解しよう - ボドゲ広場" />
+  <meta property="og:description" content="ポコっとライト攻略シリーズ第1回。タップで隣接マスが切り替わる仕組み、重要な2つの性質、パターン種類とグリッドサイズの概要。" />
+  <meta property="og:image" content="https://boardgamecat.com/og-image.png" />
+  <meta property="og:locale" content="ja_JP" />
+  <link rel="canonical" href="https://boardgamecat.com/blog/poko-light-series-intro.html" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=M+PLUS+Rounded+1c:wght@400;700;800&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "ポコっとライト攻略シリーズ①｜仕組みと基本ルールを理解しよう",
+    "description": "ポコっとライト攻略シリーズ第1回。タップで隣接マスが切り替わる仕組み、重要な2つの性質、パターン種類とグリッドサイズの概要。",
+    "url": "https://boardgamecat.com/blog/poko-light-series-intro.html",
+    "datePublished": "2026-06-02",
+    "dateModified": "2026-06-02",
+    "author": { "@type": "Person", "name": "ボドゲ広場 管理人", "url": "https://boardgamecat.com/about" },
+    "publisher": { "@type": "Organization", "name": "ボドゲ広場", "url": "https://boardgamecat.com" },
+    "about": { "@type": "Game", "name": "ポコっとライト", "url": "https://boardgamecat.com/games/poko-light" }
+  }
+  </script>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #1a1c30; color: #fff; font-family: 'M PLUS Rounded 1c', 'Noto Sans JP', sans-serif; line-height: 1.8; -webkit-font-smoothing: antialiased; }
+    a { color: inherit; text-decoration: none; }
+    header { background: rgba(26,28,48,0.95); border-bottom: 2px solid rgba(255,255,255,0.07); padding: 14px 20px; position: sticky; top: 0; z-index: 10; backdrop-filter: blur(20px); }
+    .header-inner { max-width: 720px; margin: 0 auto; display: flex; align-items: center; gap: 8px; }
+    .breadcrumb-link { font-size: 12px; color: rgba(255,255,255,0.45); }
+    .breadcrumb-link:hover { color: #b45309; }
+    .sep { color: rgba(255,255,255,0.2); font-size: 12px; }
+    .current-bc { font-size: 12px; color: rgba(255,255,255,0.6); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .container { max-width: 720px; margin: 0 auto; padding: 0 20px 80px; }
+    .article-header { padding: 36px 0 28px; }
+    .tag { display: inline-block; font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: #b45309; background: rgba(180,83,9,0.12); border: 1px solid rgba(180,83,9,0.35); padding: 3px 10px; border-radius: 20px; margin-bottom: 14px; }
+    h1 { font-family: 'M PLUS Rounded 1c', sans-serif; font-size: 24px; font-weight: 900; color: #ffffff; line-height: 1.55; margin-bottom: 14px; }
+    .meta { font-size: 11px; color: rgba(255,255,255,0.3); }
+    .divider { height: 1px; background: linear-gradient(to right, transparent, rgba(255,255,255,0.1), transparent); margin: 0 0 28px; }
+    .lead { font-size: 14px; color: rgba(255,255,255,0.75); background: rgba(255,255,255,0.04); border-left: 3px solid #b45309; padding: 14px 16px; border-radius: 0 8px 8px 0; margin-bottom: 32px; line-height: 1.8; }
+    h2 { font-family: 'M PLUS Rounded 1c', sans-serif; font-size: 18px; font-weight: 700; color: #fff; margin: 36px 0 12px; padding-left: 12px; border-left: 3px solid #b45309; line-height: 1.5; }
+    h3 { font-size: 15px; font-weight: 700; color: rgba(255,255,255,0.9); margin: 24px 0 8px; }
+    p { font-size: 14px; color: rgba(255,255,255,0.72); margin-bottom: 16px; line-height: 1.85; }
+    ul, ol { padding-left: 22px; margin-bottom: 16px; }
+    li { font-size: 14px; color: rgba(255,255,255,0.72); margin-bottom: 6px; line-height: 1.8; }
+    .info-box { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 18px 20px; margin: 20px 0; }
+    .info-box-title { font-size: 11px; letter-spacing: 0.15em; color: #b45309; margin-bottom: 10px; font-weight: 700; }
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .info-item { font-size: 13px; color: rgba(255,255,255,0.65); }
+    .info-item strong { color: rgba(255,255,255,0.4); display: block; font-size: 12px; font-weight: 400; margin-bottom: 2px; }
+    .tip-box { background: rgba(180,83,9,0.08); border: 1px solid rgba(180,83,9,0.25); border-radius: 14px; padding: 16px 18px; margin: 24px 0; }
+    .tip-label { font-size: 10px; letter-spacing: 0.2em; color: #fde68a; font-weight: 700; margin-bottom: 8px; }
+    .tip-box p { font-size: 13px; color: rgba(255,255,255,0.65); margin: 0; }
+    .warn-box { background: rgba(234,179,8,0.06); border: 1px solid rgba(234,179,8,0.2); border-radius: 14px; padding: 16px 18px; margin: 20px 0; }
+    .warn-label { font-size: 10px; letter-spacing: 0.2em; color: #eab308; font-weight: 700; margin-bottom: 8px; }
+    .warn-box p { font-size: 13px; color: rgba(255,255,255,0.65); margin: 0; }
+    .cta { display: block; background: linear-gradient(135deg, #b45309, #92400e); color: #fff; text-align: center; padding: 18px 24px; border-radius: 999px; font-weight: 700; font-size: 16px; margin: 36px 0 20px; box-shadow: 0 0 24px rgba(180,83,9,0.4); transition: opacity 0.2s; font-family: 'M PLUS Rounded 1c', sans-serif; }
+    .cta:hover { opacity: 0.9; }
+    .cta-sub { font-size: 11px; font-weight: 400; opacity: 0.8; display: block; margin-top: 4px; }
+    .related { margin-top: 48px; padding-top: 28px; border-top: 1px solid rgba(255,255,255,0.08); }
+    .related-title { font-size: 11px; letter-spacing: 0.2em; color: rgba(255,255,255,0.35); margin-bottom: 14px; }
+    .related-list { display: flex; flex-direction: column; gap: 10px; }
+    .related-link { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 12px 16px; font-size: 13px; color: rgba(255,255,255,0.7); transition: border-color 0.2s; }
+    .related-link:hover { border-color: rgba(180,83,9,0.3); color: #fff; }
+    .author-box { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 18px 20px; margin: 32px 0; }
+    .author-label { font-size: 9px; letter-spacing: 0.2em; color: rgba(255,255,255,0.35); font-weight: 700; margin-bottom: 6px; }
+    .author-name { font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 6px; }
+    .author-bio { font-size: 13px; color: rgba(255,255,255,0.6); line-height: 1.75; margin: 0; }
+    footer { border-top: 2px solid rgba(255,255,255,0.06); padding: 32px 20px; text-align: center; }
+    .footer-logo { font-size: 11px; color: #ffd43b; letter-spacing: 0.2em; margin-bottom: 10px; }
+    .footer-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 20px; margin-bottom: 14px; }
+    .footer-links a { font-size: 11px; color: rgba(255,255,255,0.4); white-space: nowrap; }
+    .footer-links a:hover { color: rgba(255,255,255,0.7); }
+    .footer-copy { font-size: 11px; color: rgba(255,255,255,0.25); }
+    /* パターンカード */
+    .pattern-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 20px 0 28px; }
+    .pattern-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 16px 12px; text-align: center; }
+    .pattern-name { font-size: 12px; font-weight: 700; color: #fde68a; margin-bottom: 10px; letter-spacing: 0.1em; }
+    .pattern-visual { display: grid; grid-template-columns: repeat(3, 20px); gap: 3px; justify-content: center; margin: 0 auto 10px; }
+    .cell { width: 20px; height: 20px; border-radius: 4px; }
+    .cell.on { background: #fde68a; box-shadow: 0 0 6px rgba(253,230,138,0.7); }
+    .cell.off { background: rgba(255,255,255,0.08); }
+    .cell.center { background: #f97316; box-shadow: 0 0 8px rgba(249,115,22,0.8); }
+    .pattern-desc { font-size: 11px; color: rgba(255,255,255,0.5); line-height: 1.6; }
+    /* グリッドテーブル */
+    .grid-table { width: 100%; border-collapse: collapse; margin: 16px 0 24px; font-size: 13px; }
+    .grid-table th { background: rgba(180,83,9,0.2); color: #fde68a; padding: 8px 12px; text-align: left; font-weight: 700; font-size: 11px; letter-spacing: 0.1em; }
+    .grid-table td { padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.06); color: rgba(255,255,255,0.7); vertical-align: top; }
+    .grid-table tr:last-child td { border-bottom: none; }
+    .grid-label { display: inline-block; background: rgba(180,83,9,0.2); color: #fde68a; border-radius: 6px; padding: 2px 8px; font-size: 11px; font-weight: 700; }
+    /* シリーズナビ */
+    .series-nav { background: rgba(180,83,9,0.08); border: 1px solid rgba(180,83,9,0.25); border-radius: 16px; padding: 16px 20px; margin: 24px 0; }
+    .series-nav-title { font-size: 10px; letter-spacing: 0.2em; color: #fde68a; font-weight: 700; margin-bottom: 12px; }
+    .series-nav-list { display: flex; flex-wrap: wrap; gap: 8px; }
+    .series-nav-item { font-size: 12px; color: rgba(255,255,255,0.55); background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 5px 12px; transition: border-color 0.2s, color 0.2s; }
+    .series-nav-item:hover { border-color: rgba(180,83,9,0.4); color: #fde68a; }
+    .series-nav-item.current { color: #fde68a; border-color: rgba(180,83,9,0.5); background: rgba(180,83,9,0.12); font-weight: 700; }
+    /* グリッド表示 */
+    .grid-wrap { margin: 20px 0 28px; }
+    .puzzle-row { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; margin: 16px 0; }
+    .puzzle { text-align: center; }
+    .grid { display: inline-grid; gap: 4px; }
+    .g3 { grid-template-columns: repeat(3, 34px); }
+    .g3 .c { width: 34px; height: 34px; border-radius: 7px; }
+    .c { display: flex; align-items: center; justify-content: center; }
+    .on { background: #fde68a; box-shadow: 0 0 8px rgba(253,230,138,0.65); }
+    .off { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.14); }
+    .press { background: #f97316; box-shadow: 0 0 10px rgba(249,115,22,0.75); outline: 2px solid #fb923c; }
+    .p-label { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 8px; }
+    .legend { display: flex; gap: 16px; flex-wrap: wrap; margin: 12px 0 24px; }
+    .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: rgba(255,255,255,0.55); }
+    .legend-cell { width: 18px; height: 18px; border-radius: 4px; flex-shrink: 0; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <a href="/" class="breadcrumb-link">ボドゲ広場</a>
+      <span class="sep">/</span>
+      <a href="/blog/" class="breadcrumb-link">ブログ</a>
+      <span class="sep">/</span>
+      <span class="current-bc">ポコっとライト攻略①</span>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="article-header">
+      <span class="tag">パズル・攻略</span>
+      <h1>ポコっとライト攻略シリーズ①<br>仕組みと基本ルールを理解しよう</h1>
+      <p class="meta">2026.06.02 ｜ ボドゲ広場</p>
+    </div>
+    <div class="divider"></div>
+
+    <div class="series-nav">
+      <p class="series-nav-title">SERIES · 攻略シリーズ</p>
+      <div class="series-nav-list">
+        <span class="series-nav-item current">① 仕組みと基本ルール</span>
+        <a href="/blog/poko-light-plus-3x3.html" class="series-nav-item">② プラス型 3×3</a>
+        <a href="/blog/poko-light-plus-4x4.html" class="series-nav-item">③ プラス型 4×4</a>
+        <a href="/blog/poko-light-plus-5x6.html" class="series-nav-item">④ プラス型 5×5・6×6</a>
+        <a href="/blog/poko-light-cross-row.html" class="series-nav-item">⑤ クロス型・1列型</a>
+      </div>
+    </div>
+
+    <div class="lead">
+      「ポコっとライト」はグリッド上のマスをタップして<strong>すべてのライトを点灯させたらクリア</strong>の完全1人用パズルゲームです。見た目はシンプルでも「タップすると隣接マスまで切り替わる」という仕組みが絶妙な難しさを生み出します。このシリーズでは、ルールの仕組みを正確に理解することから始めて、各グリッドサイズ・各パターンへの攻略法を段階的に解説します。
+    </div>
+
+    <div class="info-box">
+      <p class="info-box-title">ゲーム基本情報</p>
+      <div class="info-grid">
+        <div class="info-item"><strong>プレイ人数</strong>1人（ソロ専用）</div>
+        <div class="info-item"><strong>グリッドサイズ</strong>3×3 〜 6×6</div>
+        <div class="info-item"><strong>ジャンル</strong>パズル（Lights Out系）</div>
+        <div class="info-item"><strong>料金</strong>無料（登録不要）</div>
+      </div>
+    </div>
+
+    <h2>ゲームの仕組み：タップすると何が起きる？</h2>
+    <p>ポコっとライトは「ライツアウト（Lights Out）」と同じ仕組みのパズルゲームです。グリッドの各マスはON（点灯）またはOFF（消灯）の2状態を持ち、<strong>1つのマスをタップするとそのマス自身と隣接するマスが一緒に切り替わります</strong>。</p>
+
+    <p>たとえばプラス型では「上・下・左・右＋タップしたマス自身」の最大5マスが一度に切り替わります。目標は全マスをON（点灯）にすること。しかし1か所を直すと別の場所が崩れる連鎖反応が生まれるため、手当たり次第に押しても解くことはできません。</p>
+
+    <div class="grid-wrap">
+      <p style="font-size:13px;color:rgba(255,255,255,0.55);margin-bottom:8px;">中央をタップしたときの影響範囲（プラス型の例）</p>
+      <div class="puzzle-row">
+        <div class="puzzle">
+          <div class="grid g3">
+            <div class="c off"></div><div class="c off"></div><div class="c off"></div>
+            <div class="c off"></div><div class="c on"></div><div class="c off"></div>
+            <div class="c off"></div><div class="c off"></div><div class="c off"></div>
+          </div>
+          <p class="p-label">タップ前</p>
+        </div>
+        <div class="arr">→</div>
+        <div class="puzzle">
+          <div class="grid g3">
+            <div class="c off"></div><div class="c on"></div><div class="c off"></div>
+            <div class="c on"></div><div class="c press"></div><div class="c on"></div>
+            <div class="c off"></div><div class="c on"></div><div class="c off"></div>
+          </div>
+          <p class="p-label">中央タップ後（プラス型）</p>
+        </div>
+      </div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-cell" style="background:#fde68a;"></div>ON（点灯）</div>
+        <div class="legend-item"><div class="legend-cell" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.14);"></div>OFF（消灯）</div>
+        <div class="legend-item"><div class="legend-cell" style="background:#f97316;outline:2px solid #fb923c;"></div>タップしたマス</div>
+      </div>
+    </div>
+
+    <h2>重要な2つの性質</h2>
+    <p>ポコっとライトを解くうえで必ず覚えておくべき重要な性質が2つあります。この2点を知っているだけで攻略の視点が大きく変わります。</p>
+
+    <div class="tip-box">
+      <p class="tip-label">重要な性質 ①</p>
+      <p><strong>タップする順番は関係ない</strong><br>どのマスをどの順でタップしても、最終的な盤面の状態は同じです。「どこを何回タップするか」だけが結果を決めます。押す順序を気にせず、「どのマスを押すべきか」に集中しましょう。</p>
+    </div>
+
+    <div class="tip-box">
+      <p class="tip-label">重要な性質 ②</p>
+      <p><strong>同じマスを2回タップすると元に戻る</strong><br>あるマスを2回（偶数回）タップすると状態が元に戻ります。つまり各マスは「0回（押さない）か1回（押す）か」だけを考えればOK。3回押すのは1回押すのと同じです。無駄押しをなくすためにこの性質を活用しましょう。</p>
+    </div>
+
+    <p>この2つの性質から、ポコっとライトの解法は「<strong>各マスを押す／押さない</strong>という2択の組み合わせを見つける問題」として整理できます。N×Nのグリッドなら最大2<sup>N²</sup>通りを調べれば必ず答えが見つかります（もし解があれば）。</p>
+
+    <h2>パターンの種類</h2>
+    <p>ポコっとライトには複数の「切り替わりパターン」があります。タップしたときにどの範囲が切り替わるかが異なり、パターンによって攻略法が大きく変わります。</p>
+
+    <div class="pattern-grid">
+      <div class="pattern-card">
+        <p class="pattern-name">➕ プラス型</p>
+        <div class="pattern-visual">
+          <div class="cell off"></div><div class="cell on"></div><div class="cell off"></div>
+          <div class="cell on"></div><div class="cell center"></div><div class="cell on"></div>
+          <div class="cell off"></div><div class="cell on"></div><div class="cell off"></div>
+        </div>
+        <p class="pattern-desc">上下左右＋自分が切り替わる。ライツアウトの標準ルール。追いかけ法が有効。</p>
+      </div>
+      <div class="pattern-card">
+        <p class="pattern-name">✕ クロス型</p>
+        <div class="pattern-visual">
+          <div class="cell on"></div><div class="cell off"></div><div class="cell on"></div>
+          <div class="cell off"></div><div class="cell center"></div><div class="cell off"></div>
+          <div class="cell on"></div><div class="cell off"></div><div class="cell on"></div>
+        </div>
+        <p class="pattern-desc">斜め4方向＋自分が切り替わる。コーナーを手がかりにする。</p>
+      </div>
+      <div class="pattern-card">
+        <p class="pattern-name">▬ 1列型</p>
+        <div class="pattern-visual">
+          <div class="cell off"></div><div class="cell off"></div><div class="cell off"></div>
+          <div class="cell on"></div><div class="cell center"></div><div class="cell on"></div>
+          <div class="cell off"></div><div class="cell off"></div><div class="cell off"></div>
+        </div>
+        <p class="pattern-desc">同じ行全体が切り替わる（縦バリアントもあり）。行独立の考え方で解ける。</p>
+      </div>
+    </div>
+
+    <h3>プラス型</h3>
+    <p>最もスタンダードなパターンです。タップすると上・下・左・右の4マス＋自分自身の最大5マスが切り替わります。グリッドの端やコーナーでは隣接マスが少ないため影響範囲が小さくなります。シリーズ②③④でこのパターンを詳しく扱います。</p>
+
+    <h3>クロス型</h3>
+    <p>タップすると斜め4方向＋自分自身が切り替わります。プラス型と影響範囲がまったく異なるため、追いかけ法は使えません。コーナーのマスをタップすると影響範囲が1マスだけになるという特性があり、これを手がかりにします。シリーズ⑤で解説します。</p>
+
+    <h3>1列型</h3>
+    <p>タップすると同じ行全体（または列全体）が一度に切り替わります。各行が独立して動作するため、論理的には最もシンプルなパターンです。シリーズ⑤で解説します。</p>
+
+    <h2>グリッドサイズの概要</h2>
+    <p>ポコっとライトでは3×3から6×6まで複数のグリッドサイズが用意されています。小さいほど試行錯誤でも解けますが、大きくなるほど手数が増えてミスが命取りになります。</p>
+
+    <table class="grid-table">
+      <thead>
+        <tr>
+          <th>サイズ</th>
+          <th>マス数</th>
+          <th>難易度の目安</th>
+          <th>主な特徴</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="grid-label">3×3</span></td>
+          <td>9マス</td>
+          <td>★☆☆</td>
+          <td>追いかけ法の練習に最適。最悪4通りのシードを試せば解ける。</td>
+        </tr>
+        <tr>
+          <td><span class="grid-label">4×4</span></td>
+          <td>16マス</td>
+          <td>★★☆</td>
+          <td>追いかけ法が安定して有効。最終行の補正に慣れると安定クリア。</td>
+        </tr>
+        <tr>
+          <td><span class="grid-label">5×5</span></td>
+          <td>25マス</td>
+          <td>★★★</td>
+          <td>標準的なライツアウトサイズ。解なし配置が存在することもある。</td>
+        </tr>
+        <tr>
+          <td><span class="grid-label">6×6</span></td>
+          <td>36マス</td>
+          <td>★★★</td>
+          <td>手数が増えミスに注意。1行ずつ確実に進める集中力が求められる。</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>このシリーズの学習ロードマップ</h2>
+    <p>攻略シリーズは以下の順で読み進めることを推奨します。プラス型・3×3から始めて少しずつ難易度を上げていくのが最も効率的な上達ルートです。</p>
+
+    <ol>
+      <li><strong>シリーズ①（本記事）</strong>：仕組みと基本ルール、重要な2つの性質を理解する</li>
+      <li><strong>シリーズ②</strong>：プラス型 3×3 で追いかけ法とシード押しを習得する</li>
+      <li><strong>シリーズ③</strong>：プラス型 4×4 で追いかけ法をより大きいグリッドに適用する</li>
+      <li><strong>シリーズ④</strong>：プラス型 5×5・6×6 で大型グリッドの注意点を学ぶ</li>
+      <li><strong>シリーズ⑤</strong>：クロス型・1列型の独自の解き方を習得する</li>
+    </ol>
+
+    <div class="warn-box">
+      <p class="warn-label">解なしパターンについて</p>
+      <p>ライツアウト系パズルにはそもそも解けない初期配置（解なしパターン）が存在する場合があります。何度試してもクリアできないときはリセットして新しい配置に変えることも立派な戦略です。</p>
+    </div>
+
+    <a href="/games/poko-light" class="cta">
+      ポコっとライトを今すぐ遊ぶ →
+      <span class="cta-sub">登録不要・ブラウザで即プレイ</span>
+    </a>
+
+    <div class="series-nav">
+      <p class="series-nav-title">SERIES · 攻略シリーズ</p>
+      <div class="series-nav-list">
+        <span class="series-nav-item current">① 仕組みと基本ルール</span>
+        <a href="/blog/poko-light-plus-3x3.html" class="series-nav-item">② プラス型 3×3</a>
+        <a href="/blog/poko-light-plus-4x4.html" class="series-nav-item">③ プラス型 4×4</a>
+        <a href="/blog/poko-light-plus-5x6.html" class="series-nav-item">④ プラス型 5×5・6×6</a>
+        <a href="/blog/poko-light-cross-row.html" class="series-nav-item">⑤ クロス型・1列型</a>
+      </div>
+    </div>
+
+    <div class="author-box">
+      <p class="author-label">AUTHOR</p>
+      <p class="author-name">ボドゲ広場 管理人</p>
+      <p class="author-bio">ボードゲーム歴10年以上の個人開発者。ブラウザで誰でも気軽に遊べるゲームを作りたくてボドゲ広場を開設。BOMB・謀略など複数のゲームを自社開発・運営中。</p>
+    </div>
+
+    <div class="related">
+      <p class="related-title">関連記事</p>
+      <div class="related-list">
+        <a href="/blog/poko-light-plus-3x3.html" class="related-link">ポコっとライト攻略シリーズ②｜プラス型 3×3 の解き方【追いかけ法入門】</a>
+        <a href="/blog/poko-light-plus-4x4.html" class="related-link">ポコっとライト攻略シリーズ③｜プラス型 4×4 の解き方【追いかけ法】</a>
+        <a href="/blog/poko-light-strategy.html" class="related-link">ポコっとライト攻略ガイド｜全消し（全点灯）を狙う基本戦術</a>
+        <a href="/blog/free-online-boardgames.html" class="related-link">無料で遊べるオンラインボードゲームおすすめ5選【ブラウザ完結・登録不要】</a>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p class="footer-logo">ボドゲ広場</p>
+    <div class="footer-links">
+      <a href="/">トップ</a>
+      <a href="/blog/">ブログ</a>
+      <a href="/about">企業情報</a>
+      <a href="/privacy-policy">プライバシーポリシー</a>
+      <a href="/terms">利用規約</a>
+      <a href="/contact">お問い合わせ</a>
+    </div>
+    <p class="footer-copy">© 2026 ボドゲ広場</p>
+  </footer>
+</body>
+</html>

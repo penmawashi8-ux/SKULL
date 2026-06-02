@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ポコっとライト攻略シリーズ②｜プラス型 3×3 の解き方【追いかけ法入門】 - ボドゲ広場</title>
+  <meta name="description" content="ポコっとライト攻略シリーズ第2回。プラス型3×3グリッドの解き方を詳しく解説。追いかけ法の基本手順、最終行が解けない場合のシード押し、具体的なグリッド図解付きで初心者でも分かりやすく説明。" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="https://boardgamecat.com/blog/poko-light-plus-3x3.html" />
+  <meta property="og:title" content="ポコっとライト攻略シリーズ②｜プラス型 3×3 の解き方【追いかけ法入門】 - ボドゲ広場" />
+  <meta property="og:description" content="プラス型3×3の追いかけ法を具体的なグリッド例で解説。シード押しも詳しく説明。" />
+  <meta property="og:image" content="https://boardgamecat.com/og-image.png" />
+  <meta property="og:locale" content="ja_JP" />
+  <link rel="canonical" href="https://boardgamecat.com/blog/poko-light-plus-3x3.html" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=M+PLUS+Rounded+1c:wght@400;700;800&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "ポコっとライト攻略シリーズ②｜プラス型 3×3 の解き方【追いかけ法入門】",
+    "description": "プラス型3×3の追いかけ法を具体的なグリッド例で解説。シード押しも詳しく説明。",
+    "url": "https://boardgamecat.com/blog/poko-light-plus-3x3.html",
+    "datePublished": "2026-06-02",
+    "dateModified": "2026-06-02",
+    "author": { "@type": "Person", "name": "ボドゲ広場 管理人", "url": "https://boardgamecat.com/about" },
+    "publisher": { "@type": "Organization", "name": "ボドゲ広場", "url": "https://boardgamecat.com" },
+    "about": { "@type": "Game", "name": "ポコっとライト", "url": "https://boardgamecat.com/games/poko-light" }
+  }
+  </script>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #1a1c30; color: #fff; font-family: 'M PLUS Rounded 1c', 'Noto Sans JP', sans-serif; line-height: 1.8; -webkit-font-smoothing: antialiased; }
+    a { color: inherit; text-decoration: none; }
+    header { background: rgba(26,28,48,0.95); border-bottom: 2px solid rgba(255,255,255,0.07); padding: 14px 20px; position: sticky; top: 0; z-index: 10; backdrop-filter: blur(20px); }
+    .header-inner { max-width: 720px; margin: 0 auto; display: flex; align-items: center; gap: 8px; }
+    .breadcrumb-link { font-size: 12px; color: rgba(255,255,255,0.45); }
+    .breadcrumb-link:hover { color: #b45309; }
+    .sep { color: rgba(255,255,255,0.2); font-size: 12px; }
+    .current-bc { font-size: 12px; color: rgba(255,255,255,0.6); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .container { max-width: 720px; margin: 0 auto; padding: 0 20px 80px; }
+    .article-header { padding: 36px 0 28px; }
+    .tag { display: inline-block; font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: #b45309; background: rgba(180,83,9,0.12); border: 1px solid rgba(180,83,9,0.35); padding: 3px 10px; border-radius: 20px; margin-bottom: 14px; }
+    h1 { font-family: 'M PLUS Rounded 1c', sans-serif; font-size: 24px; font-weight: 900; color: #ffffff; line-height: 1.55; margin-bottom: 14px; }
+    .meta { font-size: 11px; color: rgba(255,255,255,0.3); }
+    .divider { height: 1px; background: linear-gradient(to right, transparent, rgba(255,255,255,0.1), transparent); margin: 0 0 28px; }
+    .lead { font-size: 14px; color: rgba(255,255,255,0.75); background: rgba(255,255,255,0.04); border-left: 3px solid #b45309; padding: 14px 16px; border-radius: 0 8px 8px 0; margin-bottom: 32px; line-height: 1.8; }
+    h2 { font-family: 'M PLUS Rounded 1c', sans-serif; font-size: 18px; font-weight: 700; color: #fff; margin: 36px 0 12px; padding-left: 12px; border-left: 3px solid #b45309; line-height: 1.5; }
+    h3 { font-size: 15px; font-weight: 700; color: rgba(255,255,255,0.9); margin: 24px 0 8px; }
+    p { font-size: 14px; color: rgba(255,255,255,0.72); margin-bottom: 16px; line-height: 1.85; }
+    ul, ol { padding-left: 22px; margin-bottom: 16px; }
+    li { font-size: 14px; color: rgba(255,255,255,0.72); margin-bottom: 6px; line-height: 1.8; }
+    .info-box { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 18px 20px; margin: 20px 0; }
+    .info-box-title { font-size: 11px; letter-spacing: 0.15em; color: #b45309; margin-bottom: 10px; font-weight: 700; }
+    .step { background: linear-gradient(135deg, #2a1a05 0%, #3d2300 100%); border: 1px solid rgba(180,83,9,0.25); border-radius: 14px; padding: 16px 18px; margin-bottom: 12px; display: flex; gap: 14px; align-items: flex-start; }
+    .step-num { background: #b45309; color: #fff; font-size: 12px; font-weight: 700; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
+    .step-body { font-size: 14px; color: rgba(255,255,255,0.75); line-height: 1.75; }
+    .step-body strong { color: #fff; }
+    .tip-box { background: rgba(180,83,9,0.08); border: 1px solid rgba(180,83,9,0.25); border-radius: 14px; padding: 16px 18px; margin: 24px 0; }
+    .tip-label { font-size: 10px; letter-spacing: 0.2em; color: #fde68a; font-weight: 700; margin-bottom: 8px; }
+    .tip-box p { font-size: 13px; color: rgba(255,255,255,0.65); margin: 0; }
+    .warn-box { background: rgba(234,179,8,0.06); border: 1px solid rgba(234,179,8,0.2); border-radius: 14px; padding: 16px 18px; margin: 20px 0; }
+    .warn-label { font-size: 10px; letter-spacing: 0.2em; color: #eab308; font-weight: 700; margin-bottom: 8px; }
+    .warn-box p { font-size: 13px; color: rgba(255,255,255,0.65); margin: 0; }
+    .cta { display: block; background: linear-gradient(135deg, #b45309, #92400e); color: #fff; text-align: center; padding: 18px 24px; border-radius: 999px; font-weight: 700; font-size: 16px; margin: 36px 0 20px; box-shadow: 0 0 24px rgba(180,83,9,0.4); transition: opacity 0.2s; font-family: 'M PLUS Rounded 1c', sans-serif; }
+    .cta:hover { opacity: 0.9; }
+    .cta-sub { font-size: 11px; font-weight: 400; opacity: 0.8; display: block; margin-top: 4px; }
+    .related { margin-top: 48px; padding-top: 28px; border-top: 1px solid rgba(255,255,255,0.08); }
+    .related-title { font-size: 11px; letter-spacing: 0.2em; color: rgba(255,255,255,0.35); margin-bottom: 14px; }
+    .related-list { display: flex; flex-direction: column; gap: 10px; }
+    .related-link { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 12px 16px; font-size: 13px; color: rgba(255,255,255,0.7); transition: border-color 0.2s; }
+    .related-link:hover { border-color: rgba(180,83,9,0.3); color: #fff; }
+    .author-box { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 18px 20px; margin: 32px 0; }
+    .author-label { font-size: 9px; letter-spacing: 0.2em; color: rgba(255,255,255,0.35); font-weight: 700; margin-bottom: 6px; }
+    .author-name { font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 6px; }
+    .author-bio { font-size: 13px; color: rgba(255,255,255,0.6); line-height: 1.75; margin: 0; }
+    footer { border-top: 2px solid rgba(255,255,255,0.06); padding: 32px 20px; text-align: center; }
+    .footer-logo { font-size: 11px; color: #ffd43b; letter-spacing: 0.2em; margin-bottom: 10px; }
+    .footer-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 20px; margin-bottom: 14px; }
+    .footer-links a { font-size: 11px; color: rgba(255,255,255,0.4); white-space: nowrap; }
+    .footer-links a:hover { color: rgba(255,255,255,0.7); }
+    .footer-copy { font-size: 11px; color: rgba(255,255,255,0.25); }
+    /* シリーズナビ */
+    .series-nav { background: rgba(180,83,9,0.08); border: 1px solid rgba(180,83,9,0.25); border-radius: 16px; padding: 16px 20px; margin: 24px 0; }
+    .series-nav-title { font-size: 10px; letter-spacing: 0.2em; color: #fde68a; font-weight: 700; margin-bottom: 12px; }
+    .series-nav-list { display: flex; flex-wrap: wrap; gap: 8px; }
+    .series-nav-item { font-size: 12px; color: rgba(255,255,255,0.55); background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 5px 12px; transition: border-color 0.2s, color 0.2s; }
+    .series-nav-item:hover { border-color: rgba(180,83,9,0.4); color: #fde68a; }
+    .series-nav-item.current { color: #fde68a; border-color: rgba(180,83,9,0.5); background: rgba(180,83,9,0.12); font-weight: 700; }
+    /* グリッド */
+    .grid-wrap { margin: 20px 0 28px; }
+    .section-label { font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.7); margin-bottom: 12px; }
+    .puzzle-row { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; margin: 16px 0; }
+    .puzzle { text-align: center; }
+    .grid { display: inline-grid; gap: 4px; }
+    .g3 { grid-template-columns: repeat(3, 34px); }
+    .g3 .c { width: 34px; height: 34px; border-radius: 7px; }
+    .c { display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; }
+    .on { background: #fde68a; box-shadow: 0 0 8px rgba(253,230,138,0.65); color: rgba(0,0,0,0.4); }
+    .off { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.14); color: rgba(255,255,255,0.3); }
+    .press { background: #f97316; box-shadow: 0 0 10px rgba(249,115,22,0.75); outline: 2px solid #fb923c; color: #fff; }
+    .p-label { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 8px; }
+    .arr { font-size: 20px; color: rgba(255,255,255,0.25); align-self: center; padding-top: 4px; }
+    .legend { display: flex; gap: 16px; flex-wrap: wrap; margin: 12px 0 24px; }
+    .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: rgba(255,255,255,0.55); }
+    .legend-cell { width: 18px; height: 18px; border-radius: 4px; flex-shrink: 0; }
+    /* 解説ブロック */
+    .chase-block { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 16px 18px; margin: 16px 0 20px; }
+    .chase-block-title { font-size: 11px; font-weight: 700; color: #fde68a; letter-spacing: 0.15em; margin-bottom: 12px; }
+    .chase-note { font-size: 13px; color: rgba(255,255,255,0.6); line-height: 1.75; }
+    /* 成功バナー */
+    .success-banner { background: linear-gradient(135deg, rgba(253,230,138,0.12), rgba(180,83,9,0.12)); border: 1px solid rgba(253,230,138,0.3); border-radius: 14px; padding: 16px 18px; margin: 20px 0; text-align: center; }
+    .success-banner p { font-size: 14px; font-weight: 700; color: #fde68a; margin: 0; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <a href="/" class="breadcrumb-link">ボドゲ広場</a>
+      <span class="sep">/</span>
+      <a href="/blog/" class="breadcrumb-link">ブログ</a>
+      <span class="sep">/</span>
+      <span class="current-bc">ポコっとライト攻略② 3×3</span>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="article-header">
+      <span class="tag">パズル・攻略</span>
+      <h1>ポコっとライト攻略シリーズ②<br>プラス型 3×3 の解き方【追いかけ法入門】</h1>
+      <p class="meta">2026.06.02 ｜ ボドゲ広場</p>
+    </div>
+    <div class="divider"></div>
+
+    <div class="series-nav">
+      <p class="series-nav-title">SERIES · 攻略シリーズ</p>
+      <div class="series-nav-list">
+        <a href="/blog/poko-light-series-intro.html" class="series-nav-item">① 仕組みと基本ルール</a>
+        <span class="series-nav-item current">② プラス型 3×3</span>
+        <a href="/blog/poko-light-plus-4x4.html" class="series-nav-item">③ プラス型 4×4</a>
+        <a href="/blog/poko-light-plus-5x6.html" class="series-nav-item">④ プラス型 5×5・6×6</a>
+        <a href="/blog/poko-light-cross-row.html" class="series-nav-item">⑤ クロス型・1列型</a>
+      </div>
+    </div>
+
+    <div class="lead">
+      攻略シリーズ第2回は<strong>プラス型 3×3</strong>グリッドです。プラス型とは「タップすると上下左右＋自分自身が切り替わる」標準ルール。ここでは最も重要な攻略テクニック「<strong>追いかけ法</strong>」を具体的な手順とグリッド図解で解説します。シリーズ③以降の大型グリッドもこの法則の応用なので、3×3でしっかり感覚をつかみましょう。
+    </div>
+
+    <h2>プラス型のルール確認</h2>
+    <p>プラス型ではタップしたマスを中心に、<strong>上・下・左・右の隣接マス＋自分自身</strong>が一度に切り替わります。グリッドの端にあるマスは隣接マスの数が少なくなります（角は2マス、辺の中央は3マス）。</p>
+
+    <div class="grid-wrap">
+      <div class="legend">
+        <div class="legend-item"><div class="legend-cell" style="background:#fde68a;"></div>ON（点灯）</div>
+        <div class="legend-item"><div class="legend-cell" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.14);"></div>OFF（消灯）</div>
+        <div class="legend-item"><div class="legend-cell" style="background:#f97316;outline:2px solid #fb923c;"></div>タップするマス</div>
+      </div>
+    </div>
+
+    <h2>追いかけ法とは？</h2>
+    <p>追いかけ法は「<strong>上の行にOFFが残っているとき、その真下のマスをタップして直す</strong>」を1行目から最終行の1つ手前まで繰り返す攻略法です。</p>
+
+    <p>プラス型では上下のマスも一緒に切り替わるため、「2行目のマスをタップすると1行目も変わる」という性質を利用します。1行目のOFFマスの真下（2行目）をタップすれば、1行目がONになります。</p>
+
+    <div class="step">
+      <span class="step-num">1</span>
+      <span class="step-body"><strong>1行目を見る</strong>：1行目にOFFマスがあったら、そのマスの<strong>真下（2行目）をタップ</strong>します。1行目に複数のOFFマスがあれば、それぞれの真下を順にタップ。これで1行目が全ONになります。</span>
+    </div>
+    <div class="step">
+      <span class="step-num">2</span>
+      <span class="step-body"><strong>2行目を見る</strong>：1行目が全ONになったら、次は2行目を見て同じことをします。2行目のOFFマスの<strong>真下（3行目）をタップ</strong>して2行目を全ONにします。</span>
+    </div>
+    <div class="step">
+      <span class="step-num">3</span>
+      <span class="step-body"><strong>最終行を確認</strong>：3×3の場合、3行目が最終行です。追いかけが終わった時点で<strong>3行目がすべてONならクリア</strong>です。</span>
+    </div>
+    <div class="step">
+      <span class="step-num">4</span>
+      <span class="step-body"><strong>最終行が解けない場合</strong>：3行目にOFFが残った場合、1行目の特定マスを先に押す「<strong>シード押し</strong>」を試します（後述）。</span>
+    </div>
+
+    <h2>具体例：実際に追いかけ法を使ってみる</h2>
+    <p>次の初期状態を例に、追いかけ法の手順をステップごとに図解します。</p>
+
+    <div class="grid-wrap">
+      <p class="section-label">初期状態</p>
+      <div class="puzzle-row">
+        <div class="puzzle">
+          <div class="grid g3">
+            <div class="c off"></div><div class="c off"></div><div class="c on"></div>
+            <div class="c off"></div><div class="c on"></div><div class="c off"></div>
+            <div class="c on"></div><div class="c off"></div><div class="c off"></div>
+          </div>
+          <p class="p-label">OFF OFF ON<br>OFF ON OFF<br>ON OFF OFF</p>
+        </div>
+      </div>
+
+      <div class="chase-block">
+        <p class="chase-block-title">STEP 1 — 1行目のOFF を直す（2行目を操作）</p>
+        <p class="chase-note">1行目は「OFF OFF ON」。OFFは列1・列2。<br>→ 2行目の列1をタップ、2行目の列2をタップして1行目を全ONにします。</p>
+      </div>
+
+      <div class="puzzle-row">
+        <div class="puzzle">
+          <div class="grid g3">
+            <div class="c off"></div><div class="c off"></div><div class="c on"></div>
+            <div class="c off"></div><div class="c on"></div><div class="c off"></div>
+            <div class="c on"></div><div class="c off"></div><div class="c off"></div>
+          </div>
+          <p class="p-label">初期状態</p>
+        </div>
+        <div class="arr">→</div>
+        <div class="puzzle">
+          <div class="grid g3">
+            <div class="c on"></div><div class="c off"></div><div class="c on"></div>
+            <div class="c press"></div><div class="c on"></div><div class="c off"></div>
+            <div class="c on"></div><div class="c off"></div><div class="c off"></div>
+          </div>
+          <p class="p-label">2行目の列1をタップ</p>
+        </div>
+        <div class="arr">→</div>
+        <div class="puzzle">
+          <div class="grid g3">
+            <div class="c on"></div><div class="c on"></div><div class="c on"></div>
+            <div class="c on"></div><div class="c off"></div><div class="c off"></div>
+            <div class="c on"></div><div class="c off"></div><div class="c off"></div>
+          </div>
+          <p class="p-label">2行目の列2をタップ<br>→1行目が全ON</p>
+        </div>
+      </div>
+
+      <div class="chase-block">
+        <p class="chase-block-title">STEP 2 — 2行目のOFF を直す（3行目を操作）</p>
+        <p class="chase-note">2行目は「ON OFF OFF」。OFFは列2・列3。<br>→ 3行目の列2をタップ、3行目の列3をタップして2行目を全ONにします。</p>
+      </div>
+
+      <div class="puzzle-row">
+        <div class="puzzle">
+          <div class="grid g3">
+            <div class="c on"></div><div class="c on"></div><div class="c on"></div>
+            <div class="c on"></div><div class="c off"></div><div class="c off"></div>
+            <div class="c on"></div><div class="c off"></div><div class="c off"></div>
+          </div>
+          <p class="p-label">1行目全ON後</p>
+        </div>
+        <div class="arr">→</div>
+        <div class="puzzle">
+          <div class="grid g3">
+            <div class="c on"></div><div class="c on"></div><div class="c on"></div>
+            <div class="c on"></div><div class="c on"></div><div class="c off"></div>
+            <div class="c on"></div><div class="c press"></div><div class="c off"></div>
+          </div>
+          <p class="p-label">3行目の列2をタップ</p>
+        </div>
+        <div class="arr">→</div>
+        <div class="puzzle">
+          <div class="grid g3">
+            <div class="c on"></div><div class="c on"></div><div class="c on"></div>
+            <div class="c on"></div><div class="c on"></div><div class="c on"></div>
+            <div class="c on"></div><div class="c on"></div><div class="c press"></div>
+          </div>
+          <p class="p-label">3行目の列3をタップ<br>→2行目が全ON</p>
+        </div>
+      </div>
+
+      <div class="chase-block">
+        <p class="chase-block-title">STEP 3 — 最終行（3行目）を確認</p>
+        <p class="chase-note">3行目の状態は「ON ON ON」→ すべてON！</p>
+      </div>
+
+      <div class="warn-box">
+        <p class="warn-label">このケースは？</p>
+        <p>上記の手順では最終行が「ON OFF OFF」になる場合があります（初期状態や操作によって異なります）。その場合は次のシード押しを使います。</p>
+      </div>
+    </div>
+
+    <h2>最終行が解けない場合：シード押し</h2>
+    <p>追いかけ法を正しく行っても最終行にOFFが残ることがあります。これは初期配置によって「シードなしでは解けない」ケースが存在するためです。</p>
+
+    <p><strong>シード押し</strong>とは、追いかけを始める前に1行目の特定マスをあらかじめタップしておく操作です。1行目の状態が変わることで、追いかけ法の結果（最終行の状態）が変わります。</p>
+
+    <div class="grid-wrap">
+      <p class="section-label">シード押し例：(1,1)を最初にタップしてから追いかけ</p>
+
+      <div class="puzzle-row">
+        <div class="puzzle">
+          <div class="grid g3">
+            <div class="c off"></div><div class="c off"></div><div class="c on"></div>
+            <div class="c off"></div><div class="c on"></div><div class="c off"></div>
+            <div class="c on"></div><div class="c off"></div><div class="c off"></div>
+          </div>
+          <p class="p-label">初期状態</p>
+        </div>
+        <div class="arr">→</div>
+        <div class="puzzle">
+          <div class="grid g3">
+            <div class="c press"></div><div class="c on"></div><div class="c on"></div>
+            <div class="c on"></div><div class="c on"></div><div class="c off"></div>
+            <div class="c on"></div><div class="c off"></div><div class="c off"></div>
+          </div>
+          <p class="p-label">シード：(1,1)をタップ</p>
+        </div>
+        <div class="arr">→</div>
+        <div class="puzzle">
+          <div class="grid g3">
+            <div class="c on"></div><div class="c on"></div><div class="c on"></div>
+            <div class="c on"></div><div class="c on"></div><div class="c on"></div>
+            <div class="c on"></div><div class="c on"></div><div class="c on"></div>
+          </div>
+          <p class="p-label">追いかけ法を適用<br>→ 全点灯クリア！</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="success-banner">
+      <p>全点灯クリア達成！シード(1,1)＋追いかけ法で解けました</p>
+    </div>
+
+    <h3>3×3のシードは最大4通り</h3>
+    <p>3×3プラス型では、1行目は3マスです。各マスを「押す／押さない」の組み合わせは <strong>2³ = 8通り</strong>ですが、実際には対称性から <strong>4通り</strong> 試せば十分なことがほとんどです。</p>
+
+    <ul>
+      <li>シードなし（そのまま追いかけ）</li>
+      <li>(1,1) だけ先に押す</li>
+      <li>(1,2) だけ先に押す</li>
+      <li>(1,3) だけ先に押す</li>
+    </ul>
+
+    <p>この4通りを試して最終行が全ONになるものを選べばクリアできます。3×3は小さいグリッドなので、すべてを試しても数十秒で終わります。</p>
+
+    <div class="tip-box">
+      <p class="tip-label">追いかけ法のコツ</p>
+      <p>「今の行にOFFがあれば、その真下を押す」だけを繰り返せばOK。複数のOFFが1行にある場合、左から順に真下を押していきます。焦らず1マスずつ確認しながら進めましょう。</p>
+    </div>
+
+    <h2>3×3プラス型の攻略まとめ</h2>
+    <ol>
+      <li>追いかけ法：1行目のOFFの真下（2行目）を押し、次は2行目のOFFの真下（3行目）を押す</li>
+      <li>最終行（3行目）が全ONならクリア</li>
+      <li>最終行にOFFが残ったら、リセットしてシードを変えて再挑戦</li>
+      <li>シードは最大4通り試せば必ず解が見つかる（解ありの配置なら）</li>
+    </ol>
+
+    <div class="warn-box">
+      <p class="warn-label">解なし配置に注意</p>
+      <p>4通り試してもクリアできない場合、その配置は解なし（そもそもクリア不可能）の可能性があります。その場合はリセットして新しい配置に切り替えましょう。</p>
+    </div>
+
+    <a href="/games/poko-light" class="cta">
+      ポコっとライトを今すぐ遊ぶ →
+      <span class="cta-sub">登録不要・ブラウザで即プレイ</span>
+    </a>
+
+    <div class="series-nav">
+      <p class="series-nav-title">SERIES · 攻略シリーズ</p>
+      <div class="series-nav-list">
+        <a href="/blog/poko-light-series-intro.html" class="series-nav-item">① 仕組みと基本ルール</a>
+        <span class="series-nav-item current">② プラス型 3×3</span>
+        <a href="/blog/poko-light-plus-4x4.html" class="series-nav-item">③ プラス型 4×4</a>
+        <a href="/blog/poko-light-plus-5x6.html" class="series-nav-item">④ プラス型 5×5・6×6</a>
+        <a href="/blog/poko-light-cross-row.html" class="series-nav-item">⑤ クロス型・1列型</a>
+      </div>
+    </div>
+
+    <div class="author-box">
+      <p class="author-label">AUTHOR</p>
+      <p class="author-name">ボドゲ広場 管理人</p>
+      <p class="author-bio">ボードゲーム歴10年以上の個人開発者。ブラウザで誰でも気軽に遊べるゲームを作りたくてボドゲ広場を開設。BOMB・謀略など複数のゲームを自社開発・運営中。</p>
+    </div>
+
+    <div class="related">
+      <p class="related-title">関連記事</p>
+      <div class="related-list">
+        <a href="/blog/poko-light-series-intro.html" class="related-link">ポコっとライト攻略シリーズ①｜仕組みと基本ルールを理解しよう</a>
+        <a href="/blog/poko-light-plus-4x4.html" class="related-link">ポコっとライト攻略シリーズ③｜プラス型 4×4 の解き方【追いかけ法】</a>
+        <a href="/blog/poko-light-plus-5x6.html" class="related-link">ポコっとライト攻略シリーズ④｜プラス型 5×5・6×6 の解き方【大型グリッド攻略】</a>
+        <a href="/blog/poko-light-strategy.html" class="related-link">ポコっとライト攻略ガイド｜全消し（全点灯）を狙う基本戦術</a>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p class="footer-logo">ボドゲ広場</p>
+    <div class="footer-links">
+      <a href="/">トップ</a>
+      <a href="/blog/">ブログ</a>
+      <a href="/about">企業情報</a>
+      <a href="/privacy-policy">プライバシーポリシー</a>
+      <a href="/terms">利用規約</a>
+      <a href="/contact">お問い合わせ</a>
+    </div>
+    <p class="footer-copy">© 2026 ボドゲ広場</p>
+  </footer>
+</body>
+</html>

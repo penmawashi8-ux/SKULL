@@ -124,6 +124,31 @@ export default function handler(_req: any, res: any) {
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://boardgamecat.com/blog/poko-light-series-intro.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://boardgamecat.com/blog/poko-light-plus-3x3.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://boardgamecat.com/blog/poko-light-plus-4x4.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://boardgamecat.com/blog/poko-light-plus-5x6.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://boardgamecat.com/blog/poko-light-cross-row.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://boardgamecat.com/blog/friends-online-boardgame.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
