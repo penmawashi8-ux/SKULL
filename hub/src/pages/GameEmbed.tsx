@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useCanonical } from '../useCanonical'
 
 const GAME_EMBED: Record<string, { name: string; url: string }> = {
@@ -16,9 +16,21 @@ export default function GameEmbed({ gameId }: { gameId: string }) {
   const game = GAME_EMBED[gameId]
   useCanonical(`/games/${gameId}`)
 
+  const [visible, setVisible] = useState(true)
+
+  const show = useCallback(() => {
+    setVisible(true)
+  }, [])
+
   useEffect(() => {
     if (game) document.title = `${game.name} | ボドゲ広場`
   }, [game])
+
+  useEffect(() => {
+    if (!visible) return
+    const t = setTimeout(() => setVisible(false), 3000)
+    return () => clearTimeout(t)
+  }, [visible])
 
   if (!game) {
     window.location.assign('/')
@@ -27,36 +39,57 @@ export default function GameEmbed({ gameId }: { gameId: string }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh', background: '#1a1c30' }}>
-      <header style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '12px',
-        padding: '10px 16px',
-        background: 'rgba(26,28,48,0.98)',
-        borderBottom: '1px solid rgba(255,255,255,0.08)',
-        flexShrink: 0,
-      }}>
+      {/* タップ感知エリア（ヘッダー非表示中も上部をタップで再表示） */}
+      {!visible && (
+        <div
+          onClick={show}
+          style={{ position: 'fixed', top: 0, left: 0, right: 0, height: '32px', zIndex: 50 }}
+        />
+      )}
+
+      <header
+        onClick={show}
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 40,
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          padding: '6px 12px',
+          background: 'rgba(26,28,48,0.92)',
+          borderBottom: '1px solid rgba(255,255,255,0.08)',
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)',
+          opacity: visible ? 1 : 0,
+          pointerEvents: visible ? 'auto' : 'none',
+          transition: 'opacity 0.4s ease',
+        }}
+      >
         <button
-          onClick={() => window.location.assign('/')}
+          onClick={e => { e.stopPropagation(); window.location.assign('/') }}
           style={{
             color: 'rgba(255,255,255,0.6)',
             background: 'rgba(255,255,255,0.08)',
             border: 'none',
-            borderRadius: '8px',
-            padding: '6px 12px',
+            borderRadius: '6px',
+            padding: '4px 10px',
             cursor: 'pointer',
-            fontSize: '13px',
+            fontSize: '12px',
           }}
         >
           ← 戻る
         </button>
-        <span style={{ color: 'white', fontWeight: 'bold', fontSize: '15px', flex: 1 }}>
+        <span style={{ color: 'white', fontWeight: 'bold', fontSize: '13px', flex: 1 }}>
           {game.name}
         </span>
-        <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: '11px' }}>
+        <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: '10px' }}>
           ボドゲ広場
         </span>
       </header>
+
       <iframe
         src={game.url}
         title={game.name}
