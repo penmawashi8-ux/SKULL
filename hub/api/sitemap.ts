@@ -139,9 +139,19 @@ export default function handler(_req: any, res: any) {
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://boardgamecat.com/blog/poko-light-plus-5x6.html</loc>
+    <loc>https://boardgamecat.com/blog/poko-light-plus-5x5.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://boardgamecat.com/blog/poko-light-plus-6x6.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://boardgamecat.com/blog/poko-light-plus-5x6.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
   </url>
   <url>
     <loc>https://boardgamecat.com/blog/poko-light-cross-row.html</loc>
