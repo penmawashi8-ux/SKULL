@@ -153,7 +153,7 @@
     </div>
 
     <div class="lead">
-      攻略シリーズ第4回は<strong>プラス型 5×5</strong>グリッドです。基本の追いかけ法は3×3・4×4と同じですが、5×5では最終行（5行目）に残るパターンが<strong>4通りに限られる</strong>という特徴があります。そのパターンに合わせたシードを使えば、体系的に必ずクリアできます。
+      攻略シリーズ第4回は<strong>プラス型 5×5</strong>グリッドです。基本の追いかけ法は3×3・4×4と同じですが、5×5では最終行（5行目）に残るパターンが<strong>16通りに確定する</strong>という特徴があります。パターンを見ればシードがひと目でわかる対応表を用意しました。
     </div>
 
     <div class="tip-box">
@@ -251,105 +251,168 @@
 
     <p>以降も同様に繰り返し、最終的に5行目を確認します。</p>
 
-    <h2>最終行（5行目）にOFFが残ったら：シード試し順</h2>
+    <h2>最終行（5行目）のパターン別シード一覧</h2>
     <p>追いかけを完了した後、5行目にOFFが残る場合は<strong>1行目のシードを変えてやり直し</strong>が必要です。シードとは「追いかけを始める前に1行目の特定のマスを先に押しておくこと」です。</p>
+    <p>下表で<strong>5行目の状態（●＝ON・○＝OFF）を探し</strong>、右側に書かれた列のマスをシードとして先押ししてからやり直してください。5行目のパターンは必ずこの16通りのどれかになります。</p>
 
-    <p>最終行に残るパターンはさまざまで、どのシードが効くかは配置によって異なります。以下の順番で機械的に試していくのが確実です。</p>
-
-    <h3>ステップ1：シードなしで試す</h3>
     <table class="pattern-table">
       <thead>
-        <tr><th>試す順</th><th>シード</th><th>操作</th></tr>
-      </thead>
-      <tbody>
         <tr>
-          <td><span class="seed-badge">①</span></td>
-          <td>なし</td>
-          <td>そのまま追いかけ → 5行目が全ONならクリア</td>
+          <th style="width:55%;">5行目のパターン（列1→5）</th>
+          <th>先に押すシード（1行目の列）</th>
         </tr>
-      </tbody>
-    </table>
-
-    <h3>ステップ2：1マスシードを順番に試す</h3>
-    <p>5行目にOFFが残ったら、リセットして下表のシードを1番から順に試します。</p>
-    <table class="pattern-table">
-      <thead>
-        <tr><th>試す順</th><th>シード（先押しするマス）</th><th>1行目の変化イメージ</th></tr>
       </thead>
       <tbody>
         <tr>
-          <td><span class="seed-badge">②</span></td>
-          <td class="seed-cell">(1,1) ← 左端</td>
           <td>
             <div class="mini-grid">
-              <div class="mini-cell mini-on"></div><div class="mini-cell mini-on"></div><div class="mini-cell mini-off"></div><div class="mini-cell mini-off"></div><div class="mini-cell mini-off"></div>
+              <div class="mini-cell mini-on"></div><div class="mini-cell mini-on"></div><div class="mini-cell mini-on"></div><div class="mini-cell mini-on"></div><div class="mini-cell mini-on"></div>
             </div>
-            <span style="font-size:11px;color:rgba(255,255,255,0.4);margin-left:6px;">押した後のイメージ</span>
+            <span style="font-size:12px;color:rgba(255,255,255,0.45);margin-left:8px;">●●●●●（全ON）</span>
           </td>
+          <td><span class="ok-badge">シードなし</span>　クリア！</td>
         </tr>
         <tr>
-          <td><span class="seed-badge">③</span></td>
-          <td class="seed-cell">(1,2) ← 左から2番目</td>
           <td>
             <div class="mini-grid">
               <div class="mini-cell mini-on"></div><div class="mini-cell mini-on"></div><div class="mini-cell mini-on"></div><div class="mini-cell mini-off"></div><div class="mini-cell mini-off"></div>
             </div>
+            <span style="font-size:12px;color:rgba(255,255,255,0.45);margin-left:8px;">●●●○○</span>
           </td>
+          <td class="seed-cell">列1</td>
         </tr>
         <tr>
-          <td><span class="seed-badge">④</span></td>
-          <td class="seed-cell">(1,3) ← 中央</td>
           <td>
             <div class="mini-grid">
-              <div class="mini-cell mini-off"></div><div class="mini-cell mini-on"></div><div class="mini-cell mini-on"></div><div class="mini-cell mini-on"></div><div class="mini-cell mini-off"></div>
+              <div class="mini-cell mini-off"></div><div class="mini-cell mini-on"></div><div class="mini-cell mini-on"></div><div class="mini-cell mini-off"></div><div class="mini-cell mini-on"></div>
             </div>
+            <span style="font-size:12px;color:rgba(255,255,255,0.45);margin-left:8px;">○●●○●</span>
           </td>
+          <td class="seed-cell">列2</td>
         </tr>
         <tr>
-          <td><span class="seed-badge">⑤</span></td>
-          <td class="seed-cell">(1,4) ← 右から2番目</td>
+          <td>
+            <div class="mini-grid">
+              <div class="mini-cell mini-off"></div><div class="mini-cell mini-on"></div><div class="mini-cell mini-off"></div><div class="mini-cell mini-on"></div><div class="mini-cell mini-off"></div>
+            </div>
+            <span style="font-size:12px;color:rgba(255,255,255,0.45);margin-left:8px;">○●○●○</span>
+          </td>
+          <td class="seed-cell">列3</td>
+        </tr>
+        <tr>
+          <td>
+            <div class="mini-grid">
+              <div class="mini-cell mini-on"></div><div class="mini-cell mini-off"></div><div class="mini-cell mini-on"></div><div class="mini-cell mini-on"></div><div class="mini-cell mini-off"></div>
+            </div>
+            <span style="font-size:12px;color:rgba(255,255,255,0.45);margin-left:8px;">●○●●○</span>
+          </td>
+          <td class="seed-cell">列4</td>
+        </tr>
+        <tr>
           <td>
             <div class="mini-grid">
               <div class="mini-cell mini-off"></div><div class="mini-cell mini-off"></div><div class="mini-cell mini-on"></div><div class="mini-cell mini-on"></div><div class="mini-cell mini-on"></div>
             </div>
+            <span style="font-size:12px;color:rgba(255,255,255,0.45);margin-left:8px;">○○●●●</span>
           </td>
+          <td class="seed-cell">列5</td>
         </tr>
         <tr>
-          <td><span class="seed-badge">⑥</span></td>
-          <td class="seed-cell">(1,5) ← 右端</td>
+          <td>
+            <div class="mini-grid">
+              <div class="mini-cell mini-off"></div><div class="mini-cell mini-on"></div><div class="mini-cell mini-on"></div><div class="mini-cell mini-on"></div><div class="mini-cell mini-off"></div>
+            </div>
+            <span style="font-size:12px;color:rgba(255,255,255,0.45);margin-left:8px;">○●●●○</span>
+          </td>
+          <td class="seed-cell">列1＋列2</td>
+        </tr>
+        <tr>
+          <td>
+            <div class="mini-grid">
+              <div class="mini-cell mini-off"></div><div class="mini-cell mini-on"></div><div class="mini-cell mini-off"></div><div class="mini-cell mini-off"></div><div class="mini-cell mini-on"></div>
+            </div>
+            <span style="font-size:12px;color:rgba(255,255,255,0.45);margin-left:8px;">○●○○●</span>
+          </td>
+          <td class="seed-cell">列1＋列3</td>
+        </tr>
+        <tr>
+          <td>
+            <div class="mini-grid">
+              <div class="mini-cell mini-on"></div><div class="mini-cell mini-off"></div><div class="mini-cell mini-on"></div><div class="mini-cell mini-off"></div><div class="mini-cell mini-on"></div>
+            </div>
+            <span style="font-size:12px;color:rgba(255,255,255,0.45);margin-left:8px;">●○●○●</span>
+          </td>
+          <td class="seed-cell">列1＋列4</td>
+        </tr>
+        <tr>
+          <td>
+            <div class="mini-grid">
+              <div class="mini-cell mini-on"></div><div class="mini-cell mini-on"></div><div class="mini-cell mini-off"></div><div class="mini-cell mini-off"></div><div class="mini-cell mini-off"></div>
+            </div>
+            <span style="font-size:12px;color:rgba(255,255,255,0.45);margin-left:8px;">●●○○○</span>
+          </td>
+          <td class="seed-cell">列2＋列3</td>
+        </tr>
+        <tr>
+          <td>
+            <div class="mini-grid">
+              <div class="mini-cell mini-off"></div><div class="mini-cell mini-off"></div><div class="mini-cell mini-on"></div><div class="mini-cell mini-off"></div><div class="mini-cell mini-off"></div>
+            </div>
+            <span style="font-size:12px;color:rgba(255,255,255,0.45);margin-left:8px;">○○●○○</span>
+          </td>
+          <td class="seed-cell">列2＋列4</td>
+        </tr>
+        <tr>
           <td>
             <div class="mini-grid">
               <div class="mini-cell mini-off"></div><div class="mini-cell mini-off"></div><div class="mini-cell mini-off"></div><div class="mini-cell mini-on"></div><div class="mini-cell mini-on"></div>
             </div>
+            <span style="font-size:12px;color:rgba(255,255,255,0.45);margin-left:8px;">○○○●●</span>
           </td>
+          <td class="seed-cell">列3＋列4</td>
+        </tr>
+        <tr>
+          <td>
+            <div class="mini-grid">
+              <div class="mini-cell mini-on"></div><div class="mini-cell mini-off"></div><div class="mini-cell mini-off"></div><div class="mini-cell mini-on"></div><div class="mini-cell mini-off"></div>
+            </div>
+            <span style="font-size:12px;color:rgba(255,255,255,0.45);margin-left:8px;">●○○●○</span>
+          </td>
+          <td class="seed-cell">列3＋列5</td>
+        </tr>
+        <tr>
+          <td>
+            <div class="mini-grid">
+              <div class="mini-cell mini-on"></div><div class="mini-cell mini-on"></div><div class="mini-cell mini-off"></div><div class="mini-cell mini-on"></div><div class="mini-cell mini-on"></div>
+            </div>
+            <span style="font-size:12px;color:rgba(255,255,255,0.45);margin-left:8px;">●●○●●</span>
+          </td>
+          <td class="seed-cell">列1＋列2＋列3</td>
+        </tr>
+        <tr>
+          <td>
+            <div class="mini-grid">
+              <div class="mini-cell mini-off"></div><div class="mini-cell mini-off"></div><div class="mini-cell mini-off"></div><div class="mini-cell mini-off"></div><div class="mini-cell mini-off"></div>
+            </div>
+            <span style="font-size:12px;color:rgba(255,255,255,0.45);margin-left:8px;">○○○○○（全OFF）</span>
+          </td>
+          <td class="seed-cell">列1＋列3＋列4</td>
+        </tr>
+        <tr>
+          <td>
+            <div class="mini-grid">
+              <div class="mini-cell mini-on"></div><div class="mini-cell mini-off"></div><div class="mini-cell mini-off"></div><div class="mini-cell mini-off"></div><div class="mini-cell mini-on"></div>
+            </div>
+            <span style="font-size:12px;color:rgba(255,255,255,0.45);margin-left:8px;">●○○○●</span>
+          </td>
+          <td class="seed-cell">列2＋列3＋列4</td>
         </tr>
       </tbody>
     </table>
 
-    <h3>ステップ3：まだ見つからなければ2マスの組み合わせを試す</h3>
-    <table class="pattern-table">
-      <thead>
-        <tr><th>試す順</th><th>シード（2マス先押し）</th></tr>
-      </thead>
-      <tbody>
-        <tr><td><span class="seed-badge">⑦</span></td><td class="seed-cell">(1,1) ＋ (1,2)</td></tr>
-        <tr><td><span class="seed-badge">⑧</span></td><td class="seed-cell">(1,1) ＋ (1,3)</td></tr>
-        <tr><td><span class="seed-badge">⑨</span></td><td class="seed-cell">(1,1) ＋ (1,4)</td></tr>
-        <tr><td><span class="seed-badge">⑩</span></td><td class="seed-cell">(1,1) ＋ (1,5)</td></tr>
-        <tr><td><span class="seed-badge">⑪</span></td><td class="seed-cell">(1,2) ＋ (1,3)</td></tr>
-        <tr><td><span class="seed-badge">⑫</span></td><td class="seed-cell">(1,2) ＋ (1,4)</td></tr>
-        <tr><td><span class="seed-badge">⑬</span></td><td class="seed-cell">(1,2) ＋ (1,5)</td></tr>
-        <tr><td><span class="seed-badge">⑭</span></td><td class="seed-cell">(1,3) ＋ (1,4)</td></tr>
-        <tr><td><span class="seed-badge">⑮</span></td><td class="seed-cell">(1,3) ＋ (1,5)</td></tr>
-        <tr><td><span class="seed-badge">⑯</span></td><td class="seed-cell">(1,4) ＋ (1,5)</td></tr>
-      </tbody>
-    </table>
-
     <div class="tip-box">
-      <p class="tip-label">ポイント：5×5は①〜⑥の1マスシードで大抵クリアできる</p>
-      <p>
-        5×5の場合、ほとんどの配置はシードなし（①）か1マスシード（②〜⑥）の6通りを試せばクリアできます。⑦以降の2マス組み合わせが必要なケースは少ないですが、念のため網羅しました。ゲームは全配置クリア可能なので、必ずどこかで成功します。
-      </p>
+      <p class="tip-label">この表の使い方</p>
+      <p>追いかけが終わって5行目のパターンを確認したら、表の左列で一致する行を探す。見つかったら盤面をリセットし、右列に書かれた1行目の列を先にタップしてから追いかけを開始する。例：「列3＋列5」なら1行目の3番目と5番目を先押し。この16パターン以外は現れないので、必ず一致する行が見つかります。</p>
     </div>
 
     <h2>シードを試すときのポイント</h2>
@@ -396,7 +459,7 @@
       <li>追いかけ法の原理は3×3・4×4と同じ：1行目→4行目まで「OFFの真下を押す」を繰り返す</li>
       <li>5行目が全ONならクリア</li>
       <li>OFFが残ったら1行目のシードを変えて再試行</li>
-      <li>シードは1マスずつ試すだけでOK（5通り試せば大抵見つかる）</li>
+      <li>シードは上の対応表で5行目のパターンを探せば一発でわかる（16通り網羅）</li>
       <li>ゲームは全配置クリア可能なので必ず解がある</li>
     </ol>
 
