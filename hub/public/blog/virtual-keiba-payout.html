@@ -265,16 +265,16 @@
 
     <h2>複勝オッズの計算方法</h2>
 
-    <p>複勝は単勝と異なり、<strong>3着以内に入った各馬がそれぞれ別のオッズを持ちます</strong>。複勝のプールをまず3等分し、その1/3を「その馬への購入額」で割ることで各馬の倍率が決まります。</p>
+    <p>複勝は、3着以内に入った馬の<strong>票をまとめてプールを分け合う</strong>仕組みです。レース前は「どの3頭が入賞するか」がわからないため、オッズは<strong>X〜Y倍という範囲表示</strong>になります。</p>
 
     <div class="formula-box">
-      <p class="formula">複勝オッズ（各馬）＝ 複勝の購入総額 ÷ 3 ÷ その馬への購入額</p>
-      <p class="formula-note">小数点以下は切り捨て（最低オッズ 1.0）</p>
+      <p class="formula">複勝オッズ ＝ 複勝の購入総額 ÷（1着・2着・3着の馬への購入額合計）</p>
+      <p class="formula-note">レース前は「最低X〜最高Y倍」の範囲で表示。レース後に確定値が決まる。</p>
     </div>
 
-    <p>1着・2着・3着の馬はそれぞれ同じ「プールの1/3」を取り合いますが、各馬への購入額が違うため払い戻し倍率も異なります。</p>
+    <p>入賞した3頭の票の合計が分母になるため、<strong>人気馬が多く入賞するほどオッズが低く</strong>（分母が大きい）、穴馬ばかりが入賞するほどオッズが高くなります。この不確実性があるのでレース前は幅を持った範囲で表示されます。</p>
 
-    <h3>具体例：複勝を計算してみる</h3>
+    <h3>具体例：複勝オッズの範囲を計算してみる</h3>
 
     <table class="odds-table">
       <thead>
@@ -282,8 +282,7 @@
           <th>馬番</th>
           <th>馬名</th>
           <th>複勝購入額</th>
-          <th>着順</th>
-          <th>複勝オッズ</th>
+          <th>複勝オッズ（目安）</th>
         </tr>
       </thead>
       <tbody>
@@ -291,88 +290,78 @@
           <td class="num">1</td>
           <td>サンダーボルト</td>
           <td class="num">¥3,000</td>
-          <td>1着</td>
-          <td class="odds-val">1.0</td>
+          <td class="odds-val">1.5〜2.3</td>
         </tr>
         <tr>
           <td class="num">2</td>
           <td>クイックシルバー</td>
           <td class="num">¥1,500</td>
-          <td>4着</td>
-          <td style="color:rgba(255,255,255,0.3)">外れ</td>
+          <td class="odds-val">1.5〜3.7</td>
         </tr>
         <tr>
           <td class="num">3</td>
           <td>ムーンライダー</td>
           <td class="num">¥600</td>
-          <td>2着</td>
-          <td class="odds-val">5.0</td>
+          <td class="odds-val">1.7〜6.0</td>
         </tr>
         <tr>
           <td class="num">4</td>
           <td>スターダスト</td>
           <td class="num">¥300</td>
-          <td>5着</td>
-          <td style="color:rgba(255,255,255,0.3)">外れ</td>
+          <td class="odds-val">1.8〜6.0</td>
         </tr>
         <tr>
           <td class="num">5</td>
           <td>ファイヤーストーム</td>
           <td class="num">¥1,500</td>
-          <td>3着</td>
-          <td class="odds-val">2.0</td>
+          <td class="odds-val">1.5〜3.7</td>
         </tr>
         <tr>
           <td class="num">6</td>
           <td>アイスブレイカー</td>
           <td class="num">¥800</td>
-          <td>6着</td>
-          <td style="color:rgba(255,255,255,0.3)">外れ</td>
+          <td class="odds-val">1.6〜5.2</td>
         </tr>
         <tr>
           <td class="num">7</td>
           <td>ゴールドラッシュ</td>
           <td class="num">¥600</td>
-          <td>7着</td>
-          <td style="color:rgba(255,255,255,0.3)">外れ</td>
+          <td class="odds-val">1.7〜6.0</td>
         </tr>
         <tr>
           <td class="num">8</td>
           <td>シルバーアロー</td>
           <td class="num">¥700</td>
-          <td>8着</td>
-          <td style="color:rgba(255,255,255,0.3)">外れ</td>
+          <td class="odds-val">1.7〜5.6</td>
         </tr>
       </tbody>
     </table>
 
-    <p>複勝の購入総額：¥3,000 + ¥1,500 + ¥600 + ¥300 + ¥1,500 + ¥800 + ¥600 + ¥700 ＝ <strong>¥9,000</strong></p>
-    <p>プールの1/3：¥9,000 ÷ 3 ＝ <strong>¥3,000</strong></p>
-    <ul>
-      <li>1番（1着）：¥3,000 ÷ ¥3,000 ＝ <strong>1.0倍</strong>（最低オッズ）</li>
-      <li>3番（2着）：¥3,000 ÷ ¥600 ＝ <strong>5.0倍</strong></li>
-      <li>5番（3着）：¥3,000 ÷ ¥1,500 ＝ <strong>2.0倍</strong></li>
-    </ul>
+    <p>複勝の購入総額：¥9,000。<strong>下限（低いオッズ）</strong>は人気馬2頭と一緒に入賞した場合（分母が大きくなる）、<strong>上限（高いオッズ）</strong>は票が少ない穴馬2頭と一緒に入賞した場合（分母が小さくなる）に対応します。</p>
 
-    <p>同じレースでも馬によって複勝オッズが大きく異なることがわかります。</p>
+    <h3>レース後：確定オッズの計算</h3>
+
+    <p>実際に1着・2着・3着が確定すると、その3頭の購入額合計で割ったオッズが確定します。</p>
+
+    <p>この例で<strong>1番（1着）・3番（2着）・5番（3着）</strong>が入賞した場合：</p>
 
     <div class="calc-box">
-      <p class="calc-title">払い戻し例：3番・ムーンライダーに¥1,000（複勝）→ 2着</p>
+      <p class="calc-title">確定オッズの計算：1着1番(¥3,000)・2着3番(¥600)・3着5番(¥1,500)</p>
       <div class="calc-row">
-        <span class="calc-label">購入額</span>
-        <span class="calc-value">¥1,000</span>
+        <span class="calc-label">複勝の購入総額</span>
+        <span class="calc-value">¥9,000</span>
       </div>
       <div class="calc-row">
-        <span class="calc-label">複勝オッズ</span>
-        <span class="calc-value">5.0倍</span>
+        <span class="calc-label">入賞3頭の購入額合計</span>
+        <span class="calc-value">¥5,100</span>
       </div>
       <div class="calc-row">
-        <span class="calc-label">払い戻し額</span>
-        <span class="calc-value highlight">¥5,000</span>
+        <span class="calc-label">確定オッズ</span>
+        <span class="calc-value">¥9,000 ÷ ¥5,100 ＝ 1.7倍</span>
       </div>
     </div>
 
-    <p>複勝は「3着以内に入れば的中」という条件の広さがある一方、人気馬は購入が集中してオッズが最低近くまで下がることがあります。穴馬が3着以内に滑り込んだときこそ、複勝でも高い払い戻しが狙えます。</p>
+    <p>この入賞パターンでは、1番・3番・5番どれに投票していても<strong>1.7倍</strong>が払い戻されます。1番（大人気）が入賞したことで分母が大きくなり、3番や5番の上限オッズ（6.0倍・3.7倍）よりも低い結果になっています——これがパリミュチュエル式の醍醐味で、「どの馬が入賞したか」でオッズが変わります。</p>
 
     <h2>オッズがリアルタイムで動く理由</h2>
 
