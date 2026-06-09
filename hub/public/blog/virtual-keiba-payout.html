@@ -265,12 +265,14 @@
 
     <h2>複勝オッズの計算方法</h2>
 
-    <p>複勝は「3着以内に入る馬が複数いる」ため、単勝より少し複雑な計算になります。複勝の購入総額を、<strong>実際に3着以内に入った馬たちへの購入額の合計</strong>で割ります。</p>
+    <p>複勝は単勝と異なり、<strong>3着以内に入った各馬がそれぞれ別のオッズを持ちます</strong>。複勝のプールをまず3等分し、その1/3を「その馬への購入額」で割ることで各馬の倍率が決まります。</p>
 
     <div class="formula-box">
-      <p class="formula">複勝オッズ ＝ 複勝の購入総額 ÷ 3着以内に入った馬への購入額合計</p>
+      <p class="formula">複勝オッズ（各馬）＝ 複勝の購入総額 ÷ 3 ÷ その馬への購入額</p>
       <p class="formula-note">小数点以下は切り捨て（最低オッズ 1.0）</p>
     </div>
+
+    <p>1着・2着・3着の馬はそれぞれ同じ「プールの1/3」を取り合いますが、各馬への購入額が違うため払い戻し倍率も異なります。</p>
 
     <h3>具体例：複勝を計算してみる</h3>
 
@@ -281,6 +283,7 @@
           <th>馬名</th>
           <th>複勝購入額</th>
           <th>着順</th>
+          <th>複勝オッズ</th>
         </tr>
       </thead>
       <tbody>
@@ -289,43 +292,69 @@
           <td>サンダーボルト</td>
           <td class="num">¥3,000</td>
           <td>1着</td>
+          <td class="odds-val">1.0</td>
         </tr>
         <tr>
           <td class="num">2</td>
           <td>クイックシルバー</td>
           <td class="num">¥1,500</td>
           <td>4着</td>
+          <td style="color:rgba(255,255,255,0.3)">外れ</td>
         </tr>
         <tr>
           <td class="num">3</td>
           <td>ムーンライダー</td>
-          <td class="num">¥800</td>
+          <td class="num">¥600</td>
           <td>2着</td>
+          <td class="odds-val">5.0</td>
         </tr>
         <tr>
           <td class="num">4</td>
           <td>スターダスト</td>
-          <td class="num">¥400</td>
+          <td class="num">¥300</td>
           <td>5着</td>
+          <td style="color:rgba(255,255,255,0.3)">外れ</td>
         </tr>
         <tr>
           <td class="num">5</td>
           <td>ファイヤーストーム</td>
-          <td class="num">¥1,200</td>
+          <td class="num">¥1,500</td>
           <td>3着</td>
+          <td class="odds-val">2.0</td>
         </tr>
         <tr>
-          <td class="num">6〜8</td>
-          <td>その他</td>
-          <td class="num">¥100</td>
-          <td>—</td>
+          <td class="num">6</td>
+          <td>アイスブレイカー</td>
+          <td class="num">¥800</td>
+          <td>6着</td>
+          <td style="color:rgba(255,255,255,0.3)">外れ</td>
+        </tr>
+        <tr>
+          <td class="num">7</td>
+          <td>ゴールドラッシュ</td>
+          <td class="num">¥600</td>
+          <td>7着</td>
+          <td style="color:rgba(255,255,255,0.3)">外れ</td>
+        </tr>
+        <tr>
+          <td class="num">8</td>
+          <td>シルバーアロー</td>
+          <td class="num">¥700</td>
+          <td>8着</td>
+          <td style="color:rgba(255,255,255,0.3)">外れ</td>
         </tr>
       </tbody>
     </table>
 
-    <p>複勝の購入総額：¥3,000 + ¥1,500 + ¥800 + ¥400 + ¥1,200 + ¥100 ＝ <strong>¥7,000</strong></p>
-    <p>3着以内（1着・2着・3着）の馬への購入額合計：¥3,000（1番）＋ ¥800（3番）＋ ¥1,200（5番）＝ <strong>¥5,000</strong></p>
-    <p>複勝オッズ：¥7,000 ÷ ¥5,000 ＝ <strong>1.4倍</strong></p>
+    <p>複勝の購入総額：¥3,000 + ¥1,500 + ¥600 + ¥300 + ¥1,500 + ¥800 + ¥600 + ¥700 ＝ <strong>¥9,000</strong></p>
+    <p>プールの1/3：¥9,000 ÷ 3 ＝ <strong>¥3,000</strong></p>
+    <ul>
+      <li>1番（1着）：¥3,000 ÷ ¥3,000 ＝ <strong>1.0倍</strong>（最低オッズ）</li>
+      <li>3番（2着）：¥3,000 ÷ ¥600 ＝ <strong>5.0倍</strong></li>
+      <li>5番（3着）：¥3,000 ÷ ¥1,500 ＝ <strong>2.0倍</strong></li>
+    </ul>
+
+    <p>同じレースでも馬によって複勝オッズが大きく異なることがわかります。</p>
 
     <div class="calc-box">
       <p class="calc-title">払い戻し例：3番・ムーンライダーに¥1,000（複勝）→ 2着</p>
@@ -335,15 +364,15 @@
       </div>
       <div class="calc-row">
         <span class="calc-label">複勝オッズ</span>
-        <span class="calc-value">1.4倍</span>
+        <span class="calc-value">5.0倍</span>
       </div>
       <div class="calc-row">
         <span class="calc-label">払い戻し額</span>
-        <span class="calc-value highlight">¥1,400</span>
+        <span class="calc-value highlight">¥5,000</span>
       </div>
     </div>
 
-    <p>このように複勝は「当たれば元金は戻るが、大きく増えることは少ない」という特性があります。ただし3着以内に入った馬への投票が少なければオッズが上がります。人気薄の穴馬が3着以内に入ったとき、その馬の複勝は高倍率になることがあります。</p>
+    <p>複勝は「3着以内に入れば的中」という条件の広さがある一方、人気馬は購入が集中してオッズが最低近くまで下がることがあります。穴馬が3着以内に滑り込んだときこそ、複勝でも高い払い戻しが狙えます。</p>
 
     <h2>オッズがリアルタイムで動く理由</h2>
 
