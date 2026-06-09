@@ -265,23 +265,25 @@
 
     <h2>複勝オッズの計算方法</h2>
 
-    <p>複勝は、3着以内に入った馬の<strong>票をまとめてプールを分け合う</strong>仕組みです。レース前は「どの3頭が入賞するか」がわからないため、オッズは<strong>X〜Y倍という範囲表示</strong>になります。</p>
+    <p>複勝の払い戻しは、<strong>「外れ馬券のプールを3等分して各入賞グループへ配る」</strong>仕組みで計算されます。式は次のとおりです。</p>
 
     <div class="formula-box">
-      <p class="formula">複勝オッズ ＝ 複勝の購入総額 ÷（1着・2着・3着の馬への購入額合計）</p>
-      <p class="formula-note">レース前は「最低X〜最高Y倍」の範囲で表示。レース後に確定値が決まる。</p>
+      <p class="formula">複勝オッズ ＝ （W ＋ D ÷ 3） ÷ W</p>
+      <p class="formula-note">W＝自分の馬への投票総額　D＝外れ馬券（入賞しなかった馬への投票）の合計　3＝入賞頭数</p>
     </div>
 
-    <p>入賞した3頭の票の合計が分母になるため、<strong>人気馬が多く入賞するほどオッズが低く</strong>（分母が大きい）、穴馬ばかりが入賞するほどオッズが高くなります。この不確実性があるのでレース前は幅を持った範囲で表示されます。</p>
+    <p>外れ馬券（D）を3等分した「D÷3」が、1着・2着・3着それぞれのグループへ均等に上乗せされます。自馬への票（W）が少ない穴馬ほど、同じ「D÷3」の恩恵を大きく受けられるため<strong>オッズが高くなります</strong>。結果として3頭はそれぞれ異なる倍率になります。</p>
 
-    <h3>具体例：複勝オッズの範囲を計算してみる</h3>
+    <p>またレース前はどの3頭が入賞するかわからないため、Dの大きさが変わります。<strong>人気馬が多く入賞するほどDが小さく（外れ券が少ない）、穴馬が多く入賞するほどDが大きく</strong>なるので、レース前のオッズは「X〜Y倍」という範囲で表示されます。</p>
+
+    <h3>具体例：複勝オッズの範囲（レース前）</h3>
 
     <table class="odds-table">
       <thead>
         <tr>
           <th>馬番</th>
           <th>馬名</th>
-          <th>複勝購入額</th>
+          <th>複勝購入額（W）</th>
           <th>複勝オッズ（目安）</th>
         </tr>
       </thead>
@@ -290,78 +292,80 @@
           <td class="num">1</td>
           <td>サンダーボルト</td>
           <td class="num">¥3,000</td>
-          <td class="odds-val">1.5〜2.3</td>
+          <td class="odds-val">1.3〜1.5</td>
         </tr>
         <tr>
           <td class="num">2</td>
           <td>クイックシルバー</td>
           <td class="num">¥1,500</td>
-          <td class="odds-val">1.5〜3.7</td>
+          <td class="odds-val">1.6〜2.4</td>
         </tr>
         <tr>
           <td class="num">3</td>
           <td>ムーンライダー</td>
           <td class="num">¥600</td>
-          <td class="odds-val">1.7〜6.0</td>
+          <td class="odds-val">3.1〜5.1</td>
         </tr>
         <tr>
           <td class="num">4</td>
           <td>スターダスト</td>
           <td class="num">¥300</td>
-          <td class="odds-val">1.8〜6.0</td>
+          <td class="odds-val">5.6〜9.3</td>
         </tr>
         <tr>
           <td class="num">5</td>
           <td>ファイヤーストーム</td>
           <td class="num">¥1,500</td>
-          <td class="odds-val">1.5〜3.7</td>
+          <td class="odds-val">1.6〜2.4</td>
         </tr>
         <tr>
           <td class="num">6</td>
           <td>アイスブレイカー</td>
           <td class="num">¥800</td>
-          <td class="odds-val">1.6〜5.2</td>
+          <td class="odds-val">2.5〜4.0</td>
         </tr>
         <tr>
           <td class="num">7</td>
           <td>ゴールドラッシュ</td>
           <td class="num">¥600</td>
-          <td class="odds-val">1.7〜6.0</td>
+          <td class="odds-val">3.1〜5.1</td>
         </tr>
         <tr>
           <td class="num">8</td>
           <td>シルバーアロー</td>
           <td class="num">¥700</td>
-          <td class="odds-val">1.7〜5.6</td>
+          <td class="odds-val">2.8〜4.5</td>
         </tr>
       </tbody>
     </table>
 
-    <p>複勝の購入総額：¥9,000。<strong>下限（低いオッズ）</strong>は人気馬2頭と一緒に入賞した場合（分母が大きくなる）、<strong>上限（高いオッズ）</strong>は票が少ない穴馬2頭と一緒に入賞した場合（分母が小さくなる）に対応します。</p>
+    <p>複勝の購入総額は¥9,000。<strong>下限</strong>は人気馬2頭（1番・2番など）と一緒に入賞した場合（Dが最小になる）、<strong>上限</strong>は票の少ない穴馬2頭（4番・3番など）と一緒に入賞した場合（Dが最大になる）です。</p>
 
-    <h3>レース後：確定オッズの計算</h3>
+    <h3>レース後：確定オッズの計算例</h3>
 
-    <p>実際に1着・2着・3着が確定すると、その3頭の購入額合計で割ったオッズが確定します。</p>
-
-    <p>この例で<strong>1番（1着）・3番（2着）・5番（3着）</strong>が入賞した場合：</p>
+    <p>結果：<strong>1番（1着）・3番（2着）・5番（3着）</strong></p>
+    <p>入賞しなかった残り5頭への投票合計（D）：¥9,000 − ¥3,000 − ¥600 − ¥1,500 ＝ <strong>¥3,900</strong></p>
+    <p>D÷3 ＝ ¥3,900 ÷ 3 ＝ <strong>¥1,300</strong>（各入賞グループへの上乗せ分）</p>
 
     <div class="calc-box">
-      <p class="calc-title">確定オッズの計算：1着1番(¥3,000)・2着3番(¥600)・3着5番(¥1,500)</p>
+      <p class="calc-title">確定オッズ：1番・3番・5番それぞれの計算</p>
       <div class="calc-row">
-        <span class="calc-label">複勝の購入総額</span>
-        <span class="calc-value">¥9,000</span>
+        <span class="calc-label">1番（W＝¥3,000）</span>
+        <span class="calc-value">（¥3,000 ＋ ¥1,300）÷ ¥3,000 ＝ <span style="color:#a3e635">1.4倍</span></span>
       </div>
       <div class="calc-row">
-        <span class="calc-label">入賞3頭の購入額合計</span>
-        <span class="calc-value">¥5,100</span>
+        <span class="calc-label">3番（W＝¥600）</span>
+        <span class="calc-value">（¥600 ＋ ¥1,300）÷ ¥600 ＝ <span style="color:#a3e635">3.1倍</span></span>
       </div>
       <div class="calc-row">
-        <span class="calc-label">確定オッズ</span>
-        <span class="calc-value">¥9,000 ÷ ¥5,100 ＝ 1.7倍</span>
+        <span class="calc-label">5番（W＝¥1,500）</span>
+        <span class="calc-value">（¥1,500 ＋ ¥1,300）÷ ¥1,500 ＝ <span style="color:#a3e635">1.8倍</span></span>
       </div>
     </div>
 
-    <p>この入賞パターンでは、1番・3番・5番どれに投票していても<strong>1.7倍</strong>が払い戻されます。1番（大人気）が入賞したことで分母が大きくなり、3番や5番の上限オッズ（6.0倍・3.7倍）よりも低い結果になっています——これがパリミュチュエル式の醍醐味で、「どの馬が入賞したか」でオッズが変わります。</p>
+    <p>同じレースでも馬によって確定オッズが異なります。1番（大人気）への票が¥3,000と多かったため恩恵が薄まり1.4倍止まり。3番（穴馬）は票が¥600と少なかったため同じ¥1,300の上乗せが3.1倍という高い倍率に変換されています。</p>
+
+    <p>3番に¥1,000を複勝で買っていた場合の払い戻しは <strong>¥1,000 × 3.1倍 ＝ ¥3,100</strong> です。</p>
 
     <h2>オッズがリアルタイムで動く理由</h2>
 
