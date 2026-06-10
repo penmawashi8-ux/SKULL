@@ -149,7 +149,7 @@
         <a href="/blog/poko-light-plus-4x4.html" class="series-nav-item">③ プラス型 4×4</a>
         <a href="/blog/poko-light-plus-5x5.html" class="series-nav-item">④ プラス型 5×5</a>
         <span class="series-nav-item current">⑤ プラス型 6×6</span>
-        <a href="/blog/poko-light-cross-row.html" class="series-nav-item">⑥ クロス型・1列型</a>
+        <a href="/blog/poko-light-cross-row.html" class="series-nav-item">⑥ バツ型・行列型</a>
       </div>
     </div>
 
@@ -234,68 +234,57 @@
     <p>以降も同様に「上の行のOFF列の真下を押す」を繰り返します。6行目まで完了したら最終行を確認してください。</p>
 
     <h2>最終行（6行目）のパターンとシード</h2>
-    <p>追いかけを完了した後、6行目にOFFが残る場合はシードを変えてやり直します。6×6はグリッドが大きい分、最終行パターンが多様になりますが、<strong>1行目を1マスずつ順番に試す</strong>だけで必ず解が見つかります。</p>
+    <p>追いかけを完了した後、6行目にOFFが残る場合はシードを押してやり直します。6×6では最終行のパターンが多様（最大64通り）なため、1マスずつの総当たりは非効率です。代わりに、<strong>「OFFが残った列ごとのシード」を重ね合わせる</strong>方法なら一発で正解のシードがわかります。</p>
 
     <table class="seed-table">
       <thead>
         <tr>
-          <th>試す順番</th>
-          <th>シードの内容</th>
+          <th>6行目に残ったOFFの列</th>
+          <th>先押しするシード（1行目）</th>
           <th>説明</th>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <td><span class="seed-badge">1番目</span></td>
-          <td>シードなし</td>
-          <td>そのまま追いかけ法を実行。6行目が全ONならクリア。</td>
+          <td><span class="seed-badge">列1</span></td>
+          <td>(1,1)＋(1,3)</td>
+          <td>列1だけOFFなら、1行目の列1と列3を先押し。</td>
         </tr>
         <tr>
-          <td><span class="seed-badge">2番目</span></td>
-          <td>(1,1) を先押し</td>
-          <td>1行目の列1をタップしてから追いかけ開始。</td>
+          <td><span class="seed-badge">列2</span></td>
+          <td>(1,4)</td>
+          <td>列2だけOFFなら、1行目の列4を先押し。</td>
         </tr>
         <tr>
-          <td><span class="seed-badge">3番目</span></td>
-          <td>(1,2) を先押し</td>
-          <td>1行目の列2をタップしてから追いかけ開始。</td>
+          <td><span class="seed-badge">列3</span></td>
+          <td>(1,1)＋(1,5)</td>
+          <td>列3だけOFFなら、1行目の列1と列5を先押し。</td>
         </tr>
         <tr>
-          <td><span class="seed-badge">4番目</span></td>
-          <td>(1,3) を先押し</td>
-          <td>1行目の列3をタップしてから追いかけ開始。</td>
+          <td><span class="seed-badge">列4</span></td>
+          <td>(1,2)＋(1,6)</td>
+          <td>列4だけOFFなら、1行目の列2と列6を先押し。</td>
         </tr>
         <tr>
-          <td><span class="seed-badge">5番目</span></td>
-          <td>(1,4) を先押し</td>
-          <td>1行目の列4をタップしてから追いかけ開始。</td>
+          <td><span class="seed-badge">列5</span></td>
+          <td>(1,3)</td>
+          <td>列5だけOFFなら、1行目の列3を先押し。</td>
         </tr>
         <tr>
-          <td><span class="seed-badge">6番目</span></td>
-          <td>(1,5) を先押し</td>
-          <td>1行目の列5をタップしてから追いかけ開始。</td>
-        </tr>
-        <tr>
-          <td><span class="seed-badge">7番目</span></td>
-          <td>(1,6) を先押し</td>
-          <td>1行目の列6をタップしてから追いかけ開始。</td>
-        </tr>
-        <tr>
-          <td><span class="seed-badge">8番目〜</span></td>
-          <td>2マス組み合わせ</td>
-          <td>(1,1)+(1,2) など2マスを同時に先押し。1〜7番で見つからない場合に試す。</td>
+          <td><span class="seed-badge">列6</span></td>
+          <td>(1,4)＋(1,6)</td>
+          <td>列6だけOFFなら、1行目の列4と列6を先押し。</td>
         </tr>
       </tbody>
     </table>
 
     <div class="tip-box">
-      <p class="tip-label">最終行パターンを観察してシードを絞る</p>
+      <p class="tip-label">OFFが複数の列に残ったら——重ね合わせルール</p>
       <p>
-        最終行に残ったOFFのパターンを見ると、どのシードが効くか絞り込めることがあります：<br><br>
-        ・<strong>左寄りにOFFが集中</strong>している → (1,1) や (1,2) を試す<br>
-        ・<strong>右寄りにOFFが集中</strong>している → (1,5) や (1,6) を試す<br>
-        ・<strong>全体に散らばっている</strong> → 2マス組み合わせを試す<br><br>
-        ゲームは全配置クリア可能なので、焦らず順番に試せば必ず見つかります。
+        OFFが2列以上に残った場合は、<strong>各列のシードを全部合わせて押す</strong>だけでOKです。ただし、合わせた結果<strong>同じマスが2回出てきたら相殺して省きます</strong>（2回押すと元に戻るため）。<br><br>
+        例：列1と列2にOFFが残った → 列1のシード (1,1)＋(1,3) と列2のシード (1,4) を合わせて、(1,1)＋(1,3)＋(1,4) を先押し。<br>
+        例：列3と列5にOFFが残った → (1,1)＋(1,5) と (1,3) を合わせて、(1,1)＋(1,3)＋(1,5) を先押し。<br><br>
+        この方法はどんな残り方にも対応でき、やり直しは必ず1回で済みます。
       </p>
     </div>
 
@@ -320,8 +309,8 @@
     <ol>
       <li>原理は3×3と同じ：「上の行のOFFの真下を押す」を1行目→5行目まで繰り返す</li>
       <li>6行目（最終行）が全ONならクリア</li>
-      <li>OFFが残ったら1行目のシードを変えて再試行（まず1マスずつ試す）</li>
-      <li>1〜7番（各列の単独シード）で大抵解が見つかる</li>
+      <li>OFFが残ったら「列ごとのシード対応表」を重ね合わせて先押しし、再試行</li>
+      <li>重ね合わせルールを使えば、やり直しは1回で済む</li>
       <li>ゲームは全配置クリア可能なので必ず解がある</li>
       <li>焦らず1行ずつ丁寧に進めることが最大のコツ</li>
     </ol>
@@ -339,7 +328,7 @@
         <a href="/blog/poko-light-plus-4x4.html" class="series-nav-item">③ プラス型 4×4</a>
         <a href="/blog/poko-light-plus-5x5.html" class="series-nav-item">④ プラス型 5×5</a>
         <span class="series-nav-item current">⑤ プラス型 6×6</span>
-        <a href="/blog/poko-light-cross-row.html" class="series-nav-item">⑥ クロス型・1列型</a>
+        <a href="/blog/poko-light-cross-row.html" class="series-nav-item">⑥ バツ型・行列型</a>
       </div>
     </div>
 
@@ -354,7 +343,7 @@
       <div class="related-list">
         <a href="/blog/poko-light-plus-5x5.html" class="related-link">ポコっとライト攻略シリーズ④｜プラス型 5×5 の解き方【追いかけ法＋シード表】</a>
         <a href="/blog/poko-light-plus-4x4.html" class="related-link">ポコっとライト攻略シリーズ③｜プラス型 4×4 の解き方【追いかけ法】</a>
-        <a href="/blog/poko-light-cross-row.html" class="related-link">ポコっとライト攻略シリーズ⑥｜クロス型・1列型の解き方</a>
+        <a href="/blog/poko-light-cross-row.html" class="related-link">ポコっとライト攻略シリーズ⑥｜バツ型・行列型の解き方</a>
         <a href="/blog/poko-light-strategy.html" class="related-link">ポコっとライト攻略ガイド｜全消し（全点灯）を狙う基本戦術</a>
       </div>
     </div>
@@ -365,7 +354,7 @@
     <div class="footer-links">
       <a href="/">トップ</a>
       <a href="/blog/">ブログ</a>
-      <a href="/about">企業情報</a>
+      <a href="/about">運営者情報</a>
       <a href="/privacy-policy">プライバシーポリシー</a>
       <a href="/terms">利用規約</a>
       <a href="/contact">お問い合わせ</a>

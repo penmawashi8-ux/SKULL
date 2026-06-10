@@ -4,11 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ポコっとライト攻略ガイド｜全消し（全点灯）を狙う基本戦術【完全1人用パズル】 - ボドゲ広場</title>
-  <meta name="description" content="ポコっとライトの攻略法を徹底解説。追いかけ法・グリッドサイズ別のコツ・プラス／クロス／1列の光り方パターン別戦術まで。初心者でも全点灯クリアを狙えるようになる完全ガイド。" />
+  <meta name="description" content="ポコっとライトの攻略法を徹底解説。追いかけ法・グリッドサイズ別のコツ・プラス／バツ／四角／行列の光り方パターン別戦術まで。初心者でも全点灯クリアを狙えるようになる完全ガイド。" />
   <meta property="og:type" content="article" />
   <meta property="og:url" content="https://boardgamecat.com/blog/poko-light-strategy.html" />
   <meta property="og:title" content="ポコっとライト攻略ガイド｜全消し（全点灯）を狙う基本戦術【完全1人用パズル】 - ボドゲ広場" />
-  <meta property="og:description" content="ポコっとライトの攻略法を徹底解説。追いかけ法・グリッドサイズ別のコツ・パターン別戦術まで。" />
+  <meta property="og:description" content="ポコっとライトの攻略法を徹底解説。追いかけ法・グリッドサイズ別のコツ・4パターン別戦術まで。" />
   <meta property="og:image" content="https://boardgamecat.com/og-image.png" />
   <meta property="og:locale" content="ja_JP" />
   <link rel="canonical" href="https://boardgamecat.com/blog/poko-light-strategy.html" />
@@ -21,7 +21,7 @@
     "@context": "https://schema.org",
     "@type": "Article",
     "headline": "ポコっとライト攻略ガイド｜全消し（全点灯）を狙う基本戦術",
-    "description": "ポコっとライトの攻略法を徹底解説。追いかけ法・グリッドサイズ別のコツ・パターン別戦術まで。",
+    "description": "ポコっとライトの攻略法を徹底解説。追いかけ法・グリッドサイズ別のコツ・4パターン別戦術まで。",
     "url": "https://boardgamecat.com/blog/poko-light-strategy.html",
     "datePublished": "2026-06-02",
     "dateModified": "2026-06-02",
@@ -158,7 +158,7 @@
         <p class="pattern-desc">上下左右＋自分が切り替わる。ライツアウトの標準ルール</p>
       </div>
       <div class="pattern-card">
-        <p class="pattern-name">✕ クロス型</p>
+        <p class="pattern-name">✕ バツ型</p>
         <div class="pattern-visual">
           <div class="cell on"></div><div class="cell off"></div><div class="cell on"></div>
           <div class="cell off"></div><div class="cell center"></div><div class="cell off"></div>
@@ -167,13 +167,22 @@
         <p class="pattern-desc">斜め4方向＋自分が切り替わる</p>
       </div>
       <div class="pattern-card">
-        <p class="pattern-name">▬ 1列型</p>
+        <p class="pattern-name">■ 四角型</p>
         <div class="pattern-visual">
-          <div class="cell off"></div><div class="cell off"></div><div class="cell off"></div>
+          <div class="cell on"></div><div class="cell on"></div><div class="cell on"></div>
           <div class="cell on"></div><div class="cell center"></div><div class="cell on"></div>
-          <div class="cell off"></div><div class="cell off"></div><div class="cell off"></div>
+          <div class="cell on"></div><div class="cell on"></div><div class="cell on"></div>
         </div>
-        <p class="pattern-desc">同じ行全体が切り替わる（縦バージョンもあり）</p>
+        <p class="pattern-desc">周囲8マス＋自分（3×3の塊）が切り替わる</p>
+      </div>
+      <div class="pattern-card">
+        <p class="pattern-name">田 行列型</p>
+        <div class="pattern-visual">
+          <div class="cell off"></div><div class="cell on"></div><div class="cell off"></div>
+          <div class="cell on"></div><div class="cell center"></div><div class="cell on"></div>
+          <div class="cell off"></div><div class="cell on"></div><div class="cell off"></div>
+        </div>
+        <p class="pattern-desc">同じ行と列の全体が切り替わる</p>
       </div>
     </div>
 
@@ -221,12 +230,12 @@
         <tr>
           <td><span class="grid-label">4×4</span></td>
           <td>★★☆</td>
-          <td>追いかけ法が有効。最終行で残るパターンに慣れると安定してクリアできる。</td>
+          <td>追いかけ法だけで必ず解ける特別なサイズ。シード補正が不要で気楽に遊べる。</td>
         </tr>
         <tr>
           <td><span class="grid-label">5×5</span></td>
           <td>★★★</td>
-          <td>標準的なライツアウトのサイズ。解けない配置（解なしパターン）が存在する場合もあるので、詰まったらリセットも選択肢。</td>
+          <td>標準的なライツアウトのサイズ。最終行に残るパターンは8通りに確定するので、シード対応表で確実に攻略できる。</td>
         </tr>
         <tr>
           <td><span class="grid-label">6×6</span></td>
@@ -236,35 +245,38 @@
       </tbody>
     </table>
 
-    <h2>クロス型・1列型の考え方</h2>
+    <h2>バツ型・四角型・行列型の考え方</h2>
 
-    <h3>クロス型（斜め方向）</h3>
-    <p>クロス型は斜め4マスが切り替わるため、プラス型とは影響範囲がまったく異なります。「斜めに追いかける」感覚で、左上から右下・左下から右上の対角線を意識しながら操作しましょう。<strong>コーナーのマスを押すと影響範囲が1マスだけ</strong>になるため、コーナーから手がかりを見つけるのが有効な出発点です。</p>
+    <h3>バツ型（斜め方向）</h3>
+    <p>バツ型は斜め4マス＋自分が切り替わるため、プラス型とは影響範囲がまったく異なります。「斜めに追いかける」感覚で、左上から右下・左下から右上の対角線を意識しながら操作しましょう。<strong>コーナーのマスを押すと影響範囲が最小（自分＋斜め1マスの計2マス）</strong>になるため、コーナーから手がかりを見つけるのが有効な出発点です。</p>
 
-    <h3>1列型（行全体が切り替わる）</h3>
-    <p>1列型は1つのマスをタップするとその行全体（または列全体）が一度に切り替わります。<strong>各行を独立した操作</strong>として考えられるため、論理的には最もシンプルです。「この行をあと何回切り替えれば全点灯か」を行ごとに計算して、奇数回なら1回押す（偶数回なら押さない）と決めれば解けます。</p>
+    <h3>四角型（3×3の塊）</h3>
+    <p>四角型はタップすると周囲8マス＋自分の最大9マスが一度に切り替わる、影響範囲が最も広いパターンです。むやみに押すと盤面が大きく崩れるため、<strong>1手ごとの変化をよく観察して手数を絞る</strong>のがコツ。角や端は影響マスが少ない（角は4マス）ので、細かい調整は角・端から行いましょう。</p>
+
+    <h3>行列型（行と列の全体が切り替わる）</h3>
+    <p>行列型は1つのマスをタップすると、そのマスと同じ行・同じ列の全体が一度に切り替わります。一見複雑ですが、<strong>「数えるだけ」で解ける</strong>論理的なパターンです。</p>
 
     <div class="tip-box">
-      <p class="tip-label">1列型の解き方</p>
-      <p>各行を左から右に見て「点灯していないマスの数が奇数なら、その行の任意のマスを1回タップ」と進めるだけで全点灯に近づけます。ただし列型（縦に切り替わる）のバリアントでは行と列を逆に考えてください。</p>
+      <p class="tip-label">行列型の解き方</p>
+      <p>3×3・5×5（奇数サイズ）なら、<strong>消えているマスをそのまま全部1回ずつタップ</strong>するだけで全点灯します。4×4・6×6（偶数サイズ）では、OFFが奇数個の行と列に印を付け、「マスがOFF・印の行・印の列」のうち当てはまる数が奇数のマスをタップします。詳しくはシリーズ⑥で解説しています。</p>
     </div>
 
     <h2>詰まったときのリセット戦略</h2>
-    <p>ライツアウト系パズルには<strong>そもそも解けない初期配置（解なしパターン）</strong>が存在することがあります。何度試してもどうしても全点灯できない場合は、リセットして別の配置に変えることが最善策です。解けないパズルを解こうとして時間を使うよりも、解ける配置から攻略感を掴むほうが上達への近道です。</p>
+    <p>一般のライツアウト系パズルには解けない初期配置が存在し得ますが、ポコっとライトの盤面は<strong>「全点灯の状態からランダムにタップして崩す」方式で生成される</strong>ため、出題されるパズルは必ず解けます。何度試しても全点灯できないときは、どこかで押し間違えているサイン。リセットして、1手ずつ確認しながらやり直すのが結局いちばんの近道です。</p>
 
-    <p>また、ランダムに配置されるタイプのゲームであれば<strong>初期状態に点灯数が多いほど解きやすい</strong>傾向があります。最初から点灯が半分以上ある配置を選ぶと、クリアまでの手数が少なくなりやすいです。</p>
+    <p>また、リセットすると新しい盤面が生成されるため、手順が長くなって混乱してしまったときに<strong>仕切り直しとしてリセットを使う</strong>のも立派な戦略です。</p>
 
     <h2>上達のための練習ステップ</h2>
     <ol>
       <li><strong>3×3のプラス型</strong>から始めて、追いかけ法の流れを体に覚えさせる</li>
       <li>慣れてきたら<strong>4×4</strong>で同じ手順を試す</li>
-      <li>プラス型をマスターしたら<strong>クロス型・1列型</strong>に挑戦してパターンの違いを楽しむ</li>
+      <li>プラス型をマスターしたら<strong>バツ型・四角型・行列型</strong>に挑戦してパターンの違いを楽しむ</li>
       <li><strong>6×6</strong>は焦らず、1行ずつ確認しながら進めると安定してクリアできる</li>
     </ol>
 
     <div class="tip-box">
       <p class="tip-label">まとめ</p>
-      <p>① タップ順は関係ない、同じマスは2回で相殺<br>② プラス型は「追いかけ法」で1行ずつ下に向かって直していく<br>③ クロス型はコーナーから手がかりを探す<br>④ 1列型は行（列）ごとに独立して考える<br>⑤ 詰まったらリセットも正解</p>
+      <p>① タップ順は関係ない、同じマスは2回で相殺<br>② プラス型は「追いかけ法」で1行ずつ下に向かって直していく<br>③ バツ型はコーナーから手がかりを探す<br>④ 行列型は消えているマスを数えて押す<br>⑤ 解けない出題はないので、詰まったらリセットして丁寧にやり直す</p>
     </div>
 
     <a href="/games/poko-light" class="cta">
@@ -293,7 +305,7 @@
     <div class="footer-links">
       <a href="/">トップ</a>
       <a href="/blog/">ブログ</a>
-      <a href="/about">企業情報</a>
+      <a href="/about">運営者情報</a>
       <a href="/privacy-policy">プライバシーポリシー</a>
       <a href="/terms">利用規約</a>
       <a href="/contact">お問い合わせ</a>

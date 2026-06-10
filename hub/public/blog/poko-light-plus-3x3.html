@@ -142,7 +142,7 @@
         <a href="/blog/poko-light-plus-4x4.html" class="series-nav-item">③ プラス型 4×4</a>
         <a href="/blog/poko-light-plus-5x5.html" class="series-nav-item">④ プラス型 5×5</a>
         <a href="/blog/poko-light-plus-6x6.html" class="series-nav-item">⑤ プラス型 6×6</a>
-        <a href="/blog/poko-light-cross-row.html" class="series-nav-item">⑥ クロス型・1列型</a>
+        <a href="/blog/poko-light-cross-row.html" class="series-nav-item">⑥ バツ型・行列型</a>
       </div>
     </div>
 
@@ -311,17 +311,21 @@
       <p>全点灯クリア達成！シード(1,1)＋追いかけ法で解けました</p>
     </div>
 
-    <h3>3×3のシードは最大4通り</h3>
-    <p>3×3プラス型では、1行目は3マスです。各マスを「押す／押さない」の組み合わせは <strong>2³ = 8通り</strong>ですが、実際には対称性から <strong>4通り</strong> 試せば十分なことがほとんどです。</p>
+    <h3>3×3のシードは全8通り——対応表で一発</h3>
+    <p>3×3プラス型では、1行目は3マスです。各マスを「押す／押さない」の組み合わせは <strong>2³ = 8通り</strong>。じつは3×3では、<strong>追いかけ後の最終行のパターンと正しいシードが1対1で対応</strong>しています。下の対応表を使えば、やり直しは1回で済みます（●＝ON・○＝OFF）。</p>
 
     <ul>
-      <li>シードなし（そのまま追いかけ）</li>
-      <li>(1,1) だけ先に押す</li>
-      <li>(1,2) だけ先に押す</li>
-      <li>(1,3) だけ先に押す</li>
+      <li>●●●（全ON）→ シードなし（そのままクリア）</li>
+      <li>●●○ → (1,2)＋(1,3) を先押し</li>
+      <li>●○● → (1,1)＋(1,2)＋(1,3) を先押し</li>
+      <li>●○○ → (1,1) を先押し</li>
+      <li>○●● → (1,1)＋(1,2) を先押し</li>
+      <li>○●○ → (1,1)＋(1,3) を先押し</li>
+      <li>○○● → (1,3) を先押し</li>
+      <li>○○○（全OFF）→ (1,2) を先押し</li>
     </ul>
 
-    <p>この4通りを試して最終行が全ONになるものを選べばクリアできます。3×3は小さいグリッドなので、すべてを試しても数十秒で終わります。</p>
+    <p>対応表を覚えなくても、8通りのシードを順に試せば必ずどれかで解けます。3×3は小さいグリッドなので、すべて試しても数分で終わります。</p>
 
     <div class="tip-box">
       <p class="tip-label">追いかけ法のコツ</p>
@@ -333,12 +337,12 @@
       <li>追いかけ法：1行目のOFFの真下（2行目）を押し、次は2行目のOFFの真下（3行目）を押す</li>
       <li>最終行（3行目）が全ONならクリア</li>
       <li>最終行にOFFが残ったら、リセットしてシードを変えて再挑戦</li>
-      <li>シードは最大4通り試せば必ず解が見つかる（解ありの配置なら）</li>
+      <li>シードは最終行のパターンに1対1で対応——対応表なら一発、総当たりでも最大8通り</li>
     </ol>
 
-    <div class="warn-box">
-      <p class="warn-label">解なし配置に注意</p>
-      <p>4通り試してもクリアできない場合、その配置は解なし（そもそもクリア不可能）の可能性があります。その場合はリセットして新しい配置に切り替えましょう。</p>
+    <div class="tip-box">
+      <p class="tip-label">3×3に解けない配置はない</p>
+      <p>3×3プラス型は、どんな配置でも必ず解けることが数学的に保証されています（さらにポコっとライトの盤面は「全点灯から崩して」生成されるため、他のサイズでも解けない出題はありません）。8通りのシードを試しても解けない場合は途中の押し間違いなので、落ち着いてやり直しましょう。</p>
     </div>
 
     <a href="/games/poko-light" class="cta">
@@ -354,7 +358,7 @@
         <a href="/blog/poko-light-plus-4x4.html" class="series-nav-item">③ プラス型 4×4</a>
         <a href="/blog/poko-light-plus-5x5.html" class="series-nav-item">④ プラス型 5×5</a>
         <a href="/blog/poko-light-plus-6x6.html" class="series-nav-item">⑤ プラス型 6×6</a>
-        <a href="/blog/poko-light-cross-row.html" class="series-nav-item">⑥ クロス型・1列型</a>
+        <a href="/blog/poko-light-cross-row.html" class="series-nav-item">⑥ バツ型・行列型</a>
       </div>
     </div>
 
@@ -380,7 +384,7 @@
     <div class="footer-links">
       <a href="/">トップ</a>
       <a href="/blog/">ブログ</a>
-      <a href="/about">企業情報</a>
+      <a href="/about">運営者情報</a>
       <a href="/privacy-policy">プライバシーポリシー</a>
       <a href="/terms">利用規約</a>
       <a href="/contact">お問い合わせ</a>
