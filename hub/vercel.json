@@ -21,6 +21,13 @@
       ]
     }
   ],
+  "redirects": [
+    {
+      "source": "/blog/poko-light-plus-5x6.html",
+      "destination": "/blog/poko-light-plus-5x5.html",
+      "permanent": true
+    }
+  ],
   "rewrites": [
     { "source": "/sitemap.xml", "destination": "/api/sitemap" },
     { "source": "/(.*)", "destination": "/index.html" }
