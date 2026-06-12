@@ -215,7 +215,8 @@ export function GameBoard({ onGameEnd, onReturnToHub }: Props) {
     // ページ復帰時にタイマーが止まっていたら再評価
     const onVisible = () => {
       if (document.visibilityState === 'visible') {
-        autoActedRef.current = false
+        // autoActedRef は意図的にリセットしない:
+        // バックグラウンド中に自動行動済みの手番で二重実行されるのを防ぐ
         tick()
         if (!timerIntervalRef.current) {
           timerIntervalRef.current = setInterval(tick, 1000)
