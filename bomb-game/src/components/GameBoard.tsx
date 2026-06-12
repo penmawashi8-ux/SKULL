@@ -102,8 +102,8 @@ export function GameBoard({ onGameEnd, onReturnToHub }: Props) {
   const [showExitConfirm, setShowExitConfirm] = useState(false)
   const [timeLeft, setTimeLeft] = useState(TURN_TIME_LIMIT_SEC)
   const [showTimeoutToast, setShowTimeoutToast] = useState(false)
-  const [showEmoteButtons, setShowEmoteButtons] = useState(false)
-  const emoteTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [emoteCooldown, setEmoteCooldown] = useState(false)
+  const emoteCooldownTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [displayedEmote, setDisplayedEmote] = useState<{ playerId: string; type: string; sentAt: string } | null>(null)
   const emoteDisplayTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -243,9 +243,6 @@ export function GameBoard({ onGameEnd, onReturnToHub }: Props) {
       playCardPlace()
       await placeDisc('flower')
       addLog(`${myPlayer?.player_name} が🍎を置いた`, 'place')
-      setShowEmoteButtons(true)
-      if (emoteTimerRef.current) clearTimeout(emoteTimerRef.current)
-      emoteTimerRef.current = setTimeout(() => setShowEmoteButtons(false), 3000)
     } finally {
       placedRef.current = false
       actionLockRef.current = false
@@ -262,9 +259,6 @@ export function GameBoard({ onGameEnd, onReturnToHub }: Props) {
       playCardPlace()
       await placeDisc('bomb')
       addLog(`${myPlayer?.player_name} がカードを置いた`, 'place')
-      setShowEmoteButtons(true)
-      if (emoteTimerRef.current) clearTimeout(emoteTimerRef.current)
-      emoteTimerRef.current = setTimeout(() => setShowEmoteButtons(false), 3000)
     } finally {
       placedRef.current = false
       actionLockRef.current = false
@@ -378,10 +372,18 @@ export function GameBoard({ onGameEnd, onReturnToHub }: Props) {
 
   useEffect(() => {
     return () => {
-      if (emoteTimerRef.current) clearTimeout(emoteTimerRef.current)
+      if (emoteCooldownTimerRef.current) clearTimeout(emoteCooldownTimerRef.current)
       if (emoteDisplayTimerRef.current) clearTimeout(emoteDisplayTimerRef.current)
     }
   }, [])
+
+  const handleSendEmote = useCallback(async (type: 'BOMB' | 'FLOWER') => {
+    if (emoteCooldown) return
+    setEmoteCooldown(true)
+    if (emoteCooldownTimerRef.current) clearTimeout(emoteCooldownTimerRef.current)
+    emoteCooldownTimerRef.current = setTimeout(() => setEmoteCooldown(false), 2000)
+    await sendEmote(type)
+  }, [emoteCooldown, sendEmote])
 
   const lastEmoteFromState = gameState?.last_emote ?? null
   useEffect(() => {
@@ -517,38 +519,28 @@ export function GameBoard({ onGameEnd, onReturnToHub }: Props) {
         </div>
 
         {/* Emote buttons */}
-        <AnimatePresence>
-          {showEmoteButtons && phase === 'place' && !isMyTurn && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="overflow-hidden"
-            >
-              <p className="text-white/40 text-xs text-center mb-1.5" style={{ fontFamily: 'Crimson Text, serif' }}>
-                💬 エモートを送る
-              </p>
-              <div className="flex gap-2">
-                <motion.button
-                  onClick={async () => { setShowEmoteButtons(false); await sendEmote('BOMB') }}
-                  className="flex-1 py-2 rounded-xl bg-red-900/50 border border-red-500/30 flex items-center justify-center gap-1.5"
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <img src="/bomb.svg" alt="爆弾" className="w-6 h-6" />
-                  <span className="text-red-300 text-xs" style={{ fontFamily: 'Crimson Text, serif' }}>爆弾だ！</span>
-                </motion.button>
-                <motion.button
-                  onClick={async () => { setShowEmoteButtons(false); await sendEmote('FLOWER') }}
-                  className="flex-1 py-2 rounded-xl bg-emerald-900/50 border border-emerald-500/30 flex items-center justify-center gap-1.5"
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <img src="/apple.svg" alt="りんご" className="w-6 h-6" />
-                  <span className="text-emerald-300 text-xs" style={{ fontFamily: 'Crimson Text, serif' }}>りんごだ！</span>
-                </motion.button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <div className="flex gap-2">
+          <motion.button
+            onClick={() => handleSendEmote('BOMB')}
+            disabled={emoteCooldown}
+            className="flex-1 py-1.5 rounded-xl bg-red-900/50 border border-red-500/30 flex items-center justify-center gap-1.5 disabled:opacity-40 transition-opacity"
+            whileTap={!emoteCooldown ? { scale: 0.95 } : {}}
+            style={{ touchAction: 'manipulation' }}
+          >
+            <img src="/bomb.svg" alt="爆弾" className="w-5 h-5" />
+            <span className="text-red-300 text-xs" style={{ fontFamily: 'Crimson Text, serif' }}>爆弾だ！</span>
+          </motion.button>
+          <motion.button
+            onClick={() => handleSendEmote('FLOWER')}
+            disabled={emoteCooldown}
+            className="flex-1 py-1.5 rounded-xl bg-emerald-900/50 border border-emerald-500/30 flex items-center justify-center gap-1.5 disabled:opacity-40 transition-opacity"
+            whileTap={!emoteCooldown ? { scale: 0.95 } : {}}
+            style={{ touchAction: 'manipulation' }}
+          >
+            <img src="/apple.svg" alt="りんご" className="w-5 h-5" />
+            <span className="text-emerald-300 text-xs" style={{ fontFamily: 'Crimson Text, serif' }}>りんごだ！</span>
+          </motion.button>
+        </div>
 
         {/* Action buttons */}
         <AnimatePresence mode="wait">
