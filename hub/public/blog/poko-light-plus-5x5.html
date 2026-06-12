@@ -12,6 +12,7 @@
   <meta property="og:image" content="https://boardgamecat.com/og-image.png" />
   <meta property="og:locale" content="ja_JP" />
   <link rel="canonical" href="https://boardgamecat.com/blog/poko-light-plus-5x5.html" />
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5436923510883200" crossorigin="anonymous"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=M+PLUS+Rounded+1c:wght@400;700;800&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet" />
@@ -148,12 +149,12 @@
         <a href="/blog/poko-light-plus-4x4.html" class="series-nav-item">③ プラス型 4×4</a>
         <span class="series-nav-item current">④ プラス型 5×5</span>
         <a href="/blog/poko-light-plus-6x6.html" class="series-nav-item">⑤ プラス型 6×6</a>
-        <a href="/blog/poko-light-cross-row.html" class="series-nav-item">⑥ クロス型・1列型</a>
+        <a href="/blog/poko-light-cross-row.html" class="series-nav-item">⑥ バツ型・行列型</a>
       </div>
     </div>
 
     <div class="lead">
-      攻略シリーズ第4回は<strong>プラス型 5×5</strong>グリッドです。基本の追いかけ法は3×3・4×4と同じですが、5×5では最終行（5行目）に残るパターンが<strong>16通りに確定する</strong>という特徴があります。パターンを見ればシードがひと目でわかる対応表を用意しました。
+      攻略シリーズ第4回は<strong>プラス型 5×5</strong>グリッドです。基本の追いかけ法は3×3・4×4と同じですが、5×5では最終行（5行目）に残るパターンが<strong>全ONを含む8通りに確定する</strong>という特徴があります。パターンを見ればシードがひと目でわかる対応表を用意しました。
     </div>
 
     <div class="tip-box">
@@ -240,7 +241,7 @@
           <div class="grid g5">
             <div class="c on"></div><div class="c on"></div><div class="c on"></div><div class="c on"></div><div class="c on"></div>
             <div class="c on"></div><div class="c on"></div><div class="c on"></div><div class="c on"></div><div class="c on"></div>
-            <div class="c on"></div><div class="c press"></div><div class="c press"></div><div class="c press"></div><div class="c on"></div>
+            <div class="c off"></div><div class="c press"></div><div class="c press"></div><div class="c press"></div><div class="c off"></div>
             <div class="c off"></div><div class="c off"></div><div class="c on"></div><div class="c off"></div><div class="c off"></div>
             <div class="c on"></div><div class="c off"></div><div class="c on"></div><div class="c off"></div><div class="c on"></div>
           </div>
@@ -253,7 +254,7 @@
 
     <h2>最終行（5行目）のパターン別シード一覧</h2>
     <p>追いかけを完了した後、5行目にOFFが残る場合は<strong>1行目のシードを変えてやり直し</strong>が必要です。シードとは「追いかけを始める前に1行目の特定のマスを先に押しておくこと」です。</p>
-    <p>下表で<strong>5行目の状態（●＝ON・○＝OFF）を探し</strong>、右側に書かれた列のマスをシードとして先押ししてからやり直してください。5行目のパターンは必ずこの16通りのどれかになります。</p>
+    <p>下表で<strong>5行目の状態（●＝ON・○＝OFF）を探し</strong>、右側に書かれた列のマスをシードとして先押ししてからやり直してください。5行目のパターンは必ずこの8通り（全ON含む）のどれかになります。</p>
 
     <table class="pattern-table">
       <thead>
@@ -271,51 +272,6 @@
             <span style="font-size:12px;color:rgba(255,255,255,0.45);margin-left:8px;">●●●●●（全ON）</span>
           </td>
           <td><span class="ok-badge">シードなし</span>　クリア！</td>
-        </tr>
-        <tr>
-          <td>
-            <div class="mini-grid">
-              <div class="mini-cell mini-on"></div><div class="mini-cell mini-on"></div><div class="mini-cell mini-on"></div><div class="mini-cell mini-off"></div><div class="mini-cell mini-off"></div>
-            </div>
-            <span style="font-size:12px;color:rgba(255,255,255,0.45);margin-left:8px;">●●●○○</span>
-          </td>
-          <td class="seed-cell">列1</td>
-        </tr>
-        <tr>
-          <td>
-            <div class="mini-grid">
-              <div class="mini-cell mini-off"></div><div class="mini-cell mini-on"></div><div class="mini-cell mini-on"></div><div class="mini-cell mini-off"></div><div class="mini-cell mini-on"></div>
-            </div>
-            <span style="font-size:12px;color:rgba(255,255,255,0.45);margin-left:8px;">○●●○●</span>
-          </td>
-          <td class="seed-cell">列2</td>
-        </tr>
-        <tr>
-          <td>
-            <div class="mini-grid">
-              <div class="mini-cell mini-off"></div><div class="mini-cell mini-on"></div><div class="mini-cell mini-off"></div><div class="mini-cell mini-on"></div><div class="mini-cell mini-off"></div>
-            </div>
-            <span style="font-size:12px;color:rgba(255,255,255,0.45);margin-left:8px;">○●○●○</span>
-          </td>
-          <td class="seed-cell">列3</td>
-        </tr>
-        <tr>
-          <td>
-            <div class="mini-grid">
-              <div class="mini-cell mini-on"></div><div class="mini-cell mini-off"></div><div class="mini-cell mini-on"></div><div class="mini-cell mini-on"></div><div class="mini-cell mini-off"></div>
-            </div>
-            <span style="font-size:12px;color:rgba(255,255,255,0.45);margin-left:8px;">●○●●○</span>
-          </td>
-          <td class="seed-cell">列4</td>
-        </tr>
-        <tr>
-          <td>
-            <div class="mini-grid">
-              <div class="mini-cell mini-off"></div><div class="mini-cell mini-off"></div><div class="mini-cell mini-on"></div><div class="mini-cell mini-on"></div><div class="mini-cell mini-on"></div>
-            </div>
-            <span style="font-size:12px;color:rgba(255,255,255,0.45);margin-left:8px;">○○●●●</span>
-          </td>
-          <td class="seed-cell">列5</td>
         </tr>
         <tr>
           <td>
@@ -380,39 +336,12 @@
           </td>
           <td class="seed-cell">列3＋列5</td>
         </tr>
-        <tr>
-          <td>
-            <div class="mini-grid">
-              <div class="mini-cell mini-on"></div><div class="mini-cell mini-on"></div><div class="mini-cell mini-off"></div><div class="mini-cell mini-on"></div><div class="mini-cell mini-on"></div>
-            </div>
-            <span style="font-size:12px;color:rgba(255,255,255,0.45);margin-left:8px;">●●○●●</span>
-          </td>
-          <td class="seed-cell">列1＋列2＋列3</td>
-        </tr>
-        <tr>
-          <td>
-            <div class="mini-grid">
-              <div class="mini-cell mini-off"></div><div class="mini-cell mini-off"></div><div class="mini-cell mini-off"></div><div class="mini-cell mini-off"></div><div class="mini-cell mini-off"></div>
-            </div>
-            <span style="font-size:12px;color:rgba(255,255,255,0.45);margin-left:8px;">○○○○○（全OFF）</span>
-          </td>
-          <td class="seed-cell">列1＋列3＋列4</td>
-        </tr>
-        <tr>
-          <td>
-            <div class="mini-grid">
-              <div class="mini-cell mini-on"></div><div class="mini-cell mini-off"></div><div class="mini-cell mini-off"></div><div class="mini-cell mini-off"></div><div class="mini-cell mini-on"></div>
-            </div>
-            <span style="font-size:12px;color:rgba(255,255,255,0.45);margin-left:8px;">●○○○●</span>
-          </td>
-          <td class="seed-cell">列2＋列3＋列4</td>
-        </tr>
       </tbody>
     </table>
 
     <div class="tip-box">
       <p class="tip-label">この表の使い方</p>
-      <p>追いかけが終わって5行目のパターンを確認したら、表の左列で一致する行を探す。見つかったら盤面をリセットし、右列に書かれた1行目の列を先にタップしてから追いかけを開始する。例：「列3＋列5」なら1行目の3番目と5番目を先押し。この16パターン以外は現れないので、必ず一致する行が見つかります。</p>
+      <p>追いかけが終わって5行目のパターンを確認したら、表の左列で一致する行を探す。見つかったら盤面をリセットし、右列に書かれた1行目の列を先にタップしてから追いかけを開始する。例：「列3＋列5」なら1行目の3番目と5番目を先押し。このゲームの盤面は必ず解ける状態で出題されるため、この8パターン以外は現れません。もし表にないパターンが出たら途中の押し間違いなので、リセットして丁寧に追いかけ直しましょう。</p>
     </div>
 
     <h2>シードを試すときのポイント</h2>
@@ -459,7 +388,7 @@
       <li>追いかけ法の原理は3×3・4×4と同じ：1行目→4行目まで「OFFの真下を押す」を繰り返す</li>
       <li>5行目が全ONならクリア</li>
       <li>OFFが残ったら1行目のシードを変えて再試行</li>
-      <li>シードは上の対応表で5行目のパターンを探せば一発でわかる（16通り網羅）</li>
+      <li>シードは上の対応表で5行目のパターンを探せば一発でわかる（出現する8通りを網羅）</li>
       <li>ゲームは全配置クリア可能なので必ず解がある</li>
     </ol>
 
@@ -476,7 +405,7 @@
         <a href="/blog/poko-light-plus-4x4.html" class="series-nav-item">③ プラス型 4×4</a>
         <span class="series-nav-item current">④ プラス型 5×5</span>
         <a href="/blog/poko-light-plus-6x6.html" class="series-nav-item">⑤ プラス型 6×6</a>
-        <a href="/blog/poko-light-cross-row.html" class="series-nav-item">⑥ クロス型・1列型</a>
+        <a href="/blog/poko-light-cross-row.html" class="series-nav-item">⑥ バツ型・行列型</a>
       </div>
     </div>
 
@@ -491,7 +420,7 @@
       <div class="related-list">
         <a href="/blog/poko-light-plus-4x4.html" class="related-link">ポコっとライト攻略シリーズ③｜プラス型 4×4 の解き方【追いかけ法】</a>
         <a href="/blog/poko-light-plus-6x6.html" class="related-link">ポコっとライト攻略シリーズ⑤｜プラス型 6×6 の解き方【大型グリッド攻略】</a>
-        <a href="/blog/poko-light-cross-row.html" class="related-link">ポコっとライト攻略シリーズ⑥｜クロス型・1列型の解き方</a>
+        <a href="/blog/poko-light-cross-row.html" class="related-link">ポコっとライト攻略シリーズ⑥｜バツ型・行列型の解き方</a>
         <a href="/blog/poko-light-strategy.html" class="related-link">ポコっとライト攻略ガイド｜全消し（全点灯）を狙う基本戦術</a>
       </div>
     </div>
@@ -502,7 +431,7 @@
     <div class="footer-links">
       <a href="/">トップ</a>
       <a href="/blog/">ブログ</a>
-      <a href="/about">企業情報</a>
+      <a href="/about">運営者情報</a>
       <a href="/privacy-policy">プライバシーポリシー</a>
       <a href="/terms">利用規約</a>
       <a href="/contact">お問い合わせ</a>

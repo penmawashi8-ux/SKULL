@@ -486,7 +486,12 @@ export const useGameStore = create<StoreState>()((set, get) => {
   // only the first client to act actually commits; others detect the state
   // has already moved on and abort.
   async function processOnlineCpuTurn(cpuPlayer: Player, gs: GameState): Promise<void> {
-    if (_onlineCpuProcessing) return
+    if (_onlineCpuProcessing) {
+      // Busy with a previous turn — remember the latest trigger so the
+      // finally block re-fires it instead of dropping this CPU turn.
+      _pendingCpuRetrigger = { player: cpuPlayer, gs }
+      return
+    }
     _onlineCpuProcessing = true
     const gsUpdatedAt = gs.updated_at
     try {
@@ -920,6 +925,8 @@ export const useGameStore = create<StoreState>()((set, get) => {
       const { room, gameState, players, sessionId, isCpuGame, myDiscs, publicDiscs } = get()
       const myPlayer = players.find(p => p.session_id === sessionId)
       if (!myPlayer || !gameState || !room) return
+      // Guard against stale double-fires (e.g. timeout auto-action after the turn moved on)
+      if (gameState.current_player_id !== myPlayer.id) return
 
       const round = gameState.round_number
       const position = publicDiscs.filter(
@@ -1034,6 +1041,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
       const { room, gameState, players, sessionId, isCpuGame, _foldedPlayerIds, publicDiscs } = get()
       const myPlayer = players.find(p => p.session_id === sessionId)
       if (!myPlayer || !gameState || !room) return
+      if (gameState.current_player_id !== myPlayer.id) return
 
       const round = gameState.round_number
       const totalPlaced = publicDiscs.filter(d => d.round_number === round).length
@@ -1080,6 +1088,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
       const { room, gameState, players, sessionId, isCpuGame, _foldedPlayerIds } = get()
       const myPlayer = players.find(p => p.session_id === sessionId)
       if (!myPlayer || !gameState || !room) return
+      if (gameState.current_player_id !== myPlayer.id) return
 
       const newFoldedIds = [..._foldedPlayerIds, myPlayer.id]
       const activePlayers = players.filter(p => !p.is_eliminated)
@@ -1387,11 +1396,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
                 if (!s2.isCpuGame) {
                   const cp2 = freshPlayers.find(p => p.id === newGs.current_player_id)
                   if (cp2?.is_cpu) {
-                    if (_onlineCpuProcessing) {
-                      _pendingCpuRetrigger = { player: cp2, gs: newGs }
-                    } else {
-                      processOnlineCpuTurn(cp2, newGs)
-                    }
+                    processOnlineCpuTurn(cp2, newGs)
                   } else if (cp2 && !cp2.is_eliminated && newGs.phase === 'place') {
                     const check = () => {
                       const s3 = get()
@@ -1446,7 +1451,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
                 const s2 = get()
                 if (!s2.isCpuGame) {
                   const cp2 = data.find(p => p.id === newGs.current_player_id)
-                  if (cp2?.is_cpu && !_onlineCpuProcessing) processOnlineCpuTurn(cp2, newGs)
+                  if (cp2?.is_cpu) processOnlineCpuTurn(cp2, newGs)
                 }
               })
             }
@@ -1456,12 +1461,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
             if (!s.isCpuGame) {
               const cp = s.players.find(p => p.id === newGs.current_player_id)
               if (cp?.is_cpu) {
-                if (_onlineCpuProcessing) {
-                  // Still finishing the previous turn — store so finally can re-fire
-                  _pendingCpuRetrigger = { player: cp, gs: newGs }
-                } else {
-                  processOnlineCpuTurn(cp, newGs)
-                }
+                processOnlineCpuTurn(cp, newGs)
               } else if (cp && !cp.is_eliminated && newGs.phase === 'place') {
                 const check = () => {
                   const s2 = get()
@@ -1579,7 +1579,7 @@ export const useGameStore = create<StoreState>()((set, get) => {
                   const s2 = get()
                   if (!s2.isCpuGame) {
                     const cp = s2.players.find(p => p.id === freshGs.current_player_id)
-                    if (cp?.is_cpu && !_onlineCpuProcessing) processOnlineCpuTurn(cp, freshGs)
+                    if (cp?.is_cpu) processOnlineCpuTurn(cp, freshGs)
                   }
                 } else if (freshPlayers && freshPlayers.length > 0) {
                   set(s => ({

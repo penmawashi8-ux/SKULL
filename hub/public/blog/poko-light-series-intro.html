@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ポコっとライト攻略シリーズ①｜仕組みと基本ルールを理解しよう - ボドゲ広場</title>
-  <meta name="description" content="ポコっとライト攻略シリーズ第1回。タップで隣接マスが切り替わる仕組み、タップ順が関係ない理由、プラス型・クロス型・1列型のパターン、3×3〜6×6グリッドの概要を解説。" />
+  <meta name="description" content="ポコっとライト攻略シリーズ第1回。タップで隣接マスが切り替わる仕組み、タップ順が関係ない理由、プラス型・バツ型・四角型・行列型の4パターン、3×3〜6×6グリッドの概要を解説。" />
   <meta property="og:type" content="article" />
   <meta property="og:url" content="https://boardgamecat.com/blog/poko-light-series-intro.html" />
   <meta property="og:title" content="ポコっとライト攻略シリーズ①｜仕組みと基本ルールを理解しよう - ボドゲ広場" />
@@ -12,6 +12,7 @@
   <meta property="og:image" content="https://boardgamecat.com/og-image.png" />
   <meta property="og:locale" content="ja_JP" />
   <link rel="canonical" href="https://boardgamecat.com/blog/poko-light-series-intro.html" />
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5436923510883200" crossorigin="anonymous"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=M+PLUS+Rounded+1c:wght@400;700;800&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet" />
@@ -147,7 +148,7 @@
         <a href="/blog/poko-light-plus-4x4.html" class="series-nav-item">③ プラス型 4×4</a>
         <a href="/blog/poko-light-plus-5x5.html" class="series-nav-item">④ プラス型 5×5</a>
         <a href="/blog/poko-light-plus-6x6.html" class="series-nav-item">⑤ プラス型 6×6</a>
-        <a href="/blog/poko-light-cross-row.html" class="series-nav-item">⑥ クロス型・1列型</a>
+        <a href="/blog/poko-light-cross-row.html" class="series-nav-item">⑥ バツ型・行列型</a>
       </div>
     </div>
 
@@ -227,7 +228,7 @@
         <p class="pattern-desc">上下左右＋自分が切り替わる。ライツアウトの標準ルール。追いかけ法が有効。</p>
       </div>
       <div class="pattern-card">
-        <p class="pattern-name">✕ クロス型</p>
+        <p class="pattern-name">✕ バツ型</p>
         <div class="pattern-visual">
           <div class="cell on"></div><div class="cell off"></div><div class="cell on"></div>
           <div class="cell off"></div><div class="cell center"></div><div class="cell off"></div>
@@ -236,24 +237,36 @@
         <p class="pattern-desc">斜め4方向＋自分が切り替わる。コーナーを手がかりにする。</p>
       </div>
       <div class="pattern-card">
-        <p class="pattern-name">▬ 1列型</p>
+        <p class="pattern-name">■ 四角型</p>
         <div class="pattern-visual">
-          <div class="cell off"></div><div class="cell off"></div><div class="cell off"></div>
+          <div class="cell on"></div><div class="cell on"></div><div class="cell on"></div>
           <div class="cell on"></div><div class="cell center"></div><div class="cell on"></div>
-          <div class="cell off"></div><div class="cell off"></div><div class="cell off"></div>
+          <div class="cell on"></div><div class="cell on"></div><div class="cell on"></div>
         </div>
-        <p class="pattern-desc">同じ行全体が切り替わる（縦バリアントもあり）。行独立の考え方で解ける。</p>
+        <p class="pattern-desc">周囲8マス＋自分（3×3の塊）が切り替わる。影響範囲が最大。</p>
+      </div>
+      <div class="pattern-card">
+        <p class="pattern-name">田 行列型</p>
+        <div class="pattern-visual">
+          <div class="cell off"></div><div class="cell on"></div><div class="cell off"></div>
+          <div class="cell on"></div><div class="cell center"></div><div class="cell on"></div>
+          <div class="cell off"></div><div class="cell on"></div><div class="cell off"></div>
+        </div>
+        <p class="pattern-desc">同じ行と列の全体が切り替わる。「数える」だけで解ける。</p>
       </div>
     </div>
 
     <h3>プラス型</h3>
-    <p>最もスタンダードなパターンです。タップすると上・下・左・右の4マス＋自分自身の最大5マスが切り替わります。グリッドの端やコーナーでは隣接マスが少ないため影響範囲が小さくなります。シリーズ②③④でこのパターンを詳しく扱います。</p>
+    <p>最もスタンダードなパターンです。タップすると上・下・左・右の4マス＋自分自身の最大5マスが切り替わります。グリッドの端やコーナーでは隣接マスが少ないため影響範囲が小さくなります。シリーズ②〜⑤でこのパターンを詳しく扱います。</p>
 
-    <h3>クロス型</h3>
-    <p>タップすると斜め4方向＋自分自身が切り替わります。プラス型と影響範囲がまったく異なるため、追いかけ法は使えません。コーナーのマスをタップすると影響範囲が1マスだけになるという特性があり、これを手がかりにします。シリーズ⑤で解説します。</p>
+    <h3>バツ型</h3>
+    <p>タップすると斜め4方向＋自分自身が切り替わります。プラス型と影響範囲がまったく異なるため、追いかけ法は使えません。コーナーのマスをタップすると影響範囲が最小（自分＋斜め1マスの計2マス）になるという特性があり、これを手がかりにします。シリーズ⑥で解説します。</p>
 
-    <h3>1列型</h3>
-    <p>タップすると同じ行全体（または列全体）が一度に切り替わります。各行が独立して動作するため、論理的には最もシンプルなパターンです。シリーズ⑤で解説します。</p>
+    <h3>四角型</h3>
+    <p>タップすると周囲8マス＋自分自身、つまり3×3の塊がまるごと切り替わります。1タップの影響範囲が最も広いパターンです。角や端では影響マスが減るため、そこが手がかりになります。</p>
+
+    <h3>行列型</h3>
+    <p>タップすると、タップしたマスと同じ行・同じ列の全体が一度に切り替わります。一見派手ですが、消えているマスの数を数えるだけで機械的に解ける論理的なパターンです。シリーズ⑥で解説します。</p>
 
     <h2>グリッドサイズの概要</h2>
     <p>ポコっとライトでは3×3から6×6まで複数のグリッドサイズが用意されています。小さいほど試行錯誤でも解けますが、大きくなるほど手数が増えてミスが命取りになります。</p>
@@ -272,7 +285,7 @@
           <td><span class="grid-label">3×3</span></td>
           <td>9マス</td>
           <td>★☆☆</td>
-          <td>追いかけ法の練習に最適。最悪4通りのシードを試せば解ける。</td>
+          <td>追いかけ法の練習に最適。最終行パターンとシードが1対1対応で覚えやすい。</td>
         </tr>
         <tr>
           <td><span class="grid-label">4×4</span></td>
@@ -284,7 +297,7 @@
           <td><span class="grid-label">5×5</span></td>
           <td>25マス</td>
           <td>★★★</td>
-          <td>標準的なライツアウトサイズ。解なし配置が存在することもある。</td>
+          <td>標準的なライツアウトサイズ。最終行に残る8パターンのシード表で攻略できる。</td>
         </tr>
         <tr>
           <td><span class="grid-label">6×6</span></td>
@@ -302,13 +315,14 @@
       <li><strong>シリーズ①（本記事）</strong>：仕組みと基本ルール、重要な2つの性質を理解する</li>
       <li><strong>シリーズ②</strong>：プラス型 3×3 で追いかけ法とシード押しを習得する</li>
       <li><strong>シリーズ③</strong>：プラス型 4×4 で追いかけ法をより大きいグリッドに適用する</li>
-      <li><strong>シリーズ④</strong>：プラス型 5×5・6×6 で大型グリッドの注意点を学ぶ</li>
-      <li><strong>シリーズ⑤</strong>：クロス型・1列型の独自の解き方を習得する</li>
+      <li><strong>シリーズ④</strong>：プラス型 5×5 でパターン別シード表の使い方を学ぶ</li>
+      <li><strong>シリーズ⑤</strong>：プラス型 6×6 で大型グリッドの注意点を学ぶ</li>
+      <li><strong>シリーズ⑥</strong>：バツ型・行列型の独自の解き方を習得する</li>
     </ol>
 
-    <div class="warn-box">
-      <p class="warn-label">解なしパターンについて</p>
-      <p>ライツアウト系パズルにはそもそも解けない初期配置（解なしパターン）が存在する場合があります。何度試してもクリアできないときはリセットして新しい配置に変えることも立派な戦略です。</p>
+    <div class="tip-box">
+      <p class="tip-label">解けない配置は出題されない</p>
+      <p>一般のライツアウト系パズルには解けない初期配置が存在し得ますが、ポコっとライトの盤面は「全点灯の状態からランダムにタップして崩す」方式で生成されるため、<strong>出題されるパズルは必ず解けます</strong>。何度試してもクリアできないときは、どこかで押し間違えている可能性が高いので、リセットして丁寧にやり直しましょう。</p>
     </div>
 
     <a href="/games/poko-light" class="cta">
@@ -324,7 +338,7 @@
         <a href="/blog/poko-light-plus-4x4.html" class="series-nav-item">③ プラス型 4×4</a>
         <a href="/blog/poko-light-plus-5x5.html" class="series-nav-item">④ プラス型 5×5</a>
         <a href="/blog/poko-light-plus-6x6.html" class="series-nav-item">⑤ プラス型 6×6</a>
-        <a href="/blog/poko-light-cross-row.html" class="series-nav-item">⑥ クロス型・1列型</a>
+        <a href="/blog/poko-light-cross-row.html" class="series-nav-item">⑥ バツ型・行列型</a>
       </div>
     </div>
 
@@ -350,7 +364,7 @@
     <div class="footer-links">
       <a href="/">トップ</a>
       <a href="/blog/">ブログ</a>
-      <a href="/about">企業情報</a>
+      <a href="/about">運営者情報</a>
       <a href="/privacy-policy">プライバシーポリシー</a>
       <a href="/terms">利用規約</a>
       <a href="/contact">お問い合わせ</a>
