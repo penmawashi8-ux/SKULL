@@ -1840,3 +1840,9 @@ export const useGameStore = create<StoreState>()((set, get) => {
     },
   }
 })
+
+// Dev-only: expose the store so tooling (e.g. the gameplay-video capture
+// script) can inject board states for screenshots. Stripped from prod builds.
+if (typeof window !== 'undefined' && import.meta.env?.DEV) {
+  ;(window as unknown as { __bombStore?: typeof useGameStore }).__bombStore = useGameStore
+}

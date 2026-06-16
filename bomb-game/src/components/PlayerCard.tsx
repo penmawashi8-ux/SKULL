@@ -83,7 +83,7 @@ export function PlayerCard({
 
   if (compact) {
     return (
-      <div className="relative">
+      <div className="relative" data-player-id={player.id}>
         {emote && <EmoteBubble emote={emote} />}
         <motion.div
           className={`relative bg-gray-900/80 backdrop-blur rounded-xl border border-white/10 overflow-hidden
@@ -153,7 +153,7 @@ export function PlayerCard({
   }
 
   return (
-    <div className="relative">
+    <div className="relative" data-player-id={player.id}>
       {emote && <EmoteBubble emote={emote} />}
       <motion.div
         className={`relative bg-gray-900/80 backdrop-blur rounded-xl border border-white/10 overflow-hidden

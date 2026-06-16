@@ -320,6 +320,92 @@ def render_rules(items):
     return img
 
 
+SPEAKER_COLORS = {
+    "rin": (235, 64, 80),
+    "sou": (66, 135, 245),
+    "kai": (52, 199, 120),
+    "narrator": (255, 212, 59),
+}
+SPEAKER_NAMES = {"rin": "リン", "sou": "ソウ", "kai": "カイ", "narrator": "実況"}
+
+
+def _bubble_layout(text, fnt, max_text_w, draw):
+    lines = wrap_jp(text, fnt, max_text_w, draw)
+    line_h = fnt.size + 18
+    pad_x, pad_y = 34, 28
+    text_w = max((draw.textlength(ln, font=fnt) for ln in lines), default=0)
+    bw = int(text_w + pad_x * 2)
+    bh = int(len(lines) * line_h + pad_y * 2 + 36)  # +36 for name chip
+    return lines, bw, bh, line_h, pad_x, pad_y
+
+
+def draw_speech_bubble(base, speaker, box, text, canvas_w, canvas_h):
+    """Overlay a colored speech bubble anchored to the speaker's card box."""
+    color = SPEAKER_COLORS.get(speaker, (200, 200, 200))
+    name = SPEAKER_NAMES.get(speaker, "")
+    fnt = F_BODY
+    overlay = Image.new("RGBA", base.size, (0, 0, 0, 0))
+    d = ImageDraw.Draw(overlay)
+    max_text_w = 820
+    lines, bw, bh, line_h, pad_x, pad_y = _bubble_layout(text, fnt, max_text_w, d)
+    bw = min(bw, 1000)
+
+    narrator = speaker == "narrator" or box is None
+    if narrator:
+        bx = (canvas_w - bw) // 2
+        by = int(canvas_h * 0.40)
+        tail = None
+    else:
+        cx = int(box["x"] + box["w"] / 2)
+        cy_top = int(box["y"])
+        cy_bot = int(box["y"] + box["h"])
+        bx = int(min(max(cx - bw / 2, 30), canvas_w - bw - 30))
+        if cy_top > canvas_h * 0.6:  # speaker near bottom -> bubble above
+            by = cy_top - bh - 50
+            tail = ("down", cx)
+        else:  # speaker near top -> bubble below
+            by = cy_bot + 50
+            tail = ("up", cx)
+
+    # bubble body
+    rounded(d, [bx, by, bx + bw, by + bh], 28, fill=(16, 18, 34, 240),
+            outline=color, width=5)
+    # name chip
+    chip_w = int(d.textlength(name, font=F_SMALL) + 40)
+    rounded(d, [bx + 22, by - 22, bx + 22 + chip_w, by + 30], 16, fill=color)
+    d.text((bx + 22 + chip_w / 2, by - 20), name, font=F_SMALL, fill=(20, 20, 30),
+           anchor="ma")
+    # text
+    ty = by + 44
+    for ln in lines:
+        d.text((bx + pad_x, ty), ln, font=fnt, fill=WHITE)
+        ty += line_h
+    # tail
+    if tail:
+        dir_, tx = tail
+        tx = int(min(max(tx, bx + 40), bx + bw - 40))
+        if dir_ == "up":
+            d.polygon([(tx - 24, by + 3), (tx + 24, by + 3), (tx, by - 34)],
+                      fill=(16, 18, 34, 240))
+            d.line([(tx - 24, by + 3), (tx, by - 34)], fill=color, width=5)
+            d.line([(tx + 24, by + 3), (tx, by - 34)], fill=color, width=5)
+        else:
+            yb = by + bh
+            d.polygon([(tx - 24, yb - 3), (tx + 24, yb - 3), (tx, yb + 34)],
+                      fill=(16, 18, 34, 240))
+            d.line([(tx - 24, yb - 3), (tx, yb + 34)], fill=color, width=5)
+            d.line([(tx + 24, yb - 3), (tx, yb + 34)], fill=color, width=5)
+
+    out = base.convert("RGBA")
+    out.alpha_composite(overlay)
+    return out.convert("RGB")
+
+
+def compose_game(screenshot_path, speaker, box):
+    base = Image.open(screenshot_path).convert("RGB")
+    return base
+
+
 def render_outro():
     img, d = base_frame()
     cx = W / 2
