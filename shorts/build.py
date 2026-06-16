@@ -179,7 +179,7 @@ def main():
          "-i", os.path.join(BUILD, "narration.wav"),
          "-i", os.path.join(BUILD, "bgm.wav"),
          "-filter_complex",
-         "[1:a]volume=1.0[v];[2:a]volume=0.14[b];[v][b]amix=inputs=2:duration=first:dropout_transition=2[a]",
+         "[1:a]volume=1.0[v];[2:a]volume=0.42[b];[v][b]amix=inputs=2:duration=first:dropout_transition=2:normalize=0[a]",
          "-map", "0:v", "-map", "[a]", "-c:v", "copy", "-c:a", "aac",
          "-b:a", "192k", "-shortest", "-movflags", "+faststart", OUT])
     print("Done ->", OUT, f"({total:.1f}s)")
