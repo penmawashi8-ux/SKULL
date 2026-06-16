@@ -9,7 +9,7 @@ import os, struct, subprocess
 
 SF2 = "/usr/share/sounds/sf2/FluidR3_GM.sf2"
 TPQN = 480
-BPM = 86
+BPM = 150
 
 
 def _vlq(n):
@@ -60,20 +60,22 @@ def build_midi(bars, path):
             for n in chords[ci]:
                 add(0, n, b0 + beat, 1.9, 46)
         # soft warm pad: chord root held as a whole note, very quiet
-        add(3, chords[ci][0], b0, 4, 30)
-        # acoustic bass: root on 1 and 3
-        add(2, basses[ci], b0 + 0, 1.6, 60)
-        add(2, basses[ci], b0 + 2, 1.6, 56)
+        add(3, chords[ci][0], b0, 4, 28)
+        # driving bass: bouncing root/fifth eighth feel on every beat
+        root = _note(basses[ci])
+        for beat in range(4):
+            add(2, root, b0 + beat, 0.45, 62)
+            add(2, root + 7, b0 + beat + 0.5, 0.4, 50)  # fifth on the "and"
         # vibraphone melody
         for pitch, st, du in melody[ci]:
-            add(1, pitch, b0 + st, du, 60)
-        # light chill groove on channel 9 (GM drums)
-        add(9, 36, b0 + 0, 0.2, 78)   # kick
-        add(9, 36, b0 + 2, 0.2, 70)   # kick
-        add(9, 38, b0 + 1, 0.2, 52)   # snare (soft)
-        add(9, 38, b0 + 3, 0.2, 52)
-        for e in range(8):            # closed hat eighths, quiet
-            add(9, 42, b0 + e * 0.5, 0.1, 28)
+            add(1, pitch, b0 + st, du, 62)
+        # upbeat groove: four-on-the-floor kick + backbeat snare + hats
+        for beat in range(4):
+            add(9, 36, b0 + beat, 0.2, 84)            # kick every beat
+        add(9, 38, b0 + 1, 0.2, 64)                   # snare backbeat
+        add(9, 38, b0 + 3, 0.2, 64)
+        for e in range(8):                            # hats, accent offbeats
+            add(9, 42, b0 + e * 0.5, 0.1, 30 if e % 2 == 0 else 44)
 
     evs.sort(key=lambda x: (x[0], x[1]))
 
