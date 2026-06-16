@@ -24,6 +24,7 @@ YouTubeショート向けの縦動画（1080×1920）を生成します。3人�
 ```
 pip install pillow numpy imageio-ffmpeg
 apt-get install open-jtalk hts-voice-nitech-jp-atr503-m001 open-jtalk-mecab-naist-jdic
+apt-get install fluidsynth fluid-soundfont-gm   # BGM（実楽器GM音源）
 # Node + playwright（実画面キャプチャ用）
 ```
 
@@ -42,6 +43,7 @@ python3 build.py                        # -> bomb_short.mp4
 ## ファイル
 - `capture.mjs` … 実アプリに盤面を注入して各シーンをスクショ＋メタ生成（Playwright）
 - `render.py` … 吹き出し・イントロ/ルール/宣伝画面の描画（PIL）
+- `music.py` … BGMをMIDIで作曲し fluidsynth で実楽器音にレンダリング
 - `build.py` … 音声合成・合成・BGM・動画書き出し
 - `build/beats_meta.json` … キャプチャ結果（台本・スクショ・カード座標）
 

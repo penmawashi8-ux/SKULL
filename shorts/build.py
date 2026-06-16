@@ -16,6 +16,7 @@ import imageio_ffmpeg
 from PIL import Image
 
 import render
+import music
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 BUILD = os.path.join(ROOT, "build")
@@ -88,48 +89,6 @@ def compose_frame(beat, idx):
     return path
 
 
-# ---- BGM (reused, light original loop) ----
-def adsr(n, a=0.01, d=0.06, s=0.6, r=0.2):
-    env = np.ones(n); ai=int(SR*a); di=int(SR*d); ri=int(SR*r); ai=min(ai,n)
-    if ai: env[:ai]=np.linspace(0,1,ai)
-    if di and ai+di<n: env[ai:ai+di]=np.linspace(1,s,di)
-    if ai+di<n: env[ai+di:]=s
-    if ri and ri<n: env[-ri:]*=np.linspace(s,0,ri)
-    return env
-
-def tone(freq,dur,vol,kind="sine"):
-    n=int(SR*dur); t=np.arange(n)/SR
-    if kind=="saw": w=2*(t*freq-np.floor(0.5+t*freq))
-    elif kind=="tri": w=2*np.abs(2*(t*freq-np.floor(0.5+t*freq)))-1
-    else: w=np.sin(2*np.pi*freq*t)
-    return w*adsr(n)*vol
-
-def note(name):
-    base={"C":0,"D":2,"E":4,"F":5,"G":7,"A":9,"B":11}
-    midi=12*(int(name[-1])+1)+base[name[0]]+(1 if "#" in name else 0)
-    return 440.0*2**((midi-69)/12)
-
-def make_bgm(total):
-    bpm=124; beat=60/bpm
-    chords=[["A3","C4","E4"],["F3","A3","C4"],["C4","E4","G4"],["G3","B3","D4"]]
-    bass=["A2","F2","C2","G2"]; loop=np.zeros(0,dtype=np.float32)
-    for bar in range(4):
-        ch=chords[bar]; buf=np.zeros(int(SR*beat*4),dtype=np.float32)
-        for i in range(8):
-            f=note(ch[i%3])*(2 if i%4==3 else 1); seg=tone(f,beat/2,0.12,"tri")
-            pos=int(SR*beat*i/2); buf[pos:pos+len(seg)]+=seg[:len(buf)-pos]
-        for b in range(4):
-            seg=tone(note(bass[bar])/2,beat,0.18,"saw"); pos=int(SR*beat*b)
-            buf[pos:pos+len(seg)]+=seg[:len(buf)-pos]
-            kn=int(SR*0.12); tt=np.arange(kn)/SR
-            kick=np.sin(2*np.pi*(110*np.exp(-tt*30))*tt)*np.exp(-tt*18)*0.5
-            buf[pos:pos+kn]+=kick
-        loop=np.concatenate([loop,buf])
-    need=int(SR*total); full=np.tile(loop,int(np.ceil(need/len(loop))))[:need]
-    fi=int(SR*0.8); full[:fi]*=np.linspace(0,1,fi); full[-fi:]*=np.linspace(1,0,fi)
-    return np.clip(full,-1,1)
-
-
 def write_wav(path, arr_int16):
     with wave.open(path, "w") as w:
         w.setnchannels(1); w.setsampwidth(2); w.setframerate(SR)
@@ -170,8 +129,15 @@ def main():
     write_wav(os.path.join(BUILD, "narration.wav"), narr)
     total = len(narr) / SR
 
-    # bgm
-    bgm = make_bgm(total + 0.3)
+    # bgm: real GM instruments (fluidsynth), normalized + faded
+    src = music.render_bgm(total + 0.5, os.path.join(BUILD, "bgm_src.wav"), BUILD)
+    bgm = read_wav(src).astype(np.float32) / 32768.0
+    bgm = bgm[:int((total + 0.3) * SR)]
+    peak = np.max(np.abs(bgm)) or 1.0
+    bgm = bgm / peak * 0.85
+    fi = int(SR * 1.0)
+    bgm[:fi] *= np.linspace(0, 1, fi)
+    bgm[-fi:] *= np.linspace(1, 0, fi)
     write_wav(os.path.join(BUILD, "bgm.wav"), (bgm * 32767).astype(np.int16))
 
     print(f"Total {total:.1f}s. Muxing...")
@@ -179,7 +145,7 @@ def main():
          "-i", os.path.join(BUILD, "narration.wav"),
          "-i", os.path.join(BUILD, "bgm.wav"),
          "-filter_complex",
-         "[1:a]volume=1.0[v];[2:a]volume=0.42[b];[v][b]amix=inputs=2:duration=first:dropout_transition=2:normalize=0[a]",
+         "[1:a]volume=1.0[v];[2:a]volume=0.30[b];[v][b]amix=inputs=2:duration=first:dropout_transition=2:normalize=0[a]",
          "-map", "0:v", "-map", "[a]", "-c:v", "copy", "-c:a", "aac",
          "-b:a", "192k", "-shortest", "-movflags", "+faststart", OUT])
     print("Done ->", OUT, f"({total:.1f}s)")
