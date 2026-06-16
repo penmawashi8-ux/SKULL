@@ -75,9 +75,12 @@ function state(beat) {
 const fd = (t) => [t, false];
 const up = (t) => [t, true];
 
-// ── Scripted match: the classic "everyone passes = everyone's holding a bomb"
-//    trap. Greedy KAI over-bids to 2, everyone folds instantly, and KAI flips
-//    into a bomb because every opponent secretly placed one. ──
+// ── Scripted match: RIN's bluff. She declares "I can flip 1" first, which
+//    normally implies her own top card is a safe apple (the executor flips
+//    their OWN stack first). So everyone reads her as safe. Greedy KAI overbids
+//    to 2, everyone instantly passes, and KAI -- trusting that RIN's declared
+//    card "must be an apple" -- flips it and eats a bomb. The twist: the player
+//    who declared had planted a bomb, betting she'd be outbid and never flip it.
 //    Hidden cards: KAI=apple(safe), RIN=bomb, SOU=bomb.
 const ALL_DOWN = { rin: [fd('bomb')], sou: [fd('bomb')], kai: [fd('flower')] };
 
@@ -90,48 +93,45 @@ const BEATS = [
   // ── 配置：全員カードを一枚ずつ伏せる ──
   { kind: 'game', speaker: 'sou', text: 'まずは全員、カードを一枚ずつ伏せようぜ。',
     phase: 'place', turn: 'sou', stacks: ALL_DOWN },
-  { kind: 'game', speaker: 'rin', text: 'ふふっ。私のカードは安全だよ。たぶんね。',
+  { kind: 'game', speaker: 'rin', text: '私のはリンゴ…なんてね？ふふっ。',
     phase: 'place', turn: 'rin', emote: ['rin', 'FLOWER'], stacks: ALL_DOWN },
 
-  // ── 入札：リンが1枚、欲張りカイが2枚、そして全員パス ──
-  { kind: 'game', speaker: 'rin', text: 'じゃあ口火を切るね。私は一枚めくれる。',
+  // ── 入札：リンが「1枚めくれる」＝自分は安全アピール。カイが欲張って2枚 ──
+  { kind: 'game', speaker: 'rin', text: 'じゃあ口火を切るね。私は一枚めくれるよ。',
     phase: 'bid', turn: 'kai', bid: 1, bidder: 'rin', stacks: ALL_DOWN },
-  { kind: 'game', speaker: 'kai', text: '一枚？甘いね。じゃあ俺は二枚宣言だ。',
+  { kind: 'game', speaker: 'kai', text: '一枚？じゃあ俺は二枚いくわ。',
     phase: 'bid', turn: 'sou', bid: 2, bidder: 'kai', stacks: ALL_DOWN },
-  { kind: 'game', speaker: 'sou', text: 'へえ…二枚ね。じゃあ俺はパスで。',
+  { kind: 'game', speaker: 'sou', text: 'へえ、二枚ね。俺はパス。',
     phase: 'bid', turn: 'rin', bid: 2, bidder: 'kai', folded: ['sou'], stacks: ALL_DOWN },
-  { kind: 'game', speaker: 'rin', text: '私もパス。どうぞどうぞ、お先にどうぞ？',
+  { kind: 'game', speaker: 'rin', text: '私もパス。カイくん、よろしくね？',
     phase: 'bid', turn: 'rin', bid: 2, bidder: 'kai', folded: ['sou', 'rin'],
     emote: ['rin', 'FLOWER'], stacks: ALL_DOWN },
-  { kind: 'game', speaker: 'kai', text: 'よし二枚いただき！…って、全員パス早くない？',
+  { kind: 'game', speaker: 'kai', text: '全員パス…まあいい、二枚いただくぜ。',
     phase: 'flip', turn: 'kai', bid: 2, bidder: 'kai', folded: ['sou', 'rin'], flip: 0,
     stacks: ALL_DOWN },
 
-  // ── めくり：自分のりんご→他人で即爆死 ──
-  { kind: 'game', speaker: 'kai', text: 'ま、いっか。まず自分の…りんご。一枚目クリア。',
+  // ── めくり：自分のりんご→「宣言したリンは安全」と読んでリンを選ぶ ──
+  { kind: 'game', speaker: 'kai', text: 'まず自分の…リンゴ。一枚目クリア。',
     phase: 'flip', turn: 'kai', bid: 2, bidder: 'kai', folded: ['sou', 'rin'], flip: 1, flipper: 'kai',
     stacks: { rin: [fd('bomb')], sou: [fd('bomb')], kai: [up('flower')] } },
-  { kind: 'game', speaker: 'sou', text: 'あと一枚かぁ。さあ、誰のをめくる？ふふっ。',
-    phase: 'flip', turn: 'kai', bid: 2, bidder: 'kai', folded: ['sou', 'rin'], flip: 1, flipper: 'kai',
-    emote: ['sou', 'BOMB'],
-    stacks: { rin: [fd('bomb')], sou: [fd('bomb')], kai: [up('flower')] } },
-  { kind: 'game', speaker: 'kai', text: 'ソウのいくか。どうせりんごだろ…ポチっとな。',
+  { kind: 'game', speaker: 'kai', text: 'あと一枚。リンは一枚めくれるって言ってた。なら安全だろ、そこ行く。',
     phase: 'flip', turn: 'kai', bid: 2, bidder: 'kai', folded: ['sou', 'rin'], flip: 1, flipper: 'kai',
     stacks: { rin: [fd('bomb')], sou: [fd('bomb')], kai: [up('flower')] } },
-  { kind: 'game', speaker: 'narrator', text: 'ドカーン。ソウのカードは、爆弾だった。',
+  { kind: 'game', speaker: 'narrator', text: 'ドカーン。リンのカードは…爆弾だった。',
     phase: 'flip', turn: 'kai', bid: 2, bidder: 'kai', folded: ['sou', 'rin'], flip: 1, flipper: 'kai',
-    stacks: { rin: [fd('bomb')], sou: [up('bomb')], kai: [up('flower')] } },
+    stacks: { rin: [up('bomb')], sou: [fd('bomb')], kai: [up('flower')] } },
 
-  // ── オチ：宣言者以外、全員爆弾 ──
-  { kind: 'game', speaker: 'sou', text: '残念。全員パスしたら、ふつう気づくだろ？',
-    phase: 'flip', turn: 'kai', bid: 2, bidder: 'kai', folded: ['sou', 'rin'], flip: 1, flipper: 'kai',
-    stacks: { rin: [fd('bomb')], sou: [up('bomb')], kai: [up('flower')] } },
-  { kind: 'game', speaker: 'rin', text: 'そう、私もソウも爆弾。宣言者以外、全員爆弾でーす。',
+  // ── オチ：宣言した本人が爆弾を仕込んでいた ──
+  { kind: 'game', speaker: 'rin', text: '一枚宣言したら、リンゴだと思うでしょ？仕込んだのは爆弾でーす。',
     phase: 'flip', turn: 'kai', bid: 2, bidder: 'kai', folded: ['sou', 'rin'], flip: 1, flipper: 'kai',
     emote: ['rin', 'BOMB'],
-    stacks: { rin: [up('bomb')], sou: [up('bomb')], kai: [up('flower')] } },
-  { kind: 'game', speaker: 'kai', text: '誰も乗ってこない時点で察するべきだった…欲張った。',
+    stacks: { rin: [up('bomb')], sou: [fd('bomb')], kai: [up('flower')] } },
+  { kind: 'game', speaker: 'kai', text: '宣言したやつが爆弾とか、ありかよ…欲張った。',
     phase: 'flip', turn: 'kai', bid: 2, bidder: 'kai', folded: ['sou', 'rin'], flip: 1, flipper: 'kai',
+    stacks: { rin: [up('bomb')], sou: [fd('bomb')], kai: [up('flower')] } },
+  { kind: 'game', speaker: 'sou', text: 'ちなみに俺も爆弾。全員パスは、そういうことだ。',
+    phase: 'flip', turn: 'kai', bid: 2, bidder: 'kai', folded: ['sou', 'rin'], flip: 1, flipper: 'kai',
+    emote: ['sou', 'BOMB'],
     stacks: { rin: [up('bomb')], sou: [up('bomb')], kai: [up('flower')] } },
 
   { kind: 'outro', speaker: 'narrator', text: 'このボム、ボードゲーム広場で今すぐ無料で遊べる。友達と騙し合おう。' },
