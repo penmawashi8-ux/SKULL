@@ -109,9 +109,12 @@ const BEATS = [
   { kind: 'game', speaker: 'kai', text: '全員パス…まあいい、二枚いただくぜ。',
     phase: 'flip', turn: 'kai', bid: 2, bidder: 'kai', folded: ['sou', 'rin'], flip: 0,
     stacks: ALL_DOWN },
+  { kind: 'game', speaker: 'rule', text: 'ここでルール。めくる人は、まず自分のカードから先にめくる。',
+    phase: 'flip', turn: 'kai', bid: 2, bidder: 'kai', folded: ['sou', 'rin'], flip: 0,
+    stacks: ALL_DOWN },
 
   // ── めくり：自分のりんご→「宣言したリンは安全」と読んでリンを選ぶ ──
-  { kind: 'game', speaker: 'kai', text: 'まず自分の…リンゴ。一枚目クリア。',
+  { kind: 'game', speaker: 'kai', text: 'ルール通り、まず自分の…リンゴ。一枚目クリア。',
     phase: 'flip', turn: 'kai', bid: 2, bidder: 'kai', folded: ['sou', 'rin'], flip: 1, flipper: 'kai',
     stacks: { rin: [fd('bomb')], sou: [fd('bomb')], kai: [up('flower')] } },
   { kind: 'game', speaker: 'kai', text: 'あと一枚。リンは一枚めくれるって言ってた。なら安全だろ、そこ行く。',

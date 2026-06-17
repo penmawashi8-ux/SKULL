@@ -325,8 +325,10 @@ SPEAKER_COLORS = {
     "sou": (66, 135, 245),
     "kai": (52, 199, 120),
     "narrator": (255, 212, 59),
+    "rule": (255, 170, 40),
 }
-SPEAKER_NAMES = {"rin": "リン", "sou": "ソウ", "kai": "カイ", "narrator": "実況"}
+SPEAKER_NAMES = {"rin": "リン", "sou": "ソウ", "kai": "カイ", "narrator": "実況",
+                 "rule": "ルール"}
 
 
 def _bubble_layout(text, fnt, max_text_w, draw):
