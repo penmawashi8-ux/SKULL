@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import { useCanonical } from '../useCanonical'
 import { GAME_CONTENT } from '../gameContent'
 
@@ -23,7 +23,7 @@ const INFO_LINKS = [
 export default function GameEmbed({ gameId }: { gameId: string }) {
   const game = GAME_CONTENT[gameId]
   useCanonical(`/games/${gameId}`)
-  const iframeRef = useRef<HTMLIFrameElement>(null)
+  const [fullscreen, setFullscreen] = useState(false)
 
   useEffect(() => {
     if (!game) return
@@ -34,17 +34,29 @@ export default function GameEmbed({ gameId }: { gameId: string }) {
     )
   }, [game])
 
+  // 全画面中は背面のスクロールを止める
+  useEffect(() => {
+    if (!fullscreen) return
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => { document.body.style.overflow = prev }
+  }, [fullscreen])
+
+  // 全画面中は端末の「戻る」で閉じられるようにする
+  useEffect(() => {
+    if (!fullscreen) return
+    window.history.pushState({ fs: true }, '')
+    const onPop = () => setFullscreen(false)
+    window.addEventListener('popstate', onPop)
+    return () => window.removeEventListener('popstate', onPop)
+  }, [fullscreen])
+
   if (!game) {
     window.location.assign('/')
     return null
   }
 
   const accent = game.accent
-
-  const requestFullscreen = () => {
-    const el = iframeRef.current
-    if (el?.requestFullscreen) el.requestFullscreen().catch(() => {})
-  }
 
   return (
     <div style={{ background: 'radial-gradient(ellipse at top, #1e2244 0%, #1a1c30 55%, #161824 100%)', minHeight: '100dvh', color: '#fff' }}>
@@ -95,39 +107,56 @@ export default function GameEmbed({ gameId }: { gameId: string }) {
 
         {/* ── Play area ── */}
         <div
-          style={{
-            position: 'relative',
-            borderRadius: '16px',
-            overflow: 'hidden',
-            border: `1.5px solid ${accent}44`,
-            boxShadow: `0 8px 32px rgba(0,0,0,0.4)`,
-            background: '#0e0f1a',
-          }}
+          style={
+            fullscreen
+              ? {
+                  position: 'fixed',
+                  inset: 0,
+                  zIndex: 9999,
+                  background: '#0e0f1a',
+                }
+              : {
+                  position: 'relative',
+                  borderRadius: '16px',
+                  overflow: 'hidden',
+                  border: `1.5px solid ${accent}44`,
+                  boxShadow: `0 8px 32px rgba(0,0,0,0.4)`,
+                  background: '#0e0f1a',
+                }
+          }
         >
           <iframe
-            ref={iframeRef}
             src={game.url}
             title={`${game.name}をプレイ`}
-            style={{ display: 'block', width: '100%', height: '78dvh', minHeight: '420px', border: 'none' }}
+            style={{
+              display: 'block',
+              width: '100%',
+              height: fullscreen ? '100dvh' : '78dvh',
+              minHeight: fullscreen ? undefined : '420px',
+              border: 'none',
+            }}
             allow="fullscreen"
           />
           <button
-            onClick={requestFullscreen}
+            onClick={() => { if (fullscreen) window.history.back(); else setFullscreen(true) }}
             style={{
-              position: 'absolute',
-              right: '10px',
-              bottom: '10px',
-              background: 'rgba(26,28,48,0.85)',
-              color: 'rgba(255,255,255,0.85)',
-              border: '1px solid rgba(255,255,255,0.15)',
+              position: fullscreen ? 'fixed' : 'absolute',
+              right: fullscreen ? 'calc(env(safe-area-inset-right) + 12px)' : '10px',
+              bottom: fullscreen ? 'calc(env(safe-area-inset-bottom) + 12px)' : '10px',
+              zIndex: 10000,
+              background: fullscreen ? `${accent}` : 'rgba(26,28,48,0.85)',
+              color: fullscreen ? '#1a1c30' : 'rgba(255,255,255,0.85)',
+              border: fullscreen ? 'none' : '1px solid rgba(255,255,255,0.15)',
               borderRadius: '999px',
-              padding: '6px 14px',
+              padding: '8px 16px',
               fontSize: '12px',
+              fontWeight: 700,
               cursor: 'pointer',
               backdropFilter: 'blur(8px)',
+              boxShadow: fullscreen ? `0 4px 16px rgba(0,0,0,0.5)` : 'none',
             }}
           >
-            ⛶ 全画面で遊ぶ
+            {fullscreen ? '✕ 全画面を終了' : '⛶ 全画面で遊ぶ'}
           </button>
         </div>
         <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.35)', textAlign: 'center', marginTop: '10px' }}>
