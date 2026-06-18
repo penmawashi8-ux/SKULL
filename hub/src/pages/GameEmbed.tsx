@@ -42,15 +42,6 @@ export default function GameEmbed({ gameId }: { gameId: string }) {
     return () => { document.body.style.overflow = prev }
   }, [fullscreen])
 
-  // 全画面中は端末の「戻る」で閉じられるようにする
-  useEffect(() => {
-    if (!fullscreen) return
-    window.history.pushState({ fs: true }, '')
-    const onPop = () => setFullscreen(false)
-    window.addEventListener('popstate', onPop)
-    return () => window.removeEventListener('popstate', onPop)
-  }, [fullscreen])
-
   if (!game) {
     window.location.assign('/')
     return null
@@ -106,59 +97,93 @@ export default function GameEmbed({ gameId }: { gameId: string }) {
         </div>
 
         {/* ── Play area ── */}
-        <div
-          style={
-            fullscreen
-              ? {
-                  position: 'fixed',
-                  inset: 0,
-                  zIndex: 9999,
-                  background: '#0e0f1a',
-                }
-              : {
-                  position: 'relative',
-                  borderRadius: '16px',
-                  overflow: 'hidden',
-                  border: `1.5px solid ${accent}44`,
-                  boxShadow: `0 8px 32px rgba(0,0,0,0.4)`,
-                  background: '#0e0f1a',
-                }
-          }
-        >
-          <iframe
-            src={game.url}
-            title={`${game.name}をプレイ`}
+        {fullscreen ? (
+          <div
             style={{
-              display: 'block',
-              width: '100%',
-              height: fullscreen ? '100dvh' : '78dvh',
-              minHeight: fullscreen ? undefined : '420px',
-              border: 'none',
-            }}
-            allow="fullscreen"
-          />
-          <button
-            onClick={() => { if (fullscreen) window.history.back(); else setFullscreen(true) }}
-            style={{
-              position: fullscreen ? 'fixed' : 'absolute',
-              right: fullscreen ? 'calc(env(safe-area-inset-right) + 12px)' : '10px',
-              bottom: fullscreen ? 'calc(env(safe-area-inset-bottom) + 12px)' : '10px',
-              zIndex: 10000,
-              background: fullscreen ? `${accent}` : 'rgba(26,28,48,0.85)',
-              color: fullscreen ? '#1a1c30' : 'rgba(255,255,255,0.85)',
-              border: fullscreen ? 'none' : '1px solid rgba(255,255,255,0.15)',
-              borderRadius: '999px',
-              padding: '8px 16px',
-              fontSize: '12px',
-              fontWeight: 700,
-              cursor: 'pointer',
-              backdropFilter: 'blur(8px)',
-              boxShadow: fullscreen ? `0 4px 16px rgba(0,0,0,0.5)` : 'none',
+              position: 'fixed',
+              inset: 0,
+              zIndex: 9999,
+              background: '#0e0f1a',
+              display: 'flex',
+              flexDirection: 'column',
             }}
           >
-            {fullscreen ? '✕ 全画面を終了' : '⛶ 全画面で遊ぶ'}
-          </button>
-        </div>
+            {/* slim top bar so it never overlaps the game */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                padding: 'calc(env(safe-area-inset-top) + 6px) 14px 6px',
+                background: 'rgba(26,28,48,0.96)',
+                borderBottom: '1px solid rgba(255,255,255,0.08)',
+                flexShrink: 0,
+              }}
+            >
+              <span style={{ color: 'white', fontWeight: 700, fontSize: '13px', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {game.name}
+              </span>
+              <button
+                onClick={() => setFullscreen(false)}
+                style={{
+                  background: 'rgba(255,255,255,0.1)',
+                  color: 'rgba(255,255,255,0.9)',
+                  border: '1px solid rgba(255,255,255,0.15)',
+                  borderRadius: '999px',
+                  padding: '6px 14px',
+                  fontSize: '12px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                }}
+              >
+                ✕ 全画面を終了
+              </button>
+            </div>
+            <iframe
+              src={game.url}
+              title={`${game.name}をプレイ`}
+              style={{ flex: 1, width: '100%', border: 'none', display: 'block' }}
+              allow="fullscreen"
+            />
+          </div>
+        ) : (
+          <div
+            style={{
+              position: 'relative',
+              borderRadius: '16px',
+              overflow: 'hidden',
+              border: `1.5px solid ${accent}44`,
+              boxShadow: `0 8px 32px rgba(0,0,0,0.4)`,
+              background: '#0e0f1a',
+            }}
+          >
+            <iframe
+              src={game.url}
+              title={`${game.name}をプレイ`}
+              style={{ display: 'block', width: '100%', height: '78dvh', minHeight: '420px', border: 'none' }}
+              allow="fullscreen"
+            />
+            <button
+              onClick={() => setFullscreen(true)}
+              style={{
+                position: 'absolute',
+                right: '10px',
+                bottom: '10px',
+                background: 'rgba(26,28,48,0.85)',
+                color: 'rgba(255,255,255,0.85)',
+                border: '1px solid rgba(255,255,255,0.15)',
+                borderRadius: '999px',
+                padding: '8px 16px',
+                fontSize: '12px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                backdropFilter: 'blur(8px)',
+              }}
+            >
+              ⛶ 全画面で遊ぶ
+            </button>
+          </div>
+        )}
         <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.35)', textAlign: 'center', marginTop: '10px' }}>
           登録不要・無料でそのまま遊べます
         </p>
