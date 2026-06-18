@@ -418,6 +418,96 @@ const NOTICES = [
   },
 ]
 
+const BLOG_POSTS = [
+  {
+    href: '/blog/free-online-boardgames.html',
+    tag: 'まとめ',
+    color: '#ffd43b',
+    title: '無料で遊べるオンラインボードゲームおすすめ5選',
+    desc: 'ブラウザだけで今すぐ遊べる無料ゲームを厳選紹介。友達や家族と楽しめるゲームを探している方へ。',
+    date: '2026.05.24',
+  },
+  {
+    href: '/blog/bomb-online-free.html',
+    tag: 'ブラフ・遊び方',
+    color: '#f87171',
+    title: 'BOMBのルールと遊び方｜エモートで相手を揺さぶれ',
+    desc: '爆弾かりんごか——ブラフをかます心理戦ゲーム「BOMB」のルールとエモート活用法を解説。',
+    date: '2026.05.27',
+  },
+  {
+    href: '/blog/bluff-game-tips.html',
+    tag: 'コツ・戦略',
+    color: '#ef4444',
+    title: 'ブラフゲームで勝つ5つのコツ｜心理戦の基本',
+    desc: 'BOMBや謀略に共通する勝ち方のコツ。読まれない方法、ブラフの頻度、告発のタイミングを解説。',
+    date: '2026.06.02',
+  },
+  {
+    href: '/blog/poko-light-strategy.html',
+    tag: 'パズル・攻略',
+    color: '#fde68a',
+    title: 'ポコっとライト攻略ガイド｜全点灯を狙う基本戦術',
+    desc: 'タップで周囲が切り替わるパズルの攻略法。追いかけ法の基本とパターン別戦術を総合解説。',
+    date: '2026.06.02',
+  },
+]
+
+function BlogSection() {
+  return (
+    <section className="px-4 pb-10 max-w-xl mx-auto">
+      <div className="flex items-center gap-3 mb-5">
+        <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.08)' }} />
+        <span className="font-cinzel text-[9px] font-bold tracking-[0.28em] uppercase" style={{ color: 'rgba(255,255,255,0.28)' }}>
+          ✦ Blog ✦
+        </span>
+        <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.08)' }} />
+      </div>
+      <p className="font-serif-jp text-center text-[15px] font-bold text-white mb-1">
+        ルール・遊び方解説ブログ
+      </p>
+      <p className="font-sans-jp text-center text-[11px] mb-5" style={{ color: 'rgba(255,255,255,0.42)' }}>
+        各ゲームのルール・攻略・コツをくわしく紹介
+      </p>
+      <div className="flex flex-col gap-3">
+        {BLOG_POSTS.map(post => (
+          <a
+            key={post.href}
+            href={post.href}
+            className="block no-underline"
+            style={{
+              background: 'linear-gradient(135deg, #1e2248 0%, #181b38 100%)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              borderRadius: '18px',
+              padding: '16px 18px',
+            }}
+          >
+            <span className="font-cinzel text-[9px] font-bold tracking-[0.2em] uppercase block mb-1.5" style={{ color: post.color }}>
+              {post.tag}
+            </span>
+            <p className="font-serif-jp text-[14px] font-bold text-white leading-snug mb-1.5">{post.title}</p>
+            <p className="font-sans-jp text-[11px] leading-relaxed mb-2" style={{ color: 'rgba(255,255,255,0.5)' }}>
+              {post.desc}
+            </p>
+            <p className="font-sans-jp text-[10px]" style={{ color: 'rgba(255,255,255,0.3)' }}>{post.date}</p>
+          </a>
+        ))}
+      </div>
+      <a
+        href="/blog/"
+        className="block no-underline text-center mt-5 font-sans-jp text-[12px] font-bold py-3 rounded-full"
+        style={{
+          background: 'rgba(255,212,59,0.12)',
+          border: '1.5px solid rgba(255,212,59,0.4)',
+          color: '#ffd43b',
+        }}
+      >
+        ブログの記事をすべて見る →
+      </a>
+    </section>
+  )
+}
+
 function NoticeDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
   return (
     <>
@@ -779,6 +869,9 @@ export default function App() {
           </div>
         )}
       </main>
+
+      {/* Blog */}
+      <BlogSection />
 
       {/* Footer */}
       <footer
