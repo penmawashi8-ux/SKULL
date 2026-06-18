@@ -1,101 +1,259 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useRef } from 'react'
 import { useCanonical } from '../useCanonical'
+import { GAME_CONTENT } from '../gameContent'
 
-const GAME_EMBED: Record<string, { name: string; url: string }> = {
-  'bomb':         { name: 'BOMB',         url: 'https://bomb.boardgamecat.com' },
-  'pig-tail':     { name: 'ぶたのしっぽ',   url: 'https://buta.boardgamecat.com' },
-  'keiba':        { name: 'バーチャル競馬', url: 'https://gamekeiba.boardgamecat.com' },
-  'page-one':     { name: 'ページワン',     url: 'https://pageone.boardgamecat.com' },
-  'coup':         { name: '謀略',          url: 'https://bouryaku.boardgamecat.com' },
-  'racing-board': { name: '疾走',          url: 'https://g-oei1.vercel.app' },
-  'g-board-app':  { name: 'MECH SIEGE',   url: 'https://g.boardgamecat.com' },
-  'poko-light':   { name: 'ポコっとライト', url: 'https://poko.boardgamecat.com' },
+function setMeta(name: string, content: string) {
+  let tag = document.querySelector<HTMLMetaElement>(`meta[name="${name}"]`)
+  if (!tag) {
+    tag = document.createElement('meta')
+    tag.name = name
+    document.head.appendChild(tag)
+  }
+  tag.content = content
 }
 
+const INFO_LINKS = [
+  { label: 'ブログ', path: '/blog/' },
+  { label: '企業情報', path: '/about' },
+  { label: 'プライバシーポリシー', path: '/privacy-policy' },
+  { label: '利用規約', path: '/terms' },
+  { label: 'お問い合わせ', path: '/contact' },
+]
+
 export default function GameEmbed({ gameId }: { gameId: string }) {
-  const game = GAME_EMBED[gameId]
+  const game = GAME_CONTENT[gameId]
   useCanonical(`/games/${gameId}`)
-
-  const [visible, setVisible] = useState(true)
-
-  const show = useCallback(() => {
-    setVisible(true)
-  }, [])
+  const iframeRef = useRef<HTMLIFrameElement>(null)
 
   useEffect(() => {
-    if (game) document.title = `${game.name} | ボドゲ広場`
+    if (!game) return
+    document.title = `${game.name}の遊び方・ルール｜ブラウザで無料プレイ | ボドゲ広場`
+    setMeta(
+      'description',
+      `${game.name}（${game.nameEn}）の遊び方・ルールを解説。${game.tagline}。登録不要・無料でブラウザからすぐ遊べます。`,
+    )
   }, [game])
-
-  useEffect(() => {
-    if (!visible) return
-    const t = setTimeout(() => setVisible(false), 3000)
-    return () => clearTimeout(t)
-  }, [visible])
 
   if (!game) {
     window.location.assign('/')
     return null
   }
 
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh', background: '#1a1c30' }}>
-      {/* タップ感知エリア（ヘッダー非表示中も上部をタップで再表示） */}
-      {!visible && (
-        <div
-          onClick={show}
-          style={{ position: 'fixed', top: 0, left: 0, right: 0, height: '32px', zIndex: 50 }}
-        />
-      )}
+  const accent = game.accent
 
+  const requestFullscreen = () => {
+    const el = iframeRef.current
+    if (el?.requestFullscreen) el.requestFullscreen().catch(() => {})
+  }
+
+  return (
+    <div style={{ background: 'radial-gradient(ellipse at top, #1e2244 0%, #1a1c30 55%, #161824 100%)', minHeight: '100dvh', color: '#fff' }}>
+      {/* ── Header ── */}
       <header
-        onClick={show}
         style={{
-          position: 'fixed',
+          position: 'sticky',
           top: 0,
-          left: 0,
-          right: 0,
           zIndex: 40,
           display: 'flex',
           alignItems: 'center',
           gap: '10px',
-          padding: '6px 12px',
-          background: 'rgba(26,28,48,0.92)',
+          padding: '10px 16px',
+          background: 'rgba(26,28,48,0.95)',
           borderBottom: '1px solid rgba(255,255,255,0.08)',
-          backdropFilter: 'blur(12px)',
-          WebkitBackdropFilter: 'blur(12px)',
-          opacity: visible ? 1 : 0,
-          pointerEvents: visible ? 'auto' : 'none',
-          transition: 'opacity 0.4s ease',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
         }}
       >
-        <button
-          onClick={e => { e.stopPropagation(); window.location.assign('/') }}
-          style={{
-            color: 'rgba(255,255,255,0.6)',
-            background: 'rgba(255,255,255,0.08)',
-            border: 'none',
-            borderRadius: '6px',
-            padding: '4px 10px',
-            cursor: 'pointer',
-            fontSize: '12px',
-          }}
+        <a
+          href="/"
+          onClick={e => { e.preventDefault(); window.location.assign('/') }}
+          style={{ color: 'rgba(255,255,255,0.6)', background: 'rgba(255,255,255,0.08)', borderRadius: '8px', padding: '5px 12px', fontSize: '12px', textDecoration: 'none' }}
         >
           ← 戻る
-        </button>
-        <span style={{ color: 'white', fontWeight: 'bold', fontSize: '13px', flex: 1 }}>
+        </a>
+        <span style={{ color: 'white', fontWeight: 700, fontSize: '14px', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {game.name}
         </span>
-        <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: '10px' }}>
+        <a href="/" onClick={e => { e.preventDefault(); window.location.assign('/') }} style={{ color: 'rgba(255,255,255,0.3)', fontSize: '10px', textDecoration: 'none' }}>
           ボドゲ広場
-        </span>
+        </a>
       </header>
 
-      <iframe
-        src={game.url}
-        title={game.name}
-        style={{ flex: 1, border: 'none', width: '100%' }}
-        allow="fullscreen"
-      />
+      <div style={{ maxWidth: '720px', margin: '0 auto', padding: '0 16px 64px' }}>
+        {/* ── Title block ── */}
+        <div style={{ padding: '24px 4px 16px' }}>
+          <p style={{ fontSize: '10px', letterSpacing: '0.2em', textTransform: 'uppercase', color: accent, fontWeight: 700, marginBottom: '6px' }}>
+            {game.nameEn}
+          </p>
+          <h1 style={{ fontSize: '24px', fontWeight: 900, lineHeight: 1.4, marginBottom: '8px' }}>
+            {game.name}
+          </h1>
+          <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.6)', lineHeight: 1.7 }}>
+            {game.tagline}
+          </p>
+        </div>
+
+        {/* ── Play area ── */}
+        <div
+          style={{
+            position: 'relative',
+            borderRadius: '16px',
+            overflow: 'hidden',
+            border: `1.5px solid ${accent}44`,
+            boxShadow: `0 8px 32px rgba(0,0,0,0.4)`,
+            background: '#0e0f1a',
+          }}
+        >
+          <iframe
+            ref={iframeRef}
+            src={game.url}
+            title={`${game.name}をプレイ`}
+            style={{ display: 'block', width: '100%', height: '78dvh', minHeight: '420px', border: 'none' }}
+            allow="fullscreen"
+          />
+          <button
+            onClick={requestFullscreen}
+            style={{
+              position: 'absolute',
+              right: '10px',
+              bottom: '10px',
+              background: 'rgba(26,28,48,0.85)',
+              color: 'rgba(255,255,255,0.85)',
+              border: '1px solid rgba(255,255,255,0.15)',
+              borderRadius: '999px',
+              padding: '6px 14px',
+              fontSize: '12px',
+              cursor: 'pointer',
+              backdropFilter: 'blur(8px)',
+            }}
+          >
+            ⛶ 全画面で遊ぶ
+          </button>
+        </div>
+        <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.35)', textAlign: 'center', marginTop: '10px' }}>
+          登録不要・無料でそのまま遊べます
+        </p>
+
+        {/* ── Overview ── */}
+        <section style={{ marginTop: '36px' }}>
+          <h2 style={{ fontSize: '18px', fontWeight: 700, borderLeft: `3px solid ${accent}`, paddingLeft: '12px', marginBottom: '14px' }}>
+            {game.name}とは？
+          </h2>
+          {game.intro.map((p, i) => (
+            <p key={i} style={{ fontSize: '14px', color: 'rgba(255,255,255,0.72)', lineHeight: 1.85, marginBottom: '14px' }}>
+              {p}
+            </p>
+          ))}
+
+          {/* Info table */}
+          <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', padding: '6px 18px', marginTop: '8px' }}>
+            {game.info.map(item => (
+              <div key={item.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)' }}>{item.label}</span>
+                <span style={{ fontSize: '13px', color: '#fff', fontWeight: 700 }}>{item.value}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ── How to play ── */}
+        <section style={{ marginTop: '36px' }}>
+          <h2 style={{ fontSize: '18px', fontWeight: 700, borderLeft: `3px solid ${accent}`, paddingLeft: '12px', marginBottom: '16px' }}>
+            遊び方
+          </h2>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {game.howTo.map((step, i) => (
+              <div key={i} style={{ display: 'flex', gap: '14px', alignItems: 'flex-start', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '16px 18px' }}>
+                <span style={{ background: accent, color: '#1a1c30', fontSize: '13px', fontWeight: 700, width: '26px', height: '26px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '2px' }}>
+                  {i + 1}
+                </span>
+                <div>
+                  <p style={{ fontSize: '14px', fontWeight: 700, color: '#fff', marginBottom: '4px' }}>{step.title}</p>
+                  <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.65)', lineHeight: 1.75 }}>{step.body}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ── Features ── */}
+        <section style={{ marginTop: '36px' }}>
+          <h2 style={{ fontSize: '18px', fontWeight: 700, borderLeft: `3px solid ${accent}`, paddingLeft: '12px', marginBottom: '16px' }}>
+            このゲームの特徴
+          </h2>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {game.features.map((f, i) => (
+              <div key={i} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '14px', padding: '16px 18px' }}>
+                <p style={{ fontSize: '14px', fontWeight: 700, color: accent, marginBottom: '6px' }}>{f.title}</p>
+                <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.65)', lineHeight: 1.75 }}>{f.body}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ── CTA ── */}
+        <button
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          style={{
+            display: 'block',
+            width: '100%',
+            background: `linear-gradient(135deg, ${accent}, ${accent}cc)`,
+            color: '#1a1c30',
+            textAlign: 'center',
+            padding: '16px 24px',
+            borderRadius: '999px',
+            fontWeight: 700,
+            fontSize: '15px',
+            margin: '32px 0 12px',
+            border: 'none',
+            cursor: 'pointer',
+            boxShadow: `0 6px 20px ${accent}55`,
+          }}
+        >
+          ▲ 上に戻って{game.name}を遊ぶ
+        </button>
+
+        {/* ── Related articles ── */}
+        {game.related.length > 0 && (
+          <section style={{ marginTop: '40px', paddingTop: '28px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+            <p style={{ fontSize: '11px', letterSpacing: '0.2em', color: 'rgba(255,255,255,0.35)', marginBottom: '14px' }}>
+              関連記事
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {game.related.map(a => (
+                <a
+                  key={a.href}
+                  href={a.href}
+                  style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '14px 16px', fontSize: '13px', color: 'rgba(255,255,255,0.78)', textDecoration: 'none', lineHeight: 1.6 }}
+                >
+                  📖 {a.title}
+                </a>
+              ))}
+            </div>
+          </section>
+        )}
+      </div>
+
+      {/* ── Footer ── */}
+      <footer style={{ borderTop: '2px solid rgba(255,255,255,0.06)', padding: '32px 20px', textAlign: 'center' }}>
+        <p style={{ fontSize: '14px', fontWeight: 700, color: '#ffd43b', marginBottom: '4px' }}>ボドゲ広場</p>
+        <p style={{ fontSize: '8px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)', marginBottom: '16px' }}>
+          ✦ Board Game Collection ✦
+        </p>
+        <nav style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '10px 20px', marginBottom: '14px' }}>
+          {INFO_LINKS.map(({ label, path }) => (
+            <a
+              key={path}
+              href={path}
+              onClick={e => { e.preventDefault(); window.location.assign(path) }}
+              style={{ fontSize: '11px', color: 'rgba(255,255,255,0.42)', textDecoration: 'none', whiteSpace: 'nowrap' }}
+            >
+              {label}
+            </a>
+          ))}
+        </nav>
+        <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.22)' }}>© 2026 ボドゲ広場</p>
+      </footer>
     </div>
   )
 }
