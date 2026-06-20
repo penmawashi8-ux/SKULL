@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useCanonical } from '../useCanonical'
 import { GAME_CONTENT } from '../gameContent'
 
@@ -23,7 +23,6 @@ const INFO_LINKS = [
 export default function GameEmbed({ gameId }: { gameId: string }) {
   const game = GAME_CONTENT[gameId]
   useCanonical(`/games/${gameId}`)
-  const [playing, setPlaying] = useState(false)
 
   useEffect(() => {
     if (!game) return
@@ -34,88 +33,12 @@ export default function GameEmbed({ gameId }: { gameId: string }) {
     )
   }, [game])
 
-  // プレイ中は背面のスクロールを止める
-  useEffect(() => {
-    if (!playing) return
-    const prev = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    return () => { document.body.style.overflow = prev }
-  }, [playing])
-
   if (!game) {
     window.location.assign('/')
     return null
   }
 
   const accent = game.accent
-
-  // ── プレイ中：全画面オーバーレイ（動作実績のあるフルスクリーンiframe構成） ──
-  if (playing) {
-    return (
-      <div style={{ position: 'fixed', inset: 0, zIndex: 9999, display: 'flex', flexDirection: 'column', height: '100dvh', background: '#1a1c30' }}>
-        <header
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
-            padding: 'calc(env(safe-area-inset-top) + 8px) 14px 8px',
-            background: 'rgba(26,28,48,0.96)',
-            borderBottom: '1px solid rgba(255,255,255,0.08)',
-            flexShrink: 0,
-          }}
-        >
-          <span style={{ color: 'white', fontWeight: 700, fontSize: '13px', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            {game.name}
-          </span>
-          <button
-            onClick={() => setPlaying(false)}
-            style={{
-              background: 'rgba(255,255,255,0.1)',
-              color: 'rgba(255,255,255,0.9)',
-              border: '1px solid rgba(255,255,255,0.18)',
-              borderRadius: '999px',
-              padding: '6px 16px',
-              fontSize: '12px',
-              fontWeight: 700,
-              cursor: 'pointer',
-            }}
-          >
-            ✕ 終了
-          </button>
-        </header>
-        <iframe
-          src={game.url}
-          title={`${game.name}をプレイ`}
-          style={{ flex: 1, width: '100%', border: 'none' }}
-          allow="fullscreen"
-        />
-      </div>
-    )
-  }
-
-  // ── 通常：解説付きランディングページ ──
-  const PlayButton = ({ marginTop }: { marginTop: number }) => (
-    <button
-      onClick={() => setPlaying(true)}
-      style={{
-        display: 'block',
-        width: '100%',
-        background: `linear-gradient(135deg, ${accent}, ${accent}cc)`,
-        color: '#1a1c30',
-        textAlign: 'center',
-        padding: '18px 24px',
-        borderRadius: '999px',
-        fontWeight: 700,
-        fontSize: '16px',
-        marginTop: `${marginTop}px`,
-        border: 'none',
-        cursor: 'pointer',
-        boxShadow: `0 6px 20px ${accent}66`,
-      }}
-    >
-      ▶ 今すぐ{game.name}を遊ぶ
-    </button>
-  )
 
   return (
     <div style={{ background: 'radial-gradient(ellipse at top, #1e2244 0%, #1a1c30 55%, #161824 100%)', minHeight: '100dvh', color: '#fff' }}>
@@ -150,9 +73,43 @@ export default function GameEmbed({ gameId }: { gameId: string }) {
         </a>
       </header>
 
+      {/* ── Play area (embedded, playable immediately) ── */}
+      <div style={{ maxWidth: '900px', margin: '0 auto', padding: '12px 12px 0' }}>
+        <div
+          style={{
+            position: 'relative',
+            borderRadius: '14px',
+            overflow: 'hidden',
+            border: `1.5px solid ${accent}44`,
+            boxShadow: `0 8px 32px rgba(0,0,0,0.4)`,
+            background: '#0e0f1a',
+          }}
+        >
+          <iframe
+            src={game.url}
+            title={`${game.name}をプレイ`}
+            style={{ display: 'block', width: '100%', height: '82dvh', minHeight: '460px', border: 'none' }}
+            allow="fullscreen"
+          />
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 4px 0' }}>
+          <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.35)' }}>
+            登録不要・無料でそのまま遊べます
+          </p>
+          <a
+            href={game.url}
+            target="_blank"
+            rel="noopener"
+            style={{ fontSize: '11px', color: accent, textDecoration: 'none', fontWeight: 700 }}
+          >
+            別タブで大きく開く ↗
+          </a>
+        </div>
+      </div>
+
       <div style={{ maxWidth: '720px', margin: '0 auto', padding: '0 16px 64px' }}>
         {/* ── Title block ── */}
-        <div style={{ padding: '24px 4px 8px' }}>
+        <div style={{ padding: '28px 4px 8px' }}>
           <p style={{ fontSize: '10px', letterSpacing: '0.2em', textTransform: 'uppercase', color: accent, fontWeight: 700, marginBottom: '6px' }}>
             {game.nameEn}
           </p>
@@ -164,14 +121,8 @@ export default function GameEmbed({ gameId }: { gameId: string }) {
           </p>
         </div>
 
-        {/* ── Play button ── */}
-        <PlayButton marginTop={16} />
-        <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.35)', textAlign: 'center', marginTop: '10px' }}>
-          登録不要・無料でそのまま遊べます
-        </p>
-
         {/* ── Overview ── */}
-        <section style={{ marginTop: '36px' }}>
+        <section style={{ marginTop: '28px' }}>
           <h2 style={{ fontSize: '18px', fontWeight: 700, borderLeft: `3px solid ${accent}`, paddingLeft: '12px', marginBottom: '14px' }}>
             {game.name}とは？
           </h2>
@@ -226,9 +177,6 @@ export default function GameEmbed({ gameId }: { gameId: string }) {
             ))}
           </div>
         </section>
-
-        {/* ── Play button (bottom) ── */}
-        <PlayButton marginTop={32} />
 
         {/* ── Related articles ── */}
         {game.related.length > 0 && (
