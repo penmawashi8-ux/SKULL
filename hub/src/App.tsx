@@ -771,7 +771,7 @@ export default function App() {
           className="font-sans-jp text-xs mb-1.5 relative z-10"
           style={{ color: 'rgba(255,255,255,0.52)' }}
         >
-          ブラウザで遊べる
+          無料・登録不要でブラウザで遊べる
         </p>
 
         <div className="relative z-10">
@@ -811,7 +811,8 @@ export default function App() {
           style={{ color: 'rgba(255,255,255,0.52)' }}
         >
           友達と、家族と、見知らぬ誰かと。<br />
-          オンラインでつながるボードゲームの世界。
+          スマホでもPCでも、オンラインでつながる<br />
+          無料ボードゲームの世界。
         </p>
       </section>
 

@@ -12,6 +12,17 @@ function setMeta(name: string, content: string) {
   tag.content = content
 }
 
+function setGameJsonLd(json: object) {
+  let tag = document.querySelector<HTMLScriptElement>('script#game-jsonld')
+  if (!tag) {
+    tag = document.createElement('script')
+    tag.id = 'game-jsonld'
+    tag.type = 'application/ld+json'
+    document.head.appendChild(tag)
+  }
+  tag.textContent = JSON.stringify(json)
+}
+
 const INFO_LINKS = [
   { label: 'ブログ', path: '/blog/' },
   { label: '企業情報', path: '/about' },
@@ -26,12 +37,37 @@ export default function GameEmbed({ gameId }: { gameId: string }) {
 
   useEffect(() => {
     if (!game) return
-    document.title = `${game.name}の遊び方・ルール｜ブラウザで無料プレイ | ボドゲ広場`
+    const players = game.info.find(i => i.label === 'プレイ人数')?.value ?? ''
+    const genre = game.info.find(i => i.label === 'ジャンル')?.value ?? ''
+    document.title = `${game.name}を無料でオンラインプレイ｜遊び方・ルール解説 - ボドゲ広場`
     setMeta(
       'description',
-      `${game.name}（${game.nameEn}）の遊び方・ルールを解説。${game.tagline}。登録不要・無料でブラウザからすぐ遊べます。`,
+      `${game.name}（${game.nameEn}）はブラウザで無料で遊べるオンラインゲーム（${genre}）。${game.tagline}。プレイ人数${players}。登録不要・インストール不要でスマホからもすぐ遊べます。遊び方・ルールも解説。`,
     )
-  }, [game])
+    setGameJsonLd({
+      '@context': 'https://schema.org',
+      '@graph': [
+        {
+          '@type': 'Game',
+          name: game.name,
+          alternateName: game.nameEn,
+          description: `${game.tagline}。ブラウザで無料で遊べるオンラインゲーム。`,
+          url: `https://boardgamecat.com/games/${gameId}`,
+          gamePlatform: 'Webブラウザ',
+          inLanguage: 'ja',
+          isAccessibleForFree: true,
+          genre: genre.split('・'),
+        },
+        {
+          '@type': 'BreadcrumbList',
+          itemListElement: [
+            { '@type': 'ListItem', position: 1, name: 'ボドゲ広場', item: 'https://boardgamecat.com/' },
+            { '@type': 'ListItem', position: 2, name: game.name, item: `https://boardgamecat.com/games/${gameId}` },
+          ],
+        },
+      ],
+    })
+  }, [game, gameId])
 
   if (!game) {
     window.location.assign('/')
