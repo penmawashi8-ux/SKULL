@@ -47,6 +47,7 @@ export const GAME_CONTENT: Record<string, GameContent> = {
     intro: [
       'BOMB（ボム）は、自分の前にカードを伏せて積み上げ、「この場の何枚をめくれる」と宣言し合うブラフ心理戦ゲームです。積んだカードの中に爆弾が潜んでいるかどうかは本人しか知りません。嘘で押し通すか、正直に勝ちにいくか——読み合いがすべてを決めます。',
       '各プレイヤーは爆弾1枚とりんご3枚を持ってスタート。爆弾を踏まずに宣言した枚数をめくり切れれば勝ち点を獲得し、踏めば手札を失います。2人以上いればブラウザですぐに無料で対戦でき、エモートで相手を揺さぶる駆け引きも楽しめます。',
+      '名作ブラフゲーム「スカル（Skull）」にインスパイアされて開発したオリジナルゲームなので、スカルが好きな人・スカルみたいなゲームをオンラインで探している人にもおすすめ。登録不要でURLを送るだけで、あの読み合いを友達と気軽に楽しめます。',
     ],
     info: [
       { label: 'プレイ人数', value: '2〜6人' },
@@ -66,6 +67,7 @@ export const GAME_CONTENT: Record<string, GameContent> = {
     ],
     related: [
       { title: 'BOMBのルールと遊び方｜エモートで相手を揺さぶれ', href: '/blog/bomb-online-free.html' },
+      { title: 'スカル（Skull）みたいなゲームをオンラインで無料プレイ', href: '/blog/skull-like-game-online.html' },
       { title: 'ブラフゲームで勝つ5つのコツ｜嘘と読み合いを制する', href: '/blog/bluff-game-tips.html' },
     ],
   },
