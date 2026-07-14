@@ -196,6 +196,7 @@ export const GAME_CONTENT: Record<string, GameContent> = {
     ],
     related: [
       { title: '謀略のルールと遊び方｜嘘が戦略になるブラフゲーム', href: '/blog/bouryaku-online-free.html' },
+      { title: '謀略の攻略・必勝戦略ガイド｜チャレンジの判断基準とキャラ別の立ち回り', href: '/blog/bouryaku-strategy.html' },
       { title: 'ブラフゲームで勝つ5つのコツ｜心理戦の基本', href: '/blog/bluff-game-tips.html' },
     ],
   },
@@ -225,7 +226,9 @@ export const GAME_CONTENT: Record<string, GameContent> = {
       { title: 'シンプルで奥深い', body: '進むか妨害するかの選択がそのまま戦略になる、ルールは簡単・駆け引きは本格のレースゲームです。' },
       { title: 'ベータ版公開中', body: '現在ベータ版として調整中です。実際に遊んでみた感想はお問い合わせからお寄せください。' },
     ],
-    related: [],
+    related: [
+      { title: '2人で遊べる無料オンラインボードゲームおすすめ7選', href: '/blog/two-player-online-boardgame.html' },
+    ],
   },
 
   'g-board-app': {
@@ -253,7 +256,9 @@ export const GAME_CONTENT: Record<string, GameContent> = {
       { title: '戦略性の高い対戦', body: '一手の重みが大きいターン制バトル。先を読んだ立ち回りが勝敗を分けます。' },
       { title: 'ベータ版公開中', body: '現在ベータ版として調整中です。遊んだ感想やご意見はお問い合わせからお寄せください。' },
     ],
-    related: [],
+    related: [
+      { title: '2人で遊べる無料オンラインボードゲームおすすめ7選', href: '/blog/two-player-online-boardgame.html' },
+    ],
   },
 
   'poko-light': {

@@ -409,6 +409,22 @@ const NOTICES = [
 
 const BLOG_POSTS = [
   {
+    href: '/blog/two-player-online-boardgame.html',
+    tag: 'まとめ・2人用',
+    color: '#ffd43b',
+    title: '2人で遊べる無料オンラインボードゲームおすすめ7選',
+    desc: '2人でオンライン対戦できる無料ゲームを厳選。恋人・友達・家族との2人対戦にぴったりのゲームが見つかります。',
+    date: '2026.07.14',
+  },
+  {
+    href: '/blog/bouryaku-strategy.html',
+    tag: 'コツ・戦略',
+    color: '#a855f7',
+    title: '謀略の攻略・必勝戦略ガイド｜チャレンジの判断基準',
+    desc: 'ルールを覚えた次に読む攻略記事。コイン戦略、キャラ別の立ち回り、チャレンジすべきタイミングを解説。',
+    date: '2026.07.14',
+  },
+  {
     href: '/blog/free-online-boardgames.html',
     tag: 'まとめ',
     color: '#ffd43b',
