@@ -163,5 +163,10 @@ export default function handler(_req: any, res: any) {
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
+  <url>
+    <loc>https://boardgamecat.com/blog/skull-like-game-online.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
 </urlset>`);
 }

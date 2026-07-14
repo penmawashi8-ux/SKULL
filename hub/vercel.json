@@ -30,6 +30,14 @@
   ],
   "rewrites": [
     { "source": "/sitemap.xml", "destination": "/api/sitemap" },
+    {
+      "source": "/games/:id(bomb|pig-tail|keiba|page-one|coup|racing-board|g-board-app|poko-light)",
+      "destination": "/games/:id.html"
+    },
+    { "source": "/about", "destination": "/about.html" },
+    { "source": "/privacy-policy", "destination": "/privacy-policy.html" },
+    { "source": "/terms", "destination": "/terms.html" },
+    { "source": "/contact", "destination": "/contact.html" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

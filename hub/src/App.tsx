@@ -1,21 +1,10 @@
-import { UpdatePrompt } from './components/UpdatePrompt'
 import PrivacyPolicy from './pages/PrivacyPolicy'
 import Terms from './pages/Terms'
 import Contact from './pages/Contact'
 import About from './pages/About'
 import GameEmbed from './pages/GameEmbed'
 import { useCanonical } from './useCanonical'
-import { Component, useState, type ReactNode } from 'react'
-
-class SafeRender extends Component<{ children: ReactNode }, { hasError: boolean }> {
-  state = { hasError: false }
-  static getDerivedStateFromError() { return { hasError: true } }
-  componentDidCatch(error: unknown) { console.error('SafeRender caught:', error) }
-  render() {
-    if (this.state.hasError) return null
-    return this.props.children
-  }
-}
+import { useState } from 'react'
 
 const BOMB_GAME_URL = 'https://bomb.boardgamecat.com'
 
@@ -508,6 +497,100 @@ function BlogSection() {
   )
 }
 
+// トップページに表示するFAQ。index.html の FAQPage 構造化データと内容を同期させること。
+const FAQ_ITEMS = [
+  {
+    q: 'ボドゲ広場のゲームは本当に無料ですか？',
+    a: 'はい、すべてのゲームを無料で遊べます。運営費は広告収入でまかなっており、ゲーム内課金や有料プランは一切ありません。',
+  },
+  {
+    q: '会員登録やアプリのインストールは必要ですか？',
+    a: '不要です。すべてのゲームはブラウザだけで動作します。遊びたいゲームのページを開けば、そのまますぐにプレイを始められます。',
+  },
+  {
+    q: '離れた友達と一緒に遊ぶにはどうすればいいですか？',
+    a: '対戦ゲームでは部屋を作って招待URLを友達に送るだけで、同じ部屋に集まって遊べます。LINEやDiscordなどでURLを共有するのが手軽でおすすめです。',
+  },
+  {
+    q: '1人でも遊べるゲームはありますか？',
+    a: 'あります。「ポコっとライト」は完全1人用のパズルゲームです。「ぶたのしっぽ」「ページワン」「バーチャル競馬」も1人プレイに対応しています。',
+  },
+  {
+    q: 'スマホでも遊べますか？',
+    a: 'iPhone・Android・PC・タブレットのモダンブラウザに対応しています。スマホの縦画面でも快適に遊べるよう設計しています。',
+  },
+  {
+    q: '新しいゲームは追加されますか？',
+    a: 'はい、順次追加しています。新作の公開情報はトップページ右上のお知らせ欄とブログでお伝えしています。',
+  },
+]
+
+function SiteIntroSection() {
+  return (
+    <section className="px-5 pb-10 max-w-xl mx-auto">
+      <div className="flex items-center gap-3 mb-5">
+        <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.08)' }} />
+        <span className="font-cinzel text-[9px] font-bold tracking-[0.28em] uppercase" style={{ color: 'rgba(255,255,255,0.28)' }}>
+          ✦ About ✦
+        </span>
+        <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.08)' }} />
+      </div>
+      <h2 className="font-serif-jp text-center text-[15px] font-bold text-white mb-4">
+        ボドゲ広場とは
+      </h2>
+      <div className="font-sans-jp text-[12px] leading-relaxed space-y-3" style={{ color: 'rgba(255,255,255,0.6)' }}>
+        <p>
+          ボドゲ広場は、ブラウザだけで遊べる無料オンラインボードゲームを集めた個人運営のゲームサイトです。アプリのインストールも会員登録も不要で、ページを開いた瞬間から遊び始められる手軽さを一番大切にしています。
+        </p>
+        <p>
+          収録しているのはすべて当サイトが独自に開発したオリジナルゲームです。ブラフと心理戦が熱い「BOMB」や「謀略」、定番トランプゲームの「ぶたのしっぽ」「ページワン」、レース予想を楽しむ「バーチャル競馬」、1人でじっくり遊べるパズル「ポコっとライト」など、大人数のパーティ用から1人用まで幅広くそろえています。
+        </p>
+        <p>
+          対戦ゲームは部屋を作って招待URLを友達に送るだけで、離れた相手ともオンラインで対戦できます。各ゲームのページとブログでは、ルール・遊び方・勝つためのコツも詳しく解説しています。友達や家族との集まりに、ひとりの暇つぶしに、お気軽にお楽しみください。
+        </p>
+      </div>
+    </section>
+  )
+}
+
+function FaqSection() {
+  return (
+    <section className="px-5 pb-12 max-w-xl mx-auto">
+      <div className="flex items-center gap-3 mb-5">
+        <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.08)' }} />
+        <span className="font-cinzel text-[9px] font-bold tracking-[0.28em] uppercase" style={{ color: 'rgba(255,255,255,0.28)' }}>
+          ✦ FAQ ✦
+        </span>
+        <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.08)' }} />
+      </div>
+      <h2 className="font-serif-jp text-center text-[15px] font-bold text-white mb-5">
+        よくある質問
+      </h2>
+      <div className="flex flex-col gap-3">
+        {FAQ_ITEMS.map(item => (
+          <div
+            key={item.q}
+            className="rounded-2xl px-5 py-4"
+            style={{
+              background: 'linear-gradient(135deg, #1e2248 0%, #181b38 100%)',
+              border: '1px solid rgba(255,255,255,0.08)',
+            }}
+          >
+            <h3 className="font-sans-jp text-[13px] font-bold text-white leading-snug mb-2">
+              <span style={{ color: '#ffd43b', marginRight: '6px' }}>Q.</span>
+              {item.q}
+            </h3>
+            <p className="font-sans-jp text-[12px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.55)' }}>
+              <span style={{ color: 'rgba(255,255,255,0.35)', fontWeight: 700, marginRight: '6px' }}>A.</span>
+              {item.a}
+            </p>
+          </div>
+        ))}
+      </div>
+    </section>
+  )
+}
+
 function NoticeDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
   return (
     <>
@@ -676,8 +759,8 @@ function Drawer({ open, onClose }: { open: boolean; onClose: () => void }) {
   )
 }
 
-export default function App() {
-  const path = window.location.pathname
+export default function App({ path: pathProp }: { path?: string } = {}) {
+  const path = pathProp ?? window.location.pathname
 
   if (path === '/privacy-policy') return <PrivacyPolicy />
   if (path === '/terms') return <Terms />
@@ -700,10 +783,6 @@ export default function App() {
       className="min-h-screen"
       style={{ background: 'radial-gradient(ellipse at top, #1e2244 0%, #1a1c30 55%, #161824 100%)' }}
     >
-      <SafeRender>
-        <UpdatePrompt />
-      </SafeRender>
-
       <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
       <NoticeDrawer open={noticeOpen} onClose={() => setNoticeOpen(false)} />
 
@@ -873,6 +952,12 @@ export default function App() {
 
       {/* Blog */}
       <BlogSection />
+
+      {/* Site intro */}
+      <SiteIntroSection />
+
+      {/* FAQ */}
+      <FaqSection />
 
       {/* Footer */}
       <footer
