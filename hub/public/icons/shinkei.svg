@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <defs>
+    <radialGradient id="sk-bg" cx="40%" cy="35%" r="70%">
+      <stop offset="0%" stop-color="#0e4a5c"/>
+      <stop offset="100%" stop-color="#06222e"/>
+    </radialGradient>
+    <linearGradient id="sk-back" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#223059"/>
+      <stop offset="100%" stop-color="#151d38"/>
+    </linearGradient>
+    <linearGradient id="sk-front" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#dde4f0"/>
+    </linearGradient>
+    <filter id="sk-shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-color="#000" flood-opacity="0.55"/>
+    </filter>
+    <clipPath id="sk-clip">
+      <circle cx="60" cy="60" r="50"/>
+    </clipPath>
+  </defs>
+
+  <circle cx="60" cy="60" r="50" fill="url(#sk-bg)"/>
+  <g clip-path="url(#sk-clip)">
+    <!-- 裏向きカード -->
+    <g transform="rotate(-14 44 62)" filter="url(#sk-shadow)">
+      <rect x="24" y="36" width="40" height="52" rx="6" fill="url(#sk-back)" stroke="#67e8f9" stroke-width="2"/>
+      <text x="44" y="68" font-size="18" text-anchor="middle" fill="#67e8f9" opacity="0.75" font-family="serif">✦</text>
+    </g>
+    <!-- 表向きの7 -->
+    <g transform="rotate(12 76 64)" filter="url(#sk-shadow)">
+      <rect x="56" y="38" width="40" height="52" rx="6" fill="url(#sk-front)" stroke="#94a3b8" stroke-width="1.5"/>
+      <text x="76" y="66" font-size="24" font-weight="900" text-anchor="middle" fill="#dc2626" font-family="Arial, sans-serif">7</text>
+      <text x="76" y="82" font-size="13" text-anchor="middle" fill="#dc2626" font-family="Arial, sans-serif">♥</text>
+    </g>
+    <!-- 泥棒セブンのコイン -->
+    <circle cx="88" cy="34" r="12" fill="#ffd43b" stroke="#b45309" stroke-width="2" filter="url(#sk-shadow)"/>
+    <text x="88" y="39" font-size="13" font-weight="900" text-anchor="middle" fill="#7c2d12" font-family="Arial, sans-serif">￥</text>
+  </g>
+  <circle cx="60" cy="60" r="49" fill="none" stroke="#67e8f9" stroke-width="2" opacity="0.5"/>
+</svg>
