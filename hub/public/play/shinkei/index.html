@@ -1,0 +1,542 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+<!-- ゲーム本体（iframe埋め込み用）。SEO上の正規ページは /games/shinkei 側。 -->
+<meta name="robots" content="noindex" />
+<title>神経衰弱｜ボドゲ広場</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', 'Yu Gothic', sans-serif;
+    background: radial-gradient(ellipse at top, #1e2244 0%, #1a1c30 55%, #161824 100%);
+    color: #fff;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .screen { width: 100%; max-width: 560px; padding: 20px 16px 32px; }
+  .hidden { display: none !important; }
+
+  /* ── メニュー ── */
+  .menu-title-en { font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase; color: #67e8f9; font-weight: 700; text-align: center; margin-bottom: 6px; }
+  .menu-title { font-size: 30px; font-weight: 900; text-align: center; letter-spacing: 0.1em; margin-bottom: 4px; }
+  .menu-sub { font-size: 12px; color: rgba(255,255,255,0.5); text-align: center; margin-bottom: 26px; line-height: 1.7; }
+  .section-label { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.45); letter-spacing: 0.15em; margin: 18px 0 10px; }
+  .opt-row { display: flex; gap: 8px; }
+  .opt-btn {
+    flex: 1; padding: 13px 6px; border-radius: 14px; border: 2px solid rgba(255,255,255,0.14);
+    background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.75);
+    font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.15s; font-family: inherit;
+  }
+  .opt-btn.sel { background: rgba(103,232,249,0.16); border-color: #67e8f9; color: #67e8f9; box-shadow: 0 0 14px rgba(103,232,249,0.25); }
+  .opt-btn:active { transform: scale(0.96); }
+
+  .rule-card {
+    margin-top: 6px; border-radius: 16px; padding: 14px 16px;
+    background: linear-gradient(135deg, rgba(255,212,59,0.10) 0%, rgba(255,212,59,0.04) 100%);
+    border: 1.5px solid rgba(255,212,59,0.35);
+  }
+  .rule-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .rule-name { font-size: 14px; font-weight: 800; color: #ffd43b; }
+  .rule-tag { font-size: 9px; font-weight: 700; color: #1a1c30; background: #ffd43b; border-radius: 999px; padding: 2px 8px; letter-spacing: 0.08em; }
+  .rule-desc { font-size: 11.5px; color: rgba(255,255,255,0.62); line-height: 1.75; margin-top: 8px; }
+  .toggle {
+    position: relative; width: 52px; height: 28px; border-radius: 999px; border: none; cursor: pointer;
+    background: rgba(255,255,255,0.15); transition: background 0.2s; flex-shrink: 0;
+  }
+  .toggle::after {
+    content: ''; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%;
+    background: #fff; transition: transform 0.2s;
+  }
+  .toggle.on { background: #ffd43b; }
+  .toggle.on::after { transform: translateX(24px); background: #1a1c30; }
+
+  .start-btn {
+    display: block; width: 100%; margin-top: 26px; padding: 16px; border: none; border-radius: 999px;
+    background: linear-gradient(135deg, #67e8f9cc, #67e8f9); color: #0e3a47; font-size: 16px; font-weight: 900;
+    letter-spacing: 0.1em; cursor: pointer; box-shadow: 0 6px 20px rgba(103,232,249,0.4); font-family: inherit;
+    transition: transform 0.15s;
+  }
+  .start-btn:active { transform: scale(0.97); }
+
+  /* ── ゲーム画面 ── */
+  .hud { display: flex; align-items: stretch; gap: 8px; margin-bottom: 10px; }
+  .p-chip {
+    flex: 1; border-radius: 14px; padding: 8px 12px; border: 2px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.04); transition: all 0.25s;
+  }
+  .p-chip.active { border-color: #67e8f9; background: rgba(103,232,249,0.12); box-shadow: 0 0 16px rgba(103,232,249,0.28); }
+  .p-chip .p-name { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.6); }
+  .p-chip.active .p-name { color: #67e8f9; }
+  .p-chip .p-score { font-size: 18px; font-weight: 900; }
+  .p-chip .p-score small { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.4); margin-left: 3px; }
+  .hud-mid { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 56px; }
+  .hud-vs { font-size: 11px; font-weight: 900; color: rgba(255,255,255,0.3); letter-spacing: 0.1em; }
+  .hud-rule { font-size: 9px; font-weight: 700; color: #ffd43b; margin-top: 2px; white-space: nowrap; }
+
+  .banner {
+    min-height: 34px; display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 800; margin-bottom: 10px; border-radius: 12px;
+    color: rgba(255,255,255,0.55); background: rgba(255,255,255,0.04);
+    padding: 6px 12px; text-align: center; line-height: 1.5; transition: all 0.2s;
+  }
+  .banner.good { color: #6ee7b7; background: rgba(110,231,183,0.1); }
+  .banner.bad { color: rgba(255,255,255,0.5); }
+  .banner.thief { color: #1a1c30; background: linear-gradient(135deg, #ffd43b, #fbbf24); box-shadow: 0 4px 18px rgba(255,212,59,0.45); }
+
+  .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  @media (min-width: 480px) { .grid { grid-template-columns: repeat(5, 1fr); } }
+
+  .card { aspect-ratio: 2.5 / 3.4; perspective: 600px; cursor: pointer; }
+  .card-inner {
+    position: relative; width: 100%; height: 100%;
+    transform-style: preserve-3d; transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .card.up .card-inner { transform: rotateY(180deg); }
+  .card-face {
+    position: absolute; inset: 0; border-radius: 10px; backface-visibility: hidden; -webkit-backface-visibility: hidden;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .card-back {
+    background: linear-gradient(135deg, #223059 0%, #1a2344 100%);
+    border: 2px solid rgba(103,232,249,0.35);
+    box-shadow: 0 3px 10px rgba(0,0,0,0.35), inset 0 0 12px rgba(103,232,249,0.08);
+    color: rgba(103,232,249,0.5); font-size: 18px;
+  }
+  .card-front {
+    background: linear-gradient(160deg, #ffffff 0%, #e8ecf5 100%);
+    border: 2px solid rgba(0,0,0,0.15); transform: rotateY(180deg);
+    flex-direction: column; gap: 0; box-shadow: 0 3px 10px rgba(0,0,0,0.35);
+  }
+  .card-front .rank { font-size: clamp(18px, 6vw, 26px); font-weight: 900; line-height: 1; }
+  .card-front .suit { font-size: clamp(14px, 4.5vw, 20px); line-height: 1.2; }
+  .card-front.red { color: #dc2626; }
+  .card-front.black { color: #1e293b; }
+  .card.gone { visibility: hidden; }
+  .card.matched .card-inner { animation: pop 0.45s ease; }
+  @keyframes pop {
+    0% { transform: rotateY(180deg) scale(1); }
+    45% { transform: rotateY(180deg) scale(1.14); }
+    100% { transform: rotateY(180deg) scale(1); }
+  }
+  .card.stolen-flash .card-inner { animation: none; }
+
+  .quit-row { text-align: center; margin-top: 16px; }
+  .quit-btn {
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: rgba(255,255,255,0.45);
+    font-size: 11px; font-weight: 700; border-radius: 999px; padding: 8px 20px; cursor: pointer; font-family: inherit;
+  }
+
+  /* ── 結果オーバーレイ ── */
+  .overlay {
+    position: fixed; inset: 0; background: rgba(10,12,24,0.82); z-index: 50;
+    display: flex; align-items: center; justify-content: center; padding: 24px;
+    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  }
+  .result-box {
+    width: 100%; max-width: 340px; border-radius: 22px; padding: 30px 24px; text-align: center;
+    background: linear-gradient(135deg, #1e2248 0%, #181b38 100%); border: 2px solid rgba(103,232,249,0.3);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+  }
+  .result-emoji { font-size: 44px; margin-bottom: 10px; }
+  .result-title { font-size: 22px; font-weight: 900; margin-bottom: 6px; }
+  .result-detail { font-size: 13px; color: rgba(255,255,255,0.55); margin-bottom: 22px; line-height: 1.7; }
+  .result-btns { display: flex; flex-direction: column; gap: 10px; }
+  .r-btn { padding: 13px; border-radius: 999px; border: none; font-size: 14px; font-weight: 800; cursor: pointer; font-family: inherit; }
+  .r-btn.primary { background: linear-gradient(135deg, #67e8f9cc, #67e8f9); color: #0e3a47; box-shadow: 0 4px 16px rgba(103,232,249,0.35); }
+  .r-btn.ghost { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.6); border: 1px solid rgba(255,255,255,0.14); }
+</style>
+</head>
+<body>
+
+<!-- ── メニュー画面 ── -->
+<div class="screen" id="menu">
+  <p class="menu-title-en">✦ Concentration ✦</p>
+  <h1 class="menu-title">神経衰弱</h1>
+  <p class="menu-sub">同じ数字のカードを2枚めくってペアを集めよう。<br />ペアをたくさん取ったほうの勝ち！</p>
+
+  <p class="section-label">🎮 あそびかた</p>
+  <div class="opt-row" id="mode-row">
+    <button class="opt-btn sel" data-mode="cpu">CPUと対戦</button>
+    <button class="opt-btn" data-mode="pvp">2人で対戦<br /><span style="font-size:10px;font-weight:400;">（1台のスマホ/PCで交互に）</span></button>
+  </div>
+
+  <div id="level-block">
+    <p class="section-label">🧠 CPUの記憶力</p>
+    <div class="opt-row" id="level-row">
+      <button class="opt-btn" data-level="0.35">わすれんぼ</button>
+      <button class="opt-btn sel" data-level="0.65">ふつう</button>
+      <button class="opt-btn" data-level="0.9">エリート</button>
+    </div>
+  </div>
+
+  <p class="section-label">⭐ ローカルルール</p>
+  <div class="rule-card">
+    <div class="rule-head">
+      <div>
+        <span class="rule-name">💰 泥棒セブン</span>
+        <span class="rule-tag">当サイトオリジナル</span>
+      </div>
+      <button class="toggle on" id="thief-toggle" aria-label="泥棒セブンの有効・無効"></button>
+    </div>
+    <p class="rule-desc">
+      「7」のペアを揃えた人は、その場で相手の獲得済みペアを1組奪える！
+      終盤の大逆転を生む、ボドゲ広場オリジナルの追加ルールです。
+      7のカードの場所は最優先で覚えておこう。
+    </p>
+  </div>
+
+  <button class="start-btn" id="start-btn">ゲームスタート ▶</button>
+</div>
+
+<!-- ── ゲーム画面 ── -->
+<div class="screen hidden" id="game">
+  <div class="hud">
+    <div class="p-chip" id="chip-0">
+      <p class="p-name" id="name-0">あなた</p>
+      <p class="p-score"><span id="score-0">0</span><small>ペア</small></p>
+    </div>
+    <div class="hud-mid">
+      <span class="hud-vs">VS</span>
+      <span class="hud-rule hidden" id="hud-rule">💰 泥棒セブン</span>
+    </div>
+    <div class="p-chip" id="chip-1">
+      <p class="p-name" id="name-1">CPU</p>
+      <p class="p-score"><span id="score-1">0</span><small>ペア</small></p>
+    </div>
+  </div>
+
+  <div class="banner" id="banner">カードを2枚めくってね</div>
+  <div class="grid" id="grid"></div>
+
+  <div class="quit-row">
+    <button class="quit-btn" id="quit-btn">← メニューにもどる</button>
+  </div>
+</div>
+
+<!-- ── 結果 ── -->
+<div class="overlay hidden" id="overlay">
+  <div class="result-box">
+    <div class="result-emoji" id="result-emoji">🏆</div>
+    <p class="result-title" id="result-title"></p>
+    <p class="result-detail" id="result-detail"></p>
+    <div class="result-btns">
+      <button class="r-btn primary" id="retry-btn">もう一度あそぶ</button>
+      <button class="r-btn ghost" id="menu-btn">メニューにもどる</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  const RANKS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; // 10種 × 2枚 = 20枚
+  const THIEF_RANK = 7;
+
+  const $ = id => document.getElementById(id);
+
+  // ── 設定（メニュー） ──
+  const settings = { mode: 'cpu', level: 0.65, thief: true };
+
+  document.querySelectorAll('#mode-row .opt-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#mode-row .opt-btn').forEach(b => b.classList.remove('sel'));
+      btn.classList.add('sel');
+      settings.mode = btn.dataset.mode;
+      $('level-block').classList.toggle('hidden', settings.mode !== 'cpu');
+    });
+  });
+  document.querySelectorAll('#level-row .opt-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#level-row .opt-btn').forEach(b => b.classList.remove('sel'));
+      btn.classList.add('sel');
+      settings.level = parseFloat(btn.dataset.level);
+    });
+  });
+  $('thief-toggle').addEventListener('click', () => {
+    settings.thief = !settings.thief;
+    $('thief-toggle').classList.toggle('on', settings.thief);
+  });
+
+  // ── ゲーム状態 ──
+  let cards = [];        // { rank, suit, state: 'down'|'up'|'gone', el }
+  let flipped = [];      // 今めくっている最大2枚のインデックス
+  let current = 0;       // 手番プレイヤー
+  let pairs = [[], []];  // 各プレイヤーの獲得ペア（rankの配列）
+  let busy = false;
+  let cpuMemory = {};    // rank -> Set(index)  CPUが覚えているカード
+
+  const isCpuTurn = () => settings.mode === 'cpu' && current === 1;
+
+  function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  function rankLabel(rank) { return rank === 1 ? 'A' : String(rank); }
+
+  function startGame() {
+    const deck = [];
+    for (const rank of RANKS) {
+      deck.push({ rank, suit: '♥' });
+      deck.push({ rank, suit: '♠' });
+    }
+    shuffle(deck);
+
+    cards = deck.map(c => ({ ...c, state: 'down', el: null }));
+    flipped = [];
+    current = 0;
+    pairs = [[], []];
+    busy = false;
+    cpuMemory = {};
+
+    $('name-0').textContent = settings.mode === 'cpu' ? 'あなた' : 'プレイヤー1';
+    $('name-1').textContent = settings.mode === 'cpu' ? 'CPU' : 'プレイヤー2';
+    $('hud-rule').classList.toggle('hidden', !settings.thief);
+
+    const grid = $('grid');
+    grid.innerHTML = '';
+    cards.forEach((card, i) => {
+      const el = document.createElement('div');
+      el.className = 'card';
+      el.innerHTML =
+        '<div class="card-inner">' +
+          '<div class="card-face card-back">✦</div>' +
+          '<div class="card-face card-front ' + (card.suit === '♥' ? 'red' : 'black') + '">' +
+            '<span class="rank">' + rankLabel(card.rank) + '</span>' +
+            '<span class="suit">' + card.suit + '</span>' +
+          '</div>' +
+        '</div>';
+      el.addEventListener('click', () => onCardTap(i));
+      card.el = el;
+      grid.appendChild(el);
+    });
+
+    $('menu').classList.add('hidden');
+    $('game').classList.remove('hidden');
+    $('overlay').classList.add('hidden');
+    setBanner(turnText(), '');
+    updateHud();
+  }
+
+  function turnText() {
+    if (settings.mode === 'cpu') return current === 0 ? 'あなたの番！カードを2枚めくってね' : 'CPUが考えています…';
+    return 'プレイヤー' + (current + 1) + 'の番！カードを2枚めくってね';
+  }
+
+  function setBanner(text, tone) {
+    const b = $('banner');
+    b.textContent = text;
+    b.className = 'banner' + (tone ? ' ' + tone : '');
+  }
+
+  function updateHud() {
+    $('score-0').textContent = pairs[0].length;
+    $('score-1').textContent = pairs[1].length;
+    $('chip-0').classList.toggle('active', current === 0);
+    $('chip-1').classList.toggle('active', current === 1);
+  }
+
+  // CPUはめくられたカードを記憶力（settings.level）の確率で覚える
+  function cpuRemember(index) {
+    if (settings.mode !== 'cpu') return;
+    if (Math.random() > settings.level) return;
+    const rank = cards[index].rank;
+    (cpuMemory[rank] ||= new Set()).add(index);
+  }
+  function cpuForget(index) {
+    const rank = cards[index].rank;
+    if (cpuMemory[rank]) {
+      cpuMemory[rank].delete(index);
+      if (cpuMemory[rank].size === 0) delete cpuMemory[rank];
+    }
+  }
+
+  function flipUp(index) {
+    const card = cards[index];
+    card.state = 'up';
+    card.el.classList.add('up');
+    flipped.push(index);
+    cpuRemember(index);
+  }
+
+  function onCardTap(index) {
+    if (busy || isCpuTurn()) return;
+    const card = cards[index];
+    if (card.state !== 'down' || flipped.length >= 2) return;
+    flipUp(index);
+    if (flipped.length === 2) resolveFlip();
+  }
+
+  function resolveFlip() {
+    busy = true;
+    const [a, b] = flipped;
+    const match = cards[a].rank === cards[b].rank;
+
+    setTimeout(() => {
+      if (match) {
+        handleMatch(a, b);
+      } else {
+        cards[a].state = 'down';
+        cards[b].state = 'down';
+        cards[a].el.classList.remove('up');
+        cards[b].el.classList.remove('up');
+        flipped = [];
+        current = 1 - current;
+        setBanner('ざんねん、はずれ…', 'bad');
+        updateHud();
+        setTimeout(() => {
+          setBanner(turnText(), '');
+          busy = false;
+          if (isCpuTurn()) cpuTurn();
+        }, 550);
+      }
+    }, 850);
+  }
+
+  function handleMatch(a, b) {
+    const rank = cards[a].rank;
+    cards[a].el.classList.add('matched');
+    cards[b].el.classList.add('matched');
+    pairs[current].push(rank);
+    cpuForget(a);
+    cpuForget(b);
+
+    const isThief = settings.thief && rank === THIEF_RANK && pairs[1 - current].length > 0;
+
+    setTimeout(() => {
+      cards[a].state = 'gone';
+      cards[b].state = 'gone';
+      cards[a].el.classList.add('gone');
+      cards[b].el.classList.add('gone');
+      flipped = [];
+
+      if (isThief) {
+        const stolen = pairs[1 - current].pop();
+        pairs[current].push(stolen);
+        setBanner('💰 泥棒セブン発動！ ' + rankLabel(stolen) + ' のペアを1組奪った！', 'thief');
+      } else if (settings.thief && rank === THIEF_RANK) {
+        setBanner('💰 泥棒セブン！…でも相手はまだペアを持っていない', 'good');
+      } else {
+        setBanner('ペア成立！もう一回めくれる！', 'good');
+      }
+      updateHud();
+
+      if (pairs[0].length + pairs[1].length === RANKS.length) {
+        setTimeout(showResult, isThief ? 1400 : 800);
+        return;
+      }
+
+      setTimeout(() => {
+        setBanner(turnText(), '');
+        busy = false;
+        if (isCpuTurn()) cpuTurn();
+      }, isThief ? 1500 : 700);
+    }, 550);
+  }
+
+  // ── CPU の手番 ──
+  function liveIndices() {
+    return cards.map((c, i) => (c.state === 'down' ? i : -1)).filter(i => i >= 0);
+  }
+
+  function cpuKnownPair() {
+    for (const rank in cpuMemory) {
+      const alive = [...cpuMemory[rank]].filter(i => cards[i].state === 'down');
+      if (alive.length >= 2) return [alive[0], alive[1]];
+    }
+    return null;
+  }
+
+  function cpuTurn() {
+    busy = true;
+    setBanner('CPUが考えています…', '');
+
+    setTimeout(() => {
+      const known = cpuKnownPair();
+      let first, second;
+
+      if (known) {
+        [first, second] = known;
+      } else {
+        // 覚えていないカードを優先して1枚目をめくる
+        const live = liveIndices();
+        const knownSet = new Set(Object.values(cpuMemory).flatMap(s => [...s]));
+        const unknown = live.filter(i => !knownSet.has(i));
+        const pool = unknown.length > 0 ? unknown : live;
+        first = pool[Math.floor(Math.random() * pool.length)];
+      }
+
+      flipUp(first);
+
+      setTimeout(() => {
+        if (second === undefined) {
+          // 1枚目と同じ数字を覚えていればそれをめくる
+          const rank = cards[first].rank;
+          const remembered = cpuMemory[rank]
+            ? [...cpuMemory[rank]].filter(i => i !== first && cards[i].state === 'down')
+            : [];
+          if (remembered.length > 0) {
+            second = remembered[0];
+          } else {
+            const live = liveIndices().filter(i => i !== first);
+            const knownSet = new Set(Object.values(cpuMemory).flatMap(s => [...s]));
+            const unknown = live.filter(i => !knownSet.has(i));
+            const pool = unknown.length > 0 ? unknown : live;
+            second = pool[Math.floor(Math.random() * pool.length)];
+          }
+        }
+        flipUp(second);
+        resolveFlip();
+      }, 750);
+    }, 800);
+  }
+
+  // ── 結果 ──
+  function showResult() {
+    const [s0, s1] = [pairs[0].length, pairs[1].length];
+    const names = settings.mode === 'cpu' ? ['あなた', 'CPU'] : ['プレイヤー1', 'プレイヤー2'];
+    let emoji, title;
+    if (s0 === s1) {
+      emoji = '🤝'; title = '引き分け！';
+    } else {
+      const winner = s0 > s1 ? 0 : 1;
+      if (settings.mode === 'cpu') {
+        emoji = winner === 0 ? '🏆' : '😢';
+        title = winner === 0 ? 'あなたの勝ち！' : 'CPUの勝ち…';
+      } else {
+        emoji = '🏆';
+        title = names[winner] + 'の勝ち！';
+      }
+    }
+    $('result-emoji').textContent = emoji;
+    $('result-title').textContent = title;
+    $('result-detail').textContent = names[0] + ' ' + s0 + 'ペア ─ ' + names[1] + ' ' + s1 + 'ペア' +
+      (settings.thief ? '（泥棒セブンあり）' : '');
+    $('overlay').classList.remove('hidden');
+  }
+
+  function backToMenu() {
+    $('game').classList.add('hidden');
+    $('overlay').classList.add('hidden');
+    $('menu').classList.remove('hidden');
+  }
+
+  $('start-btn').addEventListener('click', startGame);
+  $('retry-btn').addEventListener('click', startGame);
+  $('menu-btn').addEventListener('click', backToMenu);
+  $('quit-btn').addEventListener('click', backToMenu);
+})();
+</script>
+</body>
+</html>
