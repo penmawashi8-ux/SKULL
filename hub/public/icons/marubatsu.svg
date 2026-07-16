@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <defs>
+    <radialGradient id="mb-bg" cx="40%" cy="35%" r="70%">
+      <stop offset="0%" stop-color="#3d1230"/>
+      <stop offset="100%" stop-color="#180818"/>
+    </radialGradient>
+    <filter id="mb-shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000" flood-opacity="0.55"/>
+    </filter>
+    <clipPath id="mb-clip">
+      <circle cx="60" cy="60" r="50"/>
+    </clipPath>
+  </defs>
+
+  <circle cx="60" cy="60" r="50" fill="url(#mb-bg)"/>
+  <g clip-path="url(#mb-clip)">
+    <!-- 3x3の線 -->
+    <g stroke="rgba(255,255,255,0.35)" stroke-width="3" stroke-linecap="round">
+      <line x1="47" y1="22" x2="47" y2="98"/>
+      <line x1="73" y1="22" x2="73" y2="98"/>
+      <line x1="22" y1="47" x2="98" y2="47"/>
+      <line x1="22" y1="73" x2="98" y2="73"/>
+    </g>
+    <!-- ○と× -->
+    <g filter="url(#mb-shadow)" font-family="Arial, sans-serif" font-weight="900" text-anchor="middle">
+      <text x="34" y="43" font-size="24" fill="#60a5fa">○</text>
+      <text x="86" y="43" font-size="24" fill="#f87171">×</text>
+      <text x="60" y="69" font-size="24" fill="#60a5fa">○</text>
+      <text x="34" y="95" font-size="24" fill="#f87171">×</text>
+      <!-- 消えかけのマーク -->
+      <text x="86" y="95" font-size="24" fill="#60a5fa" opacity="0.35">○</text>
+    </g>
+    <text x="86" y="30" font-size="14" text-anchor="middle" filter="url(#mb-shadow)">🫧</text>
+  </g>
+  <circle cx="60" cy="60" r="49" fill="none" stroke="#f472b6" stroke-width="2" opacity="0.55"/>
+</svg>
