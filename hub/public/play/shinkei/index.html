@@ -199,15 +199,19 @@
   <div id="online-block" class="hidden">
     <p class="section-label">🌐 オンライン対戦</p>
     <div class="online-box">
-      <button class="join-btn" id="host-btn" style="width:100%;padding:14px;">部屋を作って友達を招待する</button>
+      <button class="join-btn" id="quick-btn" style="width:100%;padding:14px;">🎲 野良マッチで対戦相手を探す</button>
+      <input class="code-input" id="quick-pass" maxlength="12" placeholder="あいことば（任意）" autocomplete="off" style="letter-spacing:normal;font-size:13px;" />
+      <p class="online-note" style="margin:0;">あいことば無しなら誰とでも、入れると同じあいことばの人とだけマッチします。</p>
+      <div style="height:1px;background:rgba(255,255,255,0.1);margin:4px 0;"></div>
+      <button class="join-btn" id="host-btn" style="width:100%;padding:14px;">🔑 部屋を作って友達を招待する</button>
       <div class="join-row">
-        <input class="code-input" id="join-code" maxlength="4" placeholder="部屋コード" autocomplete="off" />
+        <input class="code-input" id="join-code" maxlength="4" inputmode="numeric" pattern="[0-9]*" placeholder="数字4ケタ" autocomplete="off" />
         <button class="join-btn" id="join-btn">参加する</button>
       </div>
       <div class="online-status hidden" id="online-status"></div>
       <p class="online-note">
-        部屋を作ると4文字の部屋コードと招待URLが表示されます。友達に送って同じ部屋に入れば対戦開始。
-        ローカルルールの設定は部屋を作った側のものが適用されます。
+        部屋を作ると数字4ケタの部屋コードが表示されます。友達に伝えて「参加する」に入力してもらえば対戦開始。
+        ローカルルールの設定は部屋を作った側（野良マッチでは先に待っていた側）のものが適用されます。
         ※P2P通信のため、一部のネットワーク環境では接続できないことがあります。
       </p>
     </div>
@@ -652,14 +656,27 @@
     return url.toString();
   }
 
-  function netHandlers(asHost) {
+  function bindCancelBtn() {
+    const b = document.getElementById('cancel-btn');
+    if (b) b.addEventListener('click', () => {
+      if (net) { net.close(); net = null; }
+      $('online-status').classList.add('hidden');
+    });
+  }
+
+  function netHandlers() {
     return {
+      onSearch(text) {
+        showStatus(text + '<br /><button class="copy-btn" id="cancel-btn">さがすのをやめる</button>');
+        bindCancelBtn();
+      },
+      onMatched(isHost) { myIndex = isHost ? 0 : 1; },
       onReady(code) {
         const invite = inviteUrl(code);
         showStatus(
           '部屋コード <span class="room-code">' + code + '</span><br />' +
-          'このURLを友達に送ってね：<br />' + invite + '<br />' +
-          '<button class="copy-btn" id="copy-btn">📋 招待URLをコピー</button><br />' +
+          '友達はこの数字4ケタを「参加する」に入力してね。<br />' +
+          '<button class="copy-btn" id="copy-btn">📋 招待URLをコピー</button>（URLから直接入ることもできます）<br />' +
           '友達が来るのを待っています…',
         );
         document.getElementById('copy-btn').addEventListener('click', () => {
@@ -670,7 +687,7 @@
         });
       },
       onConnect() {
-        if (asHost) {
+        if (net && net.isHost) {
           startGame(); // ホストが山札を作って init を送る
         } else {
           showStatus('接続しました！まもなく対戦が始まります…');
@@ -695,18 +712,21 @@
 
   function hostRoom() {
     if (net) net.close();
-    myIndex = 0;
     showStatus('部屋を作成しています…');
-    net = BGP2P.host('shinkei', netHandlers(true));
+    net = BGP2P.host('shinkei', netHandlers());
   }
 
   function joinRoom(code) {
-    code = (code || '').trim().toUpperCase();
-    if (code.length !== 4) { showStatus('⚠ 4文字の部屋コードを入力してください'); return; }
+    code = (code || '').trim();
+    if (!/^\d{4}$/.test(code)) { showStatus('⚠ 数字4ケタの部屋コードを入力してください'); return; }
     if (net) net.close();
-    myIndex = 1;
     showStatus('部屋 ' + code + ' に接続しています…');
-    net = BGP2P.join('shinkei', code, netHandlers(false));
+    net = BGP2P.join('shinkei', code, netHandlers());
+  }
+
+  function quickPlay() {
+    if (net) net.close();
+    net = BGP2P.quickMatch('shinkei', $('quick-pass').value.trim(), netHandlers());
   }
 
   // 相手のめくりは演出が終わってから反映する
@@ -718,12 +738,13 @@
 
   $('host-btn').addEventListener('click', hostRoom);
   $('join-btn').addEventListener('click', () => joinRoom($('join-code').value));
+  $('quick-btn').addEventListener('click', quickPlay);
 
   // 招待URL（?room=XXXX）から開いたら自動で参加
   const roomParam = new URLSearchParams(location.search).get('room');
   if (roomParam) {
     document.querySelector('#mode-row [data-mode="online"]').click();
-    $('join-code').value = roomParam.toUpperCase();
+    $('join-code').value = roomParam;
     joinRoom(roomParam);
   }
 

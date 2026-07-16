@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-<!-- ゲーム本体（iframe埋め込み用）。SEO上の正規ページは /games/reversi 側。 -->
+<!-- ゲーム本体（iframe埋め込み用）。SEO上の正規ページは /games/gomoku 側。 -->
 <meta name="robots" content="noindex" />
-<title>リバーシ｜ボドゲ広場</title>
+<title>五目並べ｜ボドゲ広場</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { height: 100%; }
@@ -24,7 +24,7 @@
   .hidden { display: none !important; }
 
   /* ── メニュー ── */
-  .menu-title-en { font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase; color: #a3e635; font-weight: 700; text-align: center; margin-bottom: 6px; }
+  .menu-title-en { font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase; color: #fbbf24; font-weight: 700; text-align: center; margin-bottom: 6px; }
   .menu-title { font-size: 30px; font-weight: 900; text-align: center; letter-spacing: 0.14em; margin-bottom: 4px; }
   .menu-sub { font-size: 12px; color: rgba(255,255,255,0.5); text-align: center; margin-bottom: 26px; line-height: 1.7; }
   .section-label { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.45); letter-spacing: 0.15em; margin: 18px 0 10px; }
@@ -34,7 +34,7 @@
     background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.75);
     font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.15s; font-family: inherit;
   }
-  .opt-btn.sel { background: rgba(163,230,53,0.16); border-color: #a3e635; color: #a3e635; box-shadow: 0 0 14px rgba(163,230,53,0.25); }
+  .opt-btn.sel { background: rgba(251,191,36,0.16); border-color: #fbbf24; color: #fbbf24; box-shadow: 0 0 14px rgba(251,191,36,0.25); }
   .opt-btn:active { transform: scale(0.96); }
 
   .rule-card {
@@ -59,12 +59,11 @@
 
   .start-btn {
     display: block; width: 100%; margin-top: 26px; padding: 16px; border: none; border-radius: 999px;
-    background: linear-gradient(135deg, #a3e635cc, #a3e635); color: #1e2a05; font-size: 16px; font-weight: 900;
-    letter-spacing: 0.1em; cursor: pointer; box-shadow: 0 6px 20px rgba(163,230,53,0.4); font-family: inherit;
+    background: linear-gradient(135deg, #fbbf24cc, #fbbf24); color: #3b2a05; font-size: 16px; font-weight: 900;
+    letter-spacing: 0.1em; cursor: pointer; box-shadow: 0 6px 20px rgba(251,191,36,0.4); font-family: inherit;
     transition: transform 0.15s;
   }
   .start-btn:active { transform: scale(0.97); }
-  .start-btn:disabled { opacity: 0.4; cursor: default; }
 
   /* ── オンライン対戦 ── */
   .online-box { margin-top: 6px; display: flex; flex-direction: column; gap: 10px; }
@@ -75,10 +74,10 @@
     background: rgba(255,255,255,0.06); color: #fff; font-size: 16px; font-weight: 800; letter-spacing: 0.25em;
     text-transform: uppercase; font-family: inherit; outline: none;
   }
-  .code-input:focus { border-color: #a3e635; }
+  .code-input:focus { border-color: #fbbf24; }
   .join-btn {
-    padding: 12px 20px; border-radius: 14px; border: none; background: rgba(163,230,53,0.18);
-    color: #a3e635; border: 2px solid rgba(163,230,53,0.5); font-size: 13px; font-weight: 800;
+    padding: 12px 20px; border-radius: 14px; border: none; background: rgba(251,191,36,0.18);
+    color: #fbbf24; border: 2px solid rgba(251,191,36,0.5); font-size: 13px; font-weight: 800;
     cursor: pointer; font-family: inherit; flex-shrink: 0;
   }
   .online-status {
@@ -86,10 +85,10 @@
     border: 1.5px solid rgba(255,255,255,0.12); font-size: 12px; line-height: 1.8;
     color: rgba(255,255,255,0.7); word-break: break-all;
   }
-  .online-status .room-code { font-size: 26px; font-weight: 900; letter-spacing: 0.3em; color: #a3e635; }
+  .online-status .room-code { font-size: 26px; font-weight: 900; letter-spacing: 0.3em; color: #fbbf24; }
   .copy-btn {
-    margin-top: 8px; padding: 9px 16px; border-radius: 999px; border: 1.5px solid rgba(163,230,53,0.5);
-    background: rgba(163,230,53,0.14); color: #a3e635; font-size: 12px; font-weight: 800;
+    margin-top: 8px; padding: 9px 16px; border-radius: 999px; border: 1.5px solid rgba(251,191,36,0.5);
+    background: rgba(251,191,36,0.14); color: #fbbf24; font-size: 12px; font-weight: 800;
     cursor: pointer; font-family: inherit;
   }
 
@@ -99,13 +98,12 @@
     flex: 1; border-radius: 14px; padding: 8px 12px; border: 2px solid rgba(255,255,255,0.1);
     background: rgba(255,255,255,0.04); transition: all 0.25s; display: flex; align-items: center; gap: 10px;
   }
-  .p-chip.active { border-color: #a3e635; background: rgba(163,230,53,0.12); box-shadow: 0 0 16px rgba(163,230,53,0.28); }
+  .p-chip.active { border-color: #fbbf24; background: rgba(251,191,36,0.12); box-shadow: 0 0 16px rgba(251,191,36,0.28); }
   .p-chip .mini-disc { width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0; }
   .mini-disc.black { background: radial-gradient(circle at 35% 30%, #555 0%, #0a0a0a 70%); border: 1.5px solid rgba(255,255,255,0.25); }
   .mini-disc.white { background: radial-gradient(circle at 35% 30%, #ffffff 0%, #cfd6e4 70%); border: 1.5px solid rgba(0,0,0,0.25); }
   .p-chip .p-name { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.6); }
-  .p-chip.active .p-name { color: #a3e635; }
-  .p-chip .p-score { font-size: 18px; font-weight: 900; line-height: 1.1; }
+  .p-chip.active .p-name { color: #fbbf24; }
   .hud-mid { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 56px; }
   .hud-vs { font-size: 11px; font-weight: 900; color: rgba(255,255,255,0.3); letter-spacing: 0.1em; }
   .hud-rule { font-size: 9px; font-weight: 700; color: #ffd43b; margin-top: 2px; white-space: nowrap; }
@@ -116,43 +114,37 @@
     color: rgba(255,255,255,0.55); background: rgba(255,255,255,0.04);
     padding: 6px 12px; text-align: center; line-height: 1.5; transition: all 0.2s;
   }
-  .banner.good { color: #a3e635; background: rgba(163,230,53,0.1); }
-  .banner.bonus { color: #1a1c30; background: linear-gradient(135deg, #ffd43b, #fbbf24); box-shadow: 0 4px 18px rgba(255,212,59,0.45); }
+  .banner.good { color: #fbbf24; background: rgba(251,191,36,0.1); }
+  .banner.crush { color: #1a1c30; background: linear-gradient(135deg, #ffd43b, #f59e0b); box-shadow: 0 4px 18px rgba(255,212,59,0.45); }
 
   .board {
-    display: grid; grid-template-columns: repeat(8, 1fr); gap: 2px;
-    background: #0d3321; border: 4px solid #0a2818; border-radius: 12px; padding: 4px;
-    box-shadow: 0 8px 28px rgba(0,0,0,0.45), inset 0 0 20px rgba(0,0,0,0.3);
+    display: grid; grid-template-columns: repeat(11, 1fr); gap: 1px;
+    background: #7c5a2b; border: 4px solid #5c421d; border-radius: 10px; padding: 3px;
+    box-shadow: 0 8px 28px rgba(0,0,0,0.45), inset 0 0 20px rgba(0,0,0,0.25);
   }
   .cell {
-    aspect-ratio: 1; position: relative; border-radius: 4px; cursor: pointer;
-    background: linear-gradient(135deg, #15803d 0%, #166534 100%);
+    aspect-ratio: 1; position: relative; border-radius: 2px; cursor: pointer;
+    background: linear-gradient(135deg, #c89b52 0%, #b8894a 100%);
     display: flex; align-items: center; justify-content: center;
   }
   .cell .star {
-    position: absolute; font-size: clamp(11px, 3.4vw, 16px); opacity: 0.9;
-    filter: drop-shadow(0 0 4px rgba(255,212,59,0.9)); animation: twinkle 1.6s ease-in-out infinite;
+    position: absolute; font-size: clamp(9px, 2.8vw, 14px); opacity: 0.95;
+    filter: drop-shadow(0 0 4px rgba(255,80,80,0.9)); animation: twinkle 1.6s ease-in-out infinite;
     pointer-events: none;
   }
   @keyframes twinkle { 0%,100% { transform: scale(1); opacity: 0.9; } 50% { transform: scale(1.25); opacity: 1; } }
-  .cell .hint {
-    width: 26%; height: 26%; border-radius: 50%; background: rgba(255,255,255,0.28);
-    box-shadow: 0 0 6px rgba(255,255,255,0.35); pointer-events: none;
+  .stone {
+    width: 86%; height: 86%; border-radius: 50%; pointer-events: none;
+    animation: put 0.18s ease;
   }
-  .disc {
-    width: 82%; height: 82%; border-radius: 50%; pointer-events: none;
-    transition: transform 0.3s ease, background 0.18s ease 0.12s, border-color 0.18s ease 0.12s;
-    transform: scale(0);
-  }
-  .disc.show { transform: scale(1); }
-  .disc.black { background: radial-gradient(circle at 35% 30%, #555 0%, #0a0a0a 70%); border: 1.5px solid rgba(255,255,255,0.2); box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
-  .disc.white { background: radial-gradient(circle at 35% 30%, #ffffff 0%, #cfd6e4 70%); border: 1.5px solid rgba(0,0,0,0.2); box-shadow: 0 2px 5px rgba(0,0,0,0.4); }
-  .disc.flipping { animation: flipdisc 0.42s ease; }
-  @keyframes flipdisc {
-    0% { transform: scale(1) rotateY(0deg); }
-    50% { transform: scale(1.12) rotateY(90deg); }
-    100% { transform: scale(1) rotateY(0deg); }
-  }
+  @keyframes put { 0% { transform: scale(0.4); } 100% { transform: scale(1); } }
+  .stone.black { background: radial-gradient(circle at 35% 30%, #555 0%, #0a0a0a 70%); box-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+  .stone.white { background: radial-gradient(circle at 35% 30%, #ffffff 0%, #cfd6e4 70%); box-shadow: 0 2px 4px rgba(0,0,0,0.4); }
+  .stone.last { outline: 2px solid #fbbf24; outline-offset: 1px; }
+  .cell.removable { box-shadow: inset 0 0 0 2px #ef4444; }
+  .cell.removable .stone { animation: shake 0.5s ease-in-out infinite; }
+  @keyframes shake { 0%,100% { transform: rotate(0); } 25% { transform: rotate(-6deg); } 75% { transform: rotate(6deg); } }
+  .win-line .stone { outline: 3px solid #ffd43b; outline-offset: 1px; }
 
   .quit-row { text-align: center; margin-top: 16px; }
   .quit-btn {
@@ -168,7 +160,7 @@
   }
   .result-box {
     width: 100%; max-width: 340px; border-radius: 22px; padding: 30px 24px; text-align: center;
-    background: linear-gradient(135deg, #1e2248 0%, #181b38 100%); border: 2px solid rgba(163,230,53,0.35);
+    background: linear-gradient(135deg, #1e2248 0%, #181b38 100%); border: 2px solid rgba(251,191,36,0.35);
     box-shadow: 0 12px 40px rgba(0,0,0,0.5);
   }
   .result-emoji { font-size: 44px; margin-bottom: 10px; }
@@ -176,7 +168,7 @@
   .result-detail { font-size: 13px; color: rgba(255,255,255,0.55); margin-bottom: 22px; line-height: 1.7; }
   .result-btns { display: flex; flex-direction: column; gap: 10px; }
   .r-btn { padding: 13px; border-radius: 999px; border: none; font-size: 14px; font-weight: 800; cursor: pointer; font-family: inherit; }
-  .r-btn.primary { background: linear-gradient(135deg, #a3e635cc, #a3e635); color: #1e2a05; box-shadow: 0 4px 16px rgba(163,230,53,0.35); }
+  .r-btn.primary { background: linear-gradient(135deg, #fbbf24cc, #fbbf24); color: #3b2a05; box-shadow: 0 4px 16px rgba(251,191,36,0.35); }
   .r-btn.ghost { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.6); border: 1px solid rgba(255,255,255,0.14); }
 </style>
 </head>
@@ -184,9 +176,9 @@
 
 <!-- ── メニュー画面 ── -->
 <div class="screen" id="menu">
-  <p class="menu-title-en">✦ Reversi ✦</p>
-  <h1 class="menu-title">リバーシ</h1>
-  <p class="menu-sub">相手の石をはさんでひっくり返す定番ボードゲーム。<br />最後に石が多いほうの勝ち！</p>
+  <p class="menu-title-en">✦ Gomoku ✦</p>
+  <h1 class="menu-title">五目並べ</h1>
+  <p class="menu-sub">交互に石を置いて、先にタテ・ヨコ・ナナメに<br />5つ並べたほうの勝ち！</p>
 
   <p class="section-label">🎮 あそびかた</p>
   <div class="opt-row" id="mode-row">
@@ -229,16 +221,16 @@
   <div class="rule-card">
     <div class="rule-head">
       <div>
-        <span class="rule-name">⭐ おかわりマス</span>
+        <span class="rule-name">💥 クラッシュマス</span>
         <span class="rule-tag">当サイトオリジナル</span>
       </div>
-      <button class="toggle on" id="bonus-toggle" aria-label="おかわりマスの有効・無効"></button>
+      <button class="toggle on" id="crush-toggle" aria-label="クラッシュマスの有効・無効"></button>
     </div>
     <p class="rule-desc">
-      盤上のどこかに光る星マスが4つ出現。星マスに石を置いた人は、
-      続けてもう1手打てる！（各マス1回限り）
-      星マスを取りにいくか、相手に取らせないか——定番リバーシに新しい駆け引きが生まれる、
-      ボドゲ広場オリジナルの追加ルールです。
+      盤上のどこかに光る星マスが3つ出現。星マスに石を置いた人は、
+      相手の石を1つ選んでその場で取り除ける！（各マス1回限り）
+      あと1手で負ける状況も、クラッシュマスでひっくり返せる——
+      定番の五目並べに大逆転が生まれる、ボドゲ広場オリジナルの追加ルールです。
     </p>
   </div>
 
@@ -250,21 +242,15 @@
   <div class="hud">
     <div class="p-chip" id="chip-0">
       <span class="mini-disc black"></span>
-      <div>
-        <p class="p-name" id="name-0">あなた</p>
-        <p class="p-score" id="score-0">2</p>
-      </div>
+      <div><p class="p-name" id="name-0">あなた</p></div>
     </div>
     <div class="hud-mid">
       <span class="hud-vs">VS</span>
-      <span class="hud-rule hidden" id="hud-rule">⭐ おかわりマス</span>
+      <span class="hud-rule hidden" id="hud-rule">💥 クラッシュマス</span>
     </div>
     <div class="p-chip" id="chip-1">
       <span class="mini-disc white"></span>
-      <div>
-        <p class="p-name" id="name-1">CPU</p>
-        <p class="p-score" id="score-1">2</p>
-      </div>
+      <div><p class="p-name" id="name-1">CPU</p></div>
     </div>
   </div>
 
@@ -295,26 +281,15 @@
 (() => {
   'use strict';
 
-  const SIZE = 8;
+  const SIZE = 11;
   const N = SIZE * SIZE;
   const BLACK = 1, WHITE = 2;
-  const DIRS = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
-  // CPU用の位置評価テーブル（角が最強・角のとなりは危険）
-  const WEIGHTS = [
-    120,-20, 20,  5,  5, 20,-20,120,
-    -20,-40, -5, -5, -5, -5,-40,-20,
-     20, -5, 15,  3,  3, 15, -5, 20,
-      5, -5,  3,  3,  3,  3, -5,  5,
-      5, -5,  3,  3,  3,  3, -5,  5,
-     20, -5, 15,  3,  3, 15, -5, 20,
-    -20,-40, -5, -5, -5, -5,-40,-20,
-    120,-20, 20,  5,  5, 20,-20,120,
-  ];
+  const DIRS = [[0, 1], [1, 0], [1, 1], [1, -1]];
 
   const $ = id => document.getElementById(id);
 
   // ── 設定（メニュー） ──
-  const settings = { mode: 'cpu', level: 2, bonusRule: true };
+  const settings = { mode: 'cpu', level: 2, crushRule: true };
 
   document.querySelectorAll('#mode-row .opt-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -333,84 +308,65 @@
       settings.level = parseInt(btn.dataset.level, 10);
     });
   });
-  $('bonus-toggle').addEventListener('click', () => {
-    settings.bonusRule = !settings.bonusRule;
-    $('bonus-toggle').classList.toggle('on', settings.bonusRule);
+  $('crush-toggle').addEventListener('click', () => {
+    settings.crushRule = !settings.crushRule;
+    $('crush-toggle').classList.toggle('on', settings.crushRule);
   });
 
   // ── ゲーム状態 ──
-  let board = [];        // 0=空, 1=黒, 2=白
+  let board = [];             // 0=空, 1=黒, 2=白
   let current = BLACK;
-  let bonusCells = new Set(); // おかわりマスの残り
+  let crushCells = new Set(); // クラッシュマスの残り
+  let crushPending = false;   // 石の取り除き待ち
+  let lastPlaced = -1;
+  let winLine = [];
+  let gameOver = false;
   let busy = false;
   let cells = [];
 
   // ── オンライン対戦の状態 ──
-  let net = null;          // BGP2P セッション
-  let myColor = BLACK;     // オンライン時の自分の色（ホスト=黒）
-  let remoteQueue = [];    // 受信した相手の手（演出中は待たせる）
+  let net = null;
+  let myColor = BLACK;
+  let remoteQueue = [];       // {t:'move'|'remove', i}
 
   const isOnline = () => settings.mode === 'online';
   const isCpuTurn = () => settings.mode === 'cpu' && current === WHITE;
   const isMyTurn = () => !isOnline() || current === myColor;
 
-  function flipsFor(idx, player) {
-    if (board[idx] !== 0) return [];
-    const r = Math.floor(idx / SIZE), c = idx % SIZE;
-    const all = [];
-    for (const [dr, dc] of DIRS) {
-      let rr = r + dr, cc = c + dc;
-      const line = [];
-      while (rr >= 0 && rr < SIZE && cc >= 0 && cc < SIZE) {
-        const j = rr * SIZE + cc;
-        if (board[j] === 3 - player) line.push(j);
-        else if (board[j] === player) { if (line.length) all.push(...line); break; }
-        else break;
-        rr += dr; cc += dc;
-      }
-    }
-    return all;
-  }
-
-  function validMoves(player) {
-    const moves = [];
-    for (let i = 0; i < N; i++) if (flipsFor(i, player).length) moves.push(i);
-    return moves;
-  }
-
-  function pickBonusCells() {
-    bonusCells = new Set();
-    if (!settings.bonusRule) return;
-    // テスト用: ?bonus=19,26 のようにマスを固定できる
-    const param = new URLSearchParams(location.search).get('bonus');
+  function pickCrushCells() {
+    crushCells = new Set();
+    if (!settings.crushRule) return;
+    // テスト用: ?crush=12,13,14 でマスを固定できる
+    const param = new URLSearchParams(location.search).get('crush');
     if (param) {
-      param.split(',').map(Number).filter(i => i >= 0 && i < N).forEach(i => bonusCells.add(i));
+      param.split(',').map(Number).filter(i => i >= 0 && i < N).forEach(i => crushCells.add(i));
       return;
     }
-    // 中央4マス・四隅を除いてランダムに4マス（角＋おかわりは強すぎるため）
-    const banned = new Set([27, 28, 35, 36, 0, 7, 56, 63]);
-    while (bonusCells.size < 4) {
+    const center = Math.floor(N / 2);
+    while (crushCells.size < 3) {
       const i = Math.floor(Math.random() * N);
-      if (!banned.has(i)) bonusCells.add(i);
+      if (i !== center) crushCells.add(i);
     }
   }
 
   function startGame(initData) {
     board = new Array(N).fill(0);
-    board[27] = WHITE; board[28] = BLACK; board[35] = BLACK; board[36] = WHITE;
     current = BLACK;
+    crushPending = false;
+    lastPlaced = -1;
+    winLine = [];
+    gameOver = false;
     busy = false;
     remoteQueue = [];
 
     if (initData) {
-      // オンラインのゲスト側: ホストの設定と盤面情報を受け取る
-      settings.bonusRule = !!initData.bonusRule;
-      $('bonus-toggle').classList.toggle('on', settings.bonusRule);
-      bonusCells = new Set(initData.bonus || []);
+      settings.crushRule = !!initData.crushRule;
+      $('crush-toggle').classList.toggle('on', settings.crushRule);
+      crushCells = new Set(initData.crush || []);
     } else {
-      pickBonusCells();
+      pickCrushCells();
       if (isOnline() && net) {
-        net.send({ t: 'init', bonus: [...bonusCells], bonusRule: settings.bonusRule });
+        net.send({ t: 'init', crush: [...crushCells], crushRule: settings.crushRule });
       }
     }
 
@@ -421,7 +377,7 @@
       $('name-0').textContent = settings.mode === 'cpu' ? 'あなた（黒）' : 'プレイヤー1（黒）';
       $('name-1').textContent = settings.mode === 'cpu' ? 'CPU（白）' : 'プレイヤー2（白）';
     }
-    $('hud-rule').classList.toggle('hidden', !settings.bonusRule);
+    $('hud-rule').classList.toggle('hidden', !settings.crushRule);
 
     const boardEl = $('board');
     boardEl.innerHTML = '';
@@ -453,133 +409,180 @@
     b.className = 'banner' + (tone ? ' ' + tone : '');
   }
 
-  function render(flippedSet) {
-    const hints = !busy && !isCpuTurn() && isMyTurn() ? new Set(validMoves(current)) : new Set();
+  function render() {
     for (let i = 0; i < N; i++) {
       const cell = cells[i];
-      const v = board[i];
-      let disc = cell.querySelector('.disc');
-      cell.querySelector('.hint')?.remove();
-      cell.querySelector('.star')?.remove();
-
-      if (v === 0) {
-        disc?.remove();
-        if (bonusCells.has(i)) {
+      cell.innerHTML = '';
+      cell.classList.remove('removable', 'win-line');
+      if (board[i] === 0) {
+        if (crushCells.has(i)) {
           const star = document.createElement('span');
           star.className = 'star';
-          star.textContent = '⭐';
+          star.textContent = '💥';
           cell.appendChild(star);
         }
-        if (hints.has(i)) {
-          const h = document.createElement('span');
-          h.className = 'hint';
-          cell.appendChild(h);
-        }
       } else {
-        if (!disc) {
-          disc = document.createElement('div');
-          disc.className = 'disc';
-          cell.appendChild(disc);
-          requestAnimationFrame(() => disc.classList.add('show'));
-        }
-        disc.classList.toggle('black', v === BLACK);
-        disc.classList.toggle('white', v === WHITE);
-        if (flippedSet && flippedSet.has(i)) {
-          disc.classList.remove('flipping');
-          void disc.offsetWidth;
-          disc.classList.add('flipping');
+        const stone = document.createElement('div');
+        stone.className = 'stone ' + (board[i] === BLACK ? 'black' : 'white');
+        if (i === lastPlaced && !winLine.length) stone.classList.add('last');
+        cell.appendChild(stone);
+        if (winLine.includes(i)) cell.classList.add('win-line');
+        // 取り除き待ち: 手番側の画面で相手の石を赤枠表示
+        if (crushPending && !gameOver && board[i] === 3 - current && !isCpuTurn() && isMyTurn()) {
+          cell.classList.add('removable');
         }
       }
     }
-    const b = board.filter(v => v === BLACK).length;
-    const w = board.filter(v => v === WHITE).length;
-    $('score-0').textContent = b;
-    $('score-1').textContent = w;
-    $('chip-0').classList.toggle('active', current === BLACK);
-    $('chip-1').classList.toggle('active', current === WHITE);
+    $('chip-0').classList.toggle('active', current === BLACK && !gameOver);
+    $('chip-1').classList.toggle('active', current === WHITE && !gameOver);
+  }
+
+  function checkWin(idx, p) {
+    const r = Math.floor(idx / SIZE), c = idx % SIZE;
+    for (const [dr, dc] of DIRS) {
+      const line = [idx];
+      for (const sign of [1, -1]) {
+        let rr = r + dr * sign, cc = c + dc * sign;
+        while (rr >= 0 && rr < SIZE && cc >= 0 && cc < SIZE && board[rr * SIZE + cc] === p) {
+          line.push(rr * SIZE + cc);
+          rr += dr * sign; cc += dc * sign;
+        }
+      }
+      if (line.length >= 5) return line;
+    }
+    return null;
   }
 
   function onCellTap(idx) {
-    if (busy || isCpuTurn() || !isMyTurn()) return;
-    if (!flipsFor(idx, current).length) return;
+    if (busy || gameOver || isCpuTurn() || !isMyTurn()) return;
+    if (crushPending) {
+      if (board[idx] !== 3 - current) return;
+      if (isOnline() && net) net.send({ t: 'remove', i: idx });
+      doRemove(idx);
+      return;
+    }
+    if (board[idx] !== 0) return;
     if (isOnline() && net) net.send({ t: 'move', i: idx });
     play(idx);
   }
 
   function play(idx) {
-    const flips = flipsFor(idx, current);
-    if (!flips.length) return;
-    busy = true;
+    if (gameOver || board[idx] !== 0) return;
     board[idx] = current;
-    flips.forEach(j => { board[j] = current; });
-    const usedBonus = bonusCells.has(idx);
-    if (usedBonus) bonusCells.delete(idx);
-    render(new Set(flips));
-    setTimeout(() => afterMove(usedBonus), 500);
+    lastPlaced = idx;
+    const isCrush = settings.crushRule && crushCells.has(idx);
+    if (isCrush) crushCells.delete(idx);
+
+    const line = checkWin(idx, current);
+    if (line) {
+      winLine = line;
+      gameOver = true;
+      render();
+      setTimeout(() => showResult(current), 900);
+      return;
+    }
+    if (!board.includes(0)) {
+      gameOver = true;
+      render();
+      setTimeout(() => showResult(0), 600);
+      return;
+    }
+
+    const oppHasStones = board.some(v => v === 3 - current);
+    if (isCrush && oppHasStones) {
+      crushPending = true;
+      setBanner(isMyTurn() && !isCpuTurn()
+        ? '💥 クラッシュマス！相手の石を1つタップして取り除こう'
+        : '💥 クラッシュマス！相手が石を取り除いています…', 'crush');
+      render();
+      if (isCpuTurn()) { busy = true; setTimeout(cpuRemove, 900); }
+      return;
+    }
+    if (isCrush) {
+      setBanner('💥 クラッシュマス！…でも相手の石がまだ無い', 'good');
+      render();
+      setTimeout(switchTurn, 900);
+      return;
+    }
+    switchTurn();
   }
 
-  function afterMove(usedBonus) {
-    const me = current, opp = 3 - current;
-    const meMoves = validMoves(me).length;
-    const oppMoves = validMoves(opp).length;
+  function doRemove(idx) {
+    if (!crushPending || gameOver || board[idx] !== 3 - current) return;
+    board[idx] = 0;
+    crushPending = false;
+    setBanner('💥 石を1つ取り除いた！', 'crush');
+    render();
+    setTimeout(switchTurn, 700);
+  }
 
-    if (meMoves === 0 && oppMoves === 0) {
-      render();
-      setTimeout(showResult, 600);
-      return;
-    }
-
-    if (usedBonus && meMoves > 0) {
-      setBanner('⭐ おかわりマス！もう1手打てる！', 'bonus');
-      setTimeout(() => {
-        setBanner(turnText(), '');
-        busy = false;
-        render();
-        if (isCpuTurn()) cpuTurn();
-      }, 1100);
-      return;
-    }
-
-    let notice = usedBonus ? '⭐ おかわりマス！…でも打てる場所がない ' : '';
-    if (oppMoves > 0) {
-      current = opp;
-    } else {
-      notice += (settings.mode === 'cpu'
-        ? (opp === WHITE ? 'CPUは打てる場所がないためパス！' : 'あなたは打てる場所がないためパス！')
-        : (opp === WHITE ? '白' : '黒') + 'は打てる場所がないためパス！');
-    }
-
-    if (notice) {
-      setBanner(notice, 'good');
-      setTimeout(() => {
-        setBanner(turnText(), '');
-        busy = false;
-        render();
-        if (isCpuTurn()) cpuTurn();
-      }, 1100);
-    } else {
-      setBanner(turnText(), '');
-      busy = false;
-      render();
-      if (isCpuTurn()) cpuTurn();
-    }
+  function switchTurn() {
+    if (gameOver) return;
+    current = 3 - current;
+    busy = false;
+    setBanner(turnText(), '');
+    render();
+    if (isCpuTurn()) cpuTurn();
   }
 
   // ── CPU ──
-  function cpuPick() {
-    const moves = validMoves(WHITE);
-    if (settings.level === 1) {
-      return moves[Math.floor(Math.random() * moves.length)];
+  function runLen(idx, p, dr, dc) {
+    // idx に p を置いたと仮定した連の長さと開端数
+    const r = Math.floor(idx / SIZE), c = idx % SIZE;
+    let count = 1, open = 0;
+    for (const sign of [1, -1]) {
+      let rr = r + dr * sign, cc = c + dc * sign;
+      while (rr >= 0 && rr < SIZE && cc >= 0 && cc < SIZE && board[rr * SIZE + cc] === p) {
+        count++; rr += dr * sign; cc += dc * sign;
+      }
+      if (rr >= 0 && rr < SIZE && cc >= 0 && cc < SIZE && board[rr * SIZE + cc] === 0) open++;
     }
-    let best = moves[0], bestScore = -Infinity;
-    for (const m of moves) {
-      const flips = flipsFor(m, WHITE).length;
-      let score;
-      if (settings.level === 2) {
-        score = flips + Math.random() * 2;
-      } else {
-        score = WEIGHTS[m] + flips * 2;
-        if (bonusCells.has(m)) score += 18; // おかわりマスは積極的に狙う
+    return { count, open };
+  }
+
+  function lineScore(count, open) {
+    if (count >= 5) return 1000000;
+    if (count === 4) return open === 2 ? 120000 : 12000;
+    if (count === 3) return open === 2 ? 6000 : 600;
+    if (count === 2) return open === 2 ? 120 : 15;
+    return 2;
+  }
+
+  function evalFor(idx, p) {
+    let total = 0;
+    for (const [dr, dc] of DIRS) {
+      const { count, open } = runLen(idx, p, dr, dc);
+      total += lineScore(count, open);
+    }
+    return total;
+  }
+
+  function candidateCells() {
+    const empties = [];
+    const nearStone = i => {
+      const r = Math.floor(i / SIZE), c = i % SIZE;
+      for (let dr = -2; dr <= 2; dr++) for (let dc = -2; dc <= 2; dc++) {
+        const rr = r + dr, cc = c + dc;
+        if (rr >= 0 && rr < SIZE && cc >= 0 && cc < SIZE && board[rr * SIZE + cc] !== 0) return true;
+      }
+      return false;
+    };
+    for (let i = 0; i < N; i++) if (board[i] === 0 && nearStone(i)) empties.push(i);
+    if (empties.length === 0) empties.push(Math.floor(N / 2));
+    return empties;
+  }
+
+  function cpuPick() {
+    const cands = candidateCells();
+    if (settings.level === 1 && Math.random() < 0.6) {
+      return cands[Math.floor(Math.random() * cands.length)];
+    }
+    const defW = settings.level === 3 ? 1.05 : 0.9;
+    let best = cands[0], bestScore = -Infinity;
+    for (const m of cands) {
+      let score = evalFor(m, WHITE) + evalFor(m, BLACK) * defW + Math.random() * 3;
+      if (settings.level === 3 && settings.crushRule && crushCells.has(m) && board.some(v => v === BLACK)) {
+        score += 3000; // クラッシュマスは積極的に狙う
       }
       if (score > bestScore) { bestScore = score; best = m; }
     }
@@ -590,35 +593,44 @@
     busy = true;
     setBanner('CPUが考えています…', '');
     render();
-    setTimeout(() => play(cpuPick()), 850);
+    setTimeout(() => { busy = false; play(cpuPick()); }, 750);
+  }
+
+  function cpuRemove() {
+    // 最も脅威になっている黒石を取り除く
+    busy = false;
+    let best = -1, bestScore = -Infinity;
+    for (let i = 0; i < N; i++) {
+      if (board[i] !== BLACK) continue;
+      board[i] = 0;
+      const score = evalFor(i, BLACK); // その位置の黒としての価値
+      board[i] = BLACK;
+      if (score > bestScore) { bestScore = score; best = i; }
+    }
+    if (best >= 0) doRemove(best);
+    else { crushPending = false; switchTurn(); }
   }
 
   // ── 結果 ──
-  function showResult() {
-    const b = board.filter(v => v === BLACK).length;
-    const w = board.filter(v => v === WHITE).length;
+  function showResult(winnerColor) {
     let emoji, title;
-    if (b === w) {
-      emoji = '🤝'; title = '引き分け！';
+    if (winnerColor === 0) {
+      emoji = '🤝'; title = '引き分け！盤面が埋まりました';
+    } else if (settings.mode === 'cpu') {
+      emoji = winnerColor === BLACK ? '🏆' : '😢';
+      title = winnerColor === BLACK ? 'あなたの勝ち！' : 'CPUの勝ち…';
+    } else if (isOnline()) {
+      emoji = winnerColor === myColor ? '🏆' : '😢';
+      title = winnerColor === myColor ? 'あなたの勝ち！' : '相手の勝ち…';
     } else {
-      const winnerColor = b > w ? BLACK : WHITE;
-      if (settings.mode === 'cpu') {
-        emoji = winnerColor === BLACK ? '🏆' : '😢';
-        title = winnerColor === BLACK ? 'あなたの勝ち！' : 'CPUの勝ち…';
-      } else if (isOnline()) {
-        emoji = winnerColor === myColor ? '🏆' : '😢';
-        title = winnerColor === myColor ? 'あなたの勝ち！' : '相手の勝ち…';
-      } else {
-        emoji = '🏆';
-        title = (winnerColor === BLACK ? '黒' : '白') + 'の勝ち！';
-      }
+      emoji = '🏆';
+      title = (winnerColor === BLACK ? '黒' : '白') + 'の勝ち！';
     }
     $('result-emoji').textContent = emoji;
     $('result-title').textContent = title;
-    $('result-detail').textContent = '黒 ' + b + ' ─ 白 ' + w +
-      (settings.bonusRule ? '（おかわりマスあり）' : '') +
+    $('result-detail').textContent = (winnerColor !== 0 ? '5つ並べて勝利！' : '') +
+      (settings.crushRule ? '（クラッシュマスあり）' : '') +
       (isOnline() && net && !net.isHost ? '　※部屋を作った人が「もう一度」を押すと再戦できます' : '');
-    // オンラインのゲストは再戦開始をホストに任せる
     $('retry-btn').classList.toggle('hidden', isOnline() && !(net && net.isHost));
     $('overlay').classList.remove('hidden');
   }
@@ -699,7 +711,9 @@
       onData(d) {
         if (!d || typeof d !== 'object') return;
         if (d.t === 'init') { startGame(d); return; }
-        if (d.t === 'move' && typeof d.i === 'number') remoteQueue.push(d.i);
+        if ((d.t === 'move' || d.t === 'remove') && typeof d.i === 'number') {
+          remoteQueue.push({ t: d.t, i: d.i });
+        }
       },
       onClose() {
         if (!isOnline()) return;
@@ -716,7 +730,7 @@
   function hostRoom() {
     if (net) net.close();
     showStatus('部屋を作成しています…');
-    net = BGP2P.host('reversi', netHandlers());
+    net = BGP2P.host('gomoku', netHandlers());
   }
 
   function joinRoom(code) {
@@ -724,19 +738,23 @@
     if (!/^\d{4}$/.test(code)) { showStatus('⚠ 数字4ケタの部屋コードを入力してください'); return; }
     if (net) net.close();
     showStatus('部屋 ' + code + ' に接続しています…');
-    net = BGP2P.join('reversi', code, netHandlers());
+    net = BGP2P.join('gomoku', code, netHandlers());
   }
 
   function quickPlay() {
     if (net) net.close();
-    net = BGP2P.quickMatch('reversi', $('quick-pass').value.trim(), netHandlers());
+    net = BGP2P.quickMatch('gomoku', $('quick-pass').value.trim(), netHandlers());
   }
 
   // 相手の手は演出が終わってから盤面に反映する
   setInterval(() => {
-    if (!isOnline() || busy) return;
+    if (!isOnline() || busy || gameOver) return;
     if ($('game').classList.contains('hidden')) return;
-    if (remoteQueue.length && current !== myColor) play(remoteQueue.shift());
+    if (!remoteQueue.length || current === myColor) return;
+    const m = remoteQueue.shift();
+    if (m.t === 'move' && !crushPending) play(m.i);
+    else if (m.t === 'remove' && crushPending) doRemove(m.i);
+    else remoteQueue.unshift(m); // 状態が追いつくまで待つ
   }, 120);
 
   $('host-btn').addEventListener('click', hostRoom);

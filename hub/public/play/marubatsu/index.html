@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-<!-- ゲーム本体（iframe埋め込み用）。SEO上の正規ページは /games/reversi 側。 -->
+<!-- ゲーム本体（iframe埋め込み用）。SEO上の正規ページは /games/marubatsu 側。 -->
 <meta name="robots" content="noindex" />
-<title>リバーシ｜ボドゲ広場</title>
+<title>まるばつ｜ボドゲ広場</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { height: 100%; }
@@ -24,7 +24,7 @@
   .hidden { display: none !important; }
 
   /* ── メニュー ── */
-  .menu-title-en { font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase; color: #a3e635; font-weight: 700; text-align: center; margin-bottom: 6px; }
+  .menu-title-en { font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase; color: #f472b6; font-weight: 700; text-align: center; margin-bottom: 6px; }
   .menu-title { font-size: 30px; font-weight: 900; text-align: center; letter-spacing: 0.14em; margin-bottom: 4px; }
   .menu-sub { font-size: 12px; color: rgba(255,255,255,0.5); text-align: center; margin-bottom: 26px; line-height: 1.7; }
   .section-label { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.45); letter-spacing: 0.15em; margin: 18px 0 10px; }
@@ -34,7 +34,7 @@
     background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.75);
     font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.15s; font-family: inherit;
   }
-  .opt-btn.sel { background: rgba(163,230,53,0.16); border-color: #a3e635; color: #a3e635; box-shadow: 0 0 14px rgba(163,230,53,0.25); }
+  .opt-btn.sel { background: rgba(244,114,182,0.16); border-color: #f472b6; color: #f472b6; box-shadow: 0 0 14px rgba(244,114,182,0.25); }
   .opt-btn:active { transform: scale(0.96); }
 
   .rule-card {
@@ -59,12 +59,11 @@
 
   .start-btn {
     display: block; width: 100%; margin-top: 26px; padding: 16px; border: none; border-radius: 999px;
-    background: linear-gradient(135deg, #a3e635cc, #a3e635); color: #1e2a05; font-size: 16px; font-weight: 900;
-    letter-spacing: 0.1em; cursor: pointer; box-shadow: 0 6px 20px rgba(163,230,53,0.4); font-family: inherit;
+    background: linear-gradient(135deg, #f472b6cc, #f472b6); color: #3d0a24; font-size: 16px; font-weight: 900;
+    letter-spacing: 0.1em; cursor: pointer; box-shadow: 0 6px 20px rgba(244,114,182,0.4); font-family: inherit;
     transition: transform 0.15s;
   }
   .start-btn:active { transform: scale(0.97); }
-  .start-btn:disabled { opacity: 0.4; cursor: default; }
 
   /* ── オンライン対戦 ── */
   .online-box { margin-top: 6px; display: flex; flex-direction: column; gap: 10px; }
@@ -75,10 +74,10 @@
     background: rgba(255,255,255,0.06); color: #fff; font-size: 16px; font-weight: 800; letter-spacing: 0.25em;
     text-transform: uppercase; font-family: inherit; outline: none;
   }
-  .code-input:focus { border-color: #a3e635; }
+  .code-input:focus { border-color: #f472b6; }
   .join-btn {
-    padding: 12px 20px; border-radius: 14px; border: none; background: rgba(163,230,53,0.18);
-    color: #a3e635; border: 2px solid rgba(163,230,53,0.5); font-size: 13px; font-weight: 800;
+    padding: 12px 20px; border-radius: 14px; border: none; background: rgba(244,114,182,0.18);
+    color: #f472b6; border: 2px solid rgba(244,114,182,0.5); font-size: 13px; font-weight: 800;
     cursor: pointer; font-family: inherit; flex-shrink: 0;
   }
   .online-status {
@@ -86,10 +85,10 @@
     border: 1.5px solid rgba(255,255,255,0.12); font-size: 12px; line-height: 1.8;
     color: rgba(255,255,255,0.7); word-break: break-all;
   }
-  .online-status .room-code { font-size: 26px; font-weight: 900; letter-spacing: 0.3em; color: #a3e635; }
+  .online-status .room-code { font-size: 26px; font-weight: 900; letter-spacing: 0.3em; color: #f472b6; }
   .copy-btn {
-    margin-top: 8px; padding: 9px 16px; border-radius: 999px; border: 1.5px solid rgba(163,230,53,0.5);
-    background: rgba(163,230,53,0.14); color: #a3e635; font-size: 12px; font-weight: 800;
+    margin-top: 8px; padding: 9px 16px; border-radius: 999px; border: 1.5px solid rgba(244,114,182,0.5);
+    background: rgba(244,114,182,0.14); color: #f472b6; font-size: 12px; font-weight: 800;
     cursor: pointer; font-family: inherit;
   }
 
@@ -99,13 +98,12 @@
     flex: 1; border-radius: 14px; padding: 8px 12px; border: 2px solid rgba(255,255,255,0.1);
     background: rgba(255,255,255,0.04); transition: all 0.25s; display: flex; align-items: center; gap: 10px;
   }
-  .p-chip.active { border-color: #a3e635; background: rgba(163,230,53,0.12); box-shadow: 0 0 16px rgba(163,230,53,0.28); }
-  .p-chip .mini-disc { width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0; }
-  .mini-disc.black { background: radial-gradient(circle at 35% 30%, #555 0%, #0a0a0a 70%); border: 1.5px solid rgba(255,255,255,0.25); }
-  .mini-disc.white { background: radial-gradient(circle at 35% 30%, #ffffff 0%, #cfd6e4 70%); border: 1.5px solid rgba(0,0,0,0.25); }
+  .p-chip.active { border-color: #f472b6; background: rgba(244,114,182,0.12); box-shadow: 0 0 16px rgba(244,114,182,0.28); }
+  .p-chip .mini-mark { font-size: 20px; font-weight: 900; flex-shrink: 0; }
+  .mini-mark.o { color: #60a5fa; }
+  .mini-mark.x { color: #f87171; }
   .p-chip .p-name { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.6); }
-  .p-chip.active .p-name { color: #a3e635; }
-  .p-chip .p-score { font-size: 18px; font-weight: 900; line-height: 1.1; }
+  .p-chip.active .p-name { color: #f472b6; }
   .hud-mid { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 56px; }
   .hud-vs { font-size: 11px; font-weight: 900; color: rgba(255,255,255,0.3); letter-spacing: 0.1em; }
   .hud-rule { font-size: 9px; font-weight: 700; color: #ffd43b; margin-top: 2px; white-space: nowrap; }
@@ -116,43 +114,29 @@
     color: rgba(255,255,255,0.55); background: rgba(255,255,255,0.04);
     padding: 6px 12px; text-align: center; line-height: 1.5; transition: all 0.2s;
   }
-  .banner.good { color: #a3e635; background: rgba(163,230,53,0.1); }
-  .banner.bonus { color: #1a1c30; background: linear-gradient(135deg, #ffd43b, #fbbf24); box-shadow: 0 4px 18px rgba(255,212,59,0.45); }
+  .banner.good { color: #f472b6; background: rgba(244,114,182,0.1); }
 
   .board {
-    display: grid; grid-template-columns: repeat(8, 1fr); gap: 2px;
-    background: #0d3321; border: 4px solid #0a2818; border-radius: 12px; padding: 4px;
-    box-shadow: 0 8px 28px rgba(0,0,0,0.45), inset 0 0 20px rgba(0,0,0,0.3);
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;
+    max-width: 340px; margin: 0 auto;
+    background: rgba(255,255,255,0.12); border-radius: 16px; padding: 6px;
+    box-shadow: 0 8px 28px rgba(0,0,0,0.45);
   }
   .cell {
-    aspect-ratio: 1; position: relative; border-radius: 4px; cursor: pointer;
-    background: linear-gradient(135deg, #15803d 0%, #166534 100%);
+    aspect-ratio: 1; position: relative; border-radius: 12px; cursor: pointer;
+    background: linear-gradient(135deg, #232852 0%, #1b1f3e 100%);
     display: flex; align-items: center; justify-content: center;
   }
-  .cell .star {
-    position: absolute; font-size: clamp(11px, 3.4vw, 16px); opacity: 0.9;
-    filter: drop-shadow(0 0 4px rgba(255,212,59,0.9)); animation: twinkle 1.6s ease-in-out infinite;
-    pointer-events: none;
+  .mark {
+    font-size: clamp(44px, 16vw, 64px); font-weight: 900; line-height: 1; pointer-events: none;
+    animation: put 0.2s ease;
   }
-  @keyframes twinkle { 0%,100% { transform: scale(1); opacity: 0.9; } 50% { transform: scale(1.25); opacity: 1; } }
-  .cell .hint {
-    width: 26%; height: 26%; border-radius: 50%; background: rgba(255,255,255,0.28);
-    box-shadow: 0 0 6px rgba(255,255,255,0.35); pointer-events: none;
-  }
-  .disc {
-    width: 82%; height: 82%; border-radius: 50%; pointer-events: none;
-    transition: transform 0.3s ease, background 0.18s ease 0.12s, border-color 0.18s ease 0.12s;
-    transform: scale(0);
-  }
-  .disc.show { transform: scale(1); }
-  .disc.black { background: radial-gradient(circle at 35% 30%, #555 0%, #0a0a0a 70%); border: 1.5px solid rgba(255,255,255,0.2); box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
-  .disc.white { background: radial-gradient(circle at 35% 30%, #ffffff 0%, #cfd6e4 70%); border: 1.5px solid rgba(0,0,0,0.2); box-shadow: 0 2px 5px rgba(0,0,0,0.4); }
-  .disc.flipping { animation: flipdisc 0.42s ease; }
-  @keyframes flipdisc {
-    0% { transform: scale(1) rotateY(0deg); }
-    50% { transform: scale(1.12) rotateY(90deg); }
-    100% { transform: scale(1) rotateY(0deg); }
-  }
+  @keyframes put { 0% { transform: scale(0.3); } 100% { transform: scale(1); } }
+  .mark.o { color: #60a5fa; text-shadow: 0 0 18px rgba(96,165,250,0.5); }
+  .mark.x { color: #f87171; text-shadow: 0 0 18px rgba(248,113,113,0.5); }
+  .mark.fading { opacity: 0.35; animation: fadepulse 1.2s ease-in-out infinite; }
+  @keyframes fadepulse { 0%,100% { opacity: 0.35; } 50% { opacity: 0.6; } }
+  .cell.win-line { background: linear-gradient(135deg, rgba(255,212,59,0.35), rgba(255,212,59,0.15)); }
 
   .quit-row { text-align: center; margin-top: 16px; }
   .quit-btn {
@@ -168,7 +152,7 @@
   }
   .result-box {
     width: 100%; max-width: 340px; border-radius: 22px; padding: 30px 24px; text-align: center;
-    background: linear-gradient(135deg, #1e2248 0%, #181b38 100%); border: 2px solid rgba(163,230,53,0.35);
+    background: linear-gradient(135deg, #1e2248 0%, #181b38 100%); border: 2px solid rgba(244,114,182,0.35);
     box-shadow: 0 12px 40px rgba(0,0,0,0.5);
   }
   .result-emoji { font-size: 44px; margin-bottom: 10px; }
@@ -176,7 +160,7 @@
   .result-detail { font-size: 13px; color: rgba(255,255,255,0.55); margin-bottom: 22px; line-height: 1.7; }
   .result-btns { display: flex; flex-direction: column; gap: 10px; }
   .r-btn { padding: 13px; border-radius: 999px; border: none; font-size: 14px; font-weight: 800; cursor: pointer; font-family: inherit; }
-  .r-btn.primary { background: linear-gradient(135deg, #a3e635cc, #a3e635); color: #1e2a05; box-shadow: 0 4px 16px rgba(163,230,53,0.35); }
+  .r-btn.primary { background: linear-gradient(135deg, #f472b6cc, #f472b6); color: #3d0a24; box-shadow: 0 4px 16px rgba(244,114,182,0.35); }
   .r-btn.ghost { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.6); border: 1px solid rgba(255,255,255,0.14); }
 </style>
 </head>
@@ -184,9 +168,9 @@
 
 <!-- ── メニュー画面 ── -->
 <div class="screen" id="menu">
-  <p class="menu-title-en">✦ Reversi ✦</p>
-  <h1 class="menu-title">リバーシ</h1>
-  <p class="menu-sub">相手の石をはさんでひっくり返す定番ボードゲーム。<br />最後に石が多いほうの勝ち！</p>
+  <p class="menu-title-en">✦ Tic-Tac-Toe ✦</p>
+  <h1 class="menu-title">まるばつ</h1>
+  <p class="menu-sub">交互に○と×を置いて、先にタテ・ヨコ・ナナメに<br />3つ並べたほうの勝ち！</p>
 
   <p class="section-label">🎮 あそびかた</p>
   <div class="opt-row" id="mode-row">
@@ -229,15 +213,15 @@
   <div class="rule-card">
     <div class="rule-head">
       <div>
-        <span class="rule-name">⭐ おかわりマス</span>
+        <span class="rule-name">🫧 消えるまるばつ</span>
         <span class="rule-tag">当サイトオリジナル</span>
       </div>
-      <button class="toggle on" id="bonus-toggle" aria-label="おかわりマスの有効・無効"></button>
+      <button class="toggle on" id="vanish-toggle" aria-label="消えるまるばつの有効・無効"></button>
     </div>
     <p class="rule-desc">
-      盤上のどこかに光る星マスが4つ出現。星マスに石を置いた人は、
-      続けてもう1手打てる！（各マス1回限り）
-      星マスを取りにいくか、相手に取らせないか——定番リバーシに新しい駆け引きが生まれる、
+      置けるのは1人3個まで。4個目を置くと、自分の一番古いマークが消える！
+      （次に消えるマークは薄く表示）
+      引き分けだらけの普通のまるばつが、消える読み合いで無限に熱いゲームに変わる、
       ボドゲ広場オリジナルの追加ルールです。
     </p>
   </div>
@@ -249,26 +233,20 @@
 <div class="screen hidden" id="game">
   <div class="hud">
     <div class="p-chip" id="chip-0">
-      <span class="mini-disc black"></span>
-      <div>
-        <p class="p-name" id="name-0">あなた</p>
-        <p class="p-score" id="score-0">2</p>
-      </div>
+      <span class="mini-mark o">○</span>
+      <div><p class="p-name" id="name-0">あなた</p></div>
     </div>
     <div class="hud-mid">
       <span class="hud-vs">VS</span>
-      <span class="hud-rule hidden" id="hud-rule">⭐ おかわりマス</span>
+      <span class="hud-rule hidden" id="hud-rule">🫧 消えるまるばつ</span>
     </div>
     <div class="p-chip" id="chip-1">
-      <span class="mini-disc white"></span>
-      <div>
-        <p class="p-name" id="name-1">CPU</p>
-        <p class="p-score" id="score-1">2</p>
-      </div>
+      <span class="mini-mark x">×</span>
+      <div><p class="p-name" id="name-1">CPU</p></div>
     </div>
   </div>
 
-  <div class="banner" id="banner">黒の番です</div>
+  <div class="banner" id="banner">○の番です</div>
   <div class="board" id="board"></div>
 
   <div class="quit-row">
@@ -295,26 +273,19 @@
 (() => {
   'use strict';
 
-  const SIZE = 8;
-  const N = SIZE * SIZE;
-  const BLACK = 1, WHITE = 2;
-  const DIRS = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
-  // CPU用の位置評価テーブル（角が最強・角のとなりは危険）
-  const WEIGHTS = [
-    120,-20, 20,  5,  5, 20,-20,120,
-    -20,-40, -5, -5, -5, -5,-40,-20,
-     20, -5, 15,  3,  3, 15, -5, 20,
-      5, -5,  3,  3,  3,  3, -5,  5,
-      5, -5,  3,  3,  3,  3, -5,  5,
-     20, -5, 15,  3,  3, 15, -5, 20,
-    -20,-40, -5, -5, -5, -5,-40,-20,
-    120,-20, 20,  5,  5, 20,-20,120,
+  const N = 9;
+  const LINES = [
+    [0, 1, 2], [3, 4, 5], [6, 7, 8],
+    [0, 3, 6], [1, 4, 7], [2, 5, 8],
+    [0, 4, 8], [2, 4, 6],
   ];
+  const MARKS = ['○', '×'];
+  const MOVE_CAP = 30; // 消えるまるばつが千日手にならないための上限
 
   const $ = id => document.getElementById(id);
 
   // ── 設定（メニュー） ──
-  const settings = { mode: 'cpu', level: 2, bonusRule: true };
+  const settings = { mode: 'cpu', level: 2, vanish: true };
 
   document.querySelectorAll('#mode-row .opt-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -333,95 +304,55 @@
       settings.level = parseInt(btn.dataset.level, 10);
     });
   });
-  $('bonus-toggle').addEventListener('click', () => {
-    settings.bonusRule = !settings.bonusRule;
-    $('bonus-toggle').classList.toggle('on', settings.bonusRule);
+  $('vanish-toggle').addEventListener('click', () => {
+    settings.vanish = !settings.vanish;
+    $('vanish-toggle').classList.toggle('on', settings.vanish);
   });
 
   // ── ゲーム状態 ──
-  let board = [];        // 0=空, 1=黒, 2=白
-  let current = BLACK;
-  let bonusCells = new Set(); // おかわりマスの残り
+  let board = [];           // 0=空, 1=○(P0), 2=×(P1)
+  let marks = [[], []];     // 各プレイヤーの置いた順（消えるまるばつ用）
+  let current = 0;          // 手番 0/1
+  let moveCount = 0;
+  let winLine = [];
+  let gameOver = false;
   let busy = false;
   let cells = [];
 
   // ── オンライン対戦の状態 ──
-  let net = null;          // BGP2P セッション
-  let myColor = BLACK;     // オンライン時の自分の色（ホスト=黒）
-  let remoteQueue = [];    // 受信した相手の手（演出中は待たせる）
+  let net = null;
+  let myIndex = 0;          // ホスト=0（○・先攻）
+  let remoteQueue = [];
 
   const isOnline = () => settings.mode === 'online';
-  const isCpuTurn = () => settings.mode === 'cpu' && current === WHITE;
-  const isMyTurn = () => !isOnline() || current === myColor;
-
-  function flipsFor(idx, player) {
-    if (board[idx] !== 0) return [];
-    const r = Math.floor(idx / SIZE), c = idx % SIZE;
-    const all = [];
-    for (const [dr, dc] of DIRS) {
-      let rr = r + dr, cc = c + dc;
-      const line = [];
-      while (rr >= 0 && rr < SIZE && cc >= 0 && cc < SIZE) {
-        const j = rr * SIZE + cc;
-        if (board[j] === 3 - player) line.push(j);
-        else if (board[j] === player) { if (line.length) all.push(...line); break; }
-        else break;
-        rr += dr; cc += dc;
-      }
-    }
-    return all;
-  }
-
-  function validMoves(player) {
-    const moves = [];
-    for (let i = 0; i < N; i++) if (flipsFor(i, player).length) moves.push(i);
-    return moves;
-  }
-
-  function pickBonusCells() {
-    bonusCells = new Set();
-    if (!settings.bonusRule) return;
-    // テスト用: ?bonus=19,26 のようにマスを固定できる
-    const param = new URLSearchParams(location.search).get('bonus');
-    if (param) {
-      param.split(',').map(Number).filter(i => i >= 0 && i < N).forEach(i => bonusCells.add(i));
-      return;
-    }
-    // 中央4マス・四隅を除いてランダムに4マス（角＋おかわりは強すぎるため）
-    const banned = new Set([27, 28, 35, 36, 0, 7, 56, 63]);
-    while (bonusCells.size < 4) {
-      const i = Math.floor(Math.random() * N);
-      if (!banned.has(i)) bonusCells.add(i);
-    }
-  }
+  const isCpuTurn = () => settings.mode === 'cpu' && current === 1;
+  const isMyTurn = () => !isOnline() || current === myIndex;
 
   function startGame(initData) {
     board = new Array(N).fill(0);
-    board[27] = WHITE; board[28] = BLACK; board[35] = BLACK; board[36] = WHITE;
-    current = BLACK;
+    marks = [[], []];
+    current = 0;
+    moveCount = 0;
+    winLine = [];
+    gameOver = false;
     busy = false;
     remoteQueue = [];
 
     if (initData) {
-      // オンラインのゲスト側: ホストの設定と盤面情報を受け取る
-      settings.bonusRule = !!initData.bonusRule;
-      $('bonus-toggle').classList.toggle('on', settings.bonusRule);
-      bonusCells = new Set(initData.bonus || []);
-    } else {
-      pickBonusCells();
-      if (isOnline() && net) {
-        net.send({ t: 'init', bonus: [...bonusCells], bonusRule: settings.bonusRule });
-      }
+      settings.vanish = !!initData.vanish;
+      $('vanish-toggle').classList.toggle('on', settings.vanish);
+    } else if (isOnline() && net) {
+      net.send({ t: 'init', vanish: settings.vanish });
     }
 
     if (isOnline()) {
-      $('name-0').textContent = myColor === BLACK ? 'あなた（黒）' : '相手（黒）';
-      $('name-1').textContent = myColor === WHITE ? 'あなた（白）' : '相手（白）';
+      $('name-0').textContent = myIndex === 0 ? 'あなた（○・先攻）' : '相手（○・先攻）';
+      $('name-1').textContent = myIndex === 1 ? 'あなた（×・後攻）' : '相手（×・後攻）';
     } else {
-      $('name-0').textContent = settings.mode === 'cpu' ? 'あなた（黒）' : 'プレイヤー1（黒）';
-      $('name-1').textContent = settings.mode === 'cpu' ? 'CPU（白）' : 'プレイヤー2（白）';
+      $('name-0').textContent = settings.mode === 'cpu' ? 'あなた（○）' : 'プレイヤー1（○）';
+      $('name-1').textContent = settings.mode === 'cpu' ? 'CPU（×）' : 'プレイヤー2（×）';
     }
-    $('hud-rule').classList.toggle('hidden', !settings.bonusRule);
+    $('hud-rule').classList.toggle('hidden', !settings.vanish);
 
     const boardEl = $('board');
     boardEl.innerHTML = '';
@@ -442,9 +373,9 @@
   }
 
   function turnText() {
-    if (settings.mode === 'cpu') return current === BLACK ? 'あなたの番！石を置いてね' : 'CPUが考えています…';
-    if (isOnline()) return current === myColor ? 'あなたの番！石を置いてね' : '相手の番です…';
-    return (current === BLACK ? '黒' : '白') + 'の番！石を置いてね';
+    if (settings.mode === 'cpu') return current === 0 ? 'あなたの番！マスをタップしてね' : 'CPUが考えています…';
+    if (isOnline()) return current === myIndex ? 'あなたの番！マスをタップしてね' : '相手の番です…';
+    return MARKS[current] + 'の番！マスをタップしてね';
   }
 
   function setBanner(text, tone) {
@@ -453,172 +384,143 @@
     b.className = 'banner' + (tone ? ' ' + tone : '');
   }
 
-  function render(flippedSet) {
-    const hints = !busy && !isCpuTurn() && isMyTurn() ? new Set(validMoves(current)) : new Set();
+  function render() {
+    // 次に消えるマーク: 手番プレイヤーがすでに3個置いているとき、その最古
+    const fadingIdx = (settings.vanish && !gameOver && marks[current].length === 3)
+      ? marks[current][0] : -1;
     for (let i = 0; i < N; i++) {
       const cell = cells[i];
-      const v = board[i];
-      let disc = cell.querySelector('.disc');
-      cell.querySelector('.hint')?.remove();
-      cell.querySelector('.star')?.remove();
-
-      if (v === 0) {
-        disc?.remove();
-        if (bonusCells.has(i)) {
-          const star = document.createElement('span');
-          star.className = 'star';
-          star.textContent = '⭐';
-          cell.appendChild(star);
-        }
-        if (hints.has(i)) {
-          const h = document.createElement('span');
-          h.className = 'hint';
-          cell.appendChild(h);
-        }
-      } else {
-        if (!disc) {
-          disc = document.createElement('div');
-          disc.className = 'disc';
-          cell.appendChild(disc);
-          requestAnimationFrame(() => disc.classList.add('show'));
-        }
-        disc.classList.toggle('black', v === BLACK);
-        disc.classList.toggle('white', v === WHITE);
-        if (flippedSet && flippedSet.has(i)) {
-          disc.classList.remove('flipping');
-          void disc.offsetWidth;
-          disc.classList.add('flipping');
-        }
+      cell.innerHTML = '';
+      cell.classList.toggle('win-line', winLine.includes(i));
+      if (board[i] !== 0) {
+        const m = document.createElement('span');
+        m.className = 'mark ' + (board[i] === 1 ? 'o' : 'x');
+        if (i === fadingIdx) m.classList.add('fading');
+        m.textContent = MARKS[board[i] - 1];
+        cell.appendChild(m);
       }
     }
-    const b = board.filter(v => v === BLACK).length;
-    const w = board.filter(v => v === WHITE).length;
-    $('score-0').textContent = b;
-    $('score-1').textContent = w;
-    $('chip-0').classList.toggle('active', current === BLACK);
-    $('chip-1').classList.toggle('active', current === WHITE);
+    $('chip-0').classList.toggle('active', current === 0 && !gameOver);
+    $('chip-1').classList.toggle('active', current === 1 && !gameOver);
+  }
+
+  function findWin(p) {
+    for (const line of LINES) {
+      if (line.every(i => board[i] === p + 1)) return line;
+    }
+    return null;
   }
 
   function onCellTap(idx) {
-    if (busy || isCpuTurn() || !isMyTurn()) return;
-    if (!flipsFor(idx, current).length) return;
+    if (busy || gameOver || isCpuTurn() || !isMyTurn()) return;
+    if (board[idx] !== 0) return;
     if (isOnline() && net) net.send({ t: 'move', i: idx });
     play(idx);
   }
 
   function play(idx) {
-    const flips = flipsFor(idx, current);
-    if (!flips.length) return;
-    busy = true;
-    board[idx] = current;
-    flips.forEach(j => { board[j] = current; });
-    const usedBonus = bonusCells.has(idx);
-    if (usedBonus) bonusCells.delete(idx);
-    render(new Set(flips));
-    setTimeout(() => afterMove(usedBonus), 500);
-  }
+    if (gameOver || board[idx] !== 0) return;
+    const p = current;
+    let vanished = false;
+    if (settings.vanish && marks[p].length === 3) {
+      const old = marks[p].shift();
+      board[old] = 0;
+      vanished = true;
+    }
+    board[idx] = p + 1;
+    marks[p].push(idx);
+    moveCount++;
 
-  function afterMove(usedBonus) {
-    const me = current, opp = 3 - current;
-    const meMoves = validMoves(me).length;
-    const oppMoves = validMoves(opp).length;
-
-    if (meMoves === 0 && oppMoves === 0) {
+    const line = findWin(p);
+    if (line) {
+      winLine = line;
+      gameOver = true;
       render();
-      setTimeout(showResult, 600);
+      setTimeout(() => showResult(p), 900);
+      return;
+    }
+    if ((!settings.vanish && !board.includes(0)) || moveCount >= MOVE_CAP) {
+      gameOver = true;
+      render();
+      setTimeout(() => showResult(-1), 600);
       return;
     }
 
-    if (usedBonus && meMoves > 0) {
-      setBanner('⭐ おかわりマス！もう1手打てる！', 'bonus');
-      setTimeout(() => {
-        setBanner(turnText(), '');
-        busy = false;
-        render();
-        if (isCpuTurn()) cpuTurn();
-      }, 1100);
-      return;
-    }
-
-    let notice = usedBonus ? '⭐ おかわりマス！…でも打てる場所がない ' : '';
-    if (oppMoves > 0) {
-      current = opp;
-    } else {
-      notice += (settings.mode === 'cpu'
-        ? (opp === WHITE ? 'CPUは打てる場所がないためパス！' : 'あなたは打てる場所がないためパス！')
-        : (opp === WHITE ? '白' : '黒') + 'は打てる場所がないためパス！');
-    }
-
-    if (notice) {
-      setBanner(notice, 'good');
-      setTimeout(() => {
-        setBanner(turnText(), '');
-        busy = false;
-        render();
-        if (isCpuTurn()) cpuTurn();
-      }, 1100);
-    } else {
-      setBanner(turnText(), '');
-      busy = false;
-      render();
-      if (isCpuTurn()) cpuTurn();
-    }
+    current = 1 - current;
+    if (vanished) setBanner('🫧 一番古いマークが消えた！　' + turnText(), 'good');
+    else setBanner(turnText(), '');
+    render();
+    if (isCpuTurn()) cpuTurn();
   }
 
   // ── CPU ──
+  // idx に p が置いたと仮定して勝てるか（消えるルールの最古消滅も考慮）
+  function wouldWin(idx, p) {
+    const removed = (settings.vanish && marks[p].length === 3) ? marks[p][0] : -1;
+    const test = i => {
+      if (i === idx) return true;
+      if (i === removed) return false;
+      return board[i] === p + 1;
+    };
+    return LINES.some(line => line.every(test));
+  }
+
   function cpuPick() {
-    const moves = validMoves(WHITE);
-    if (settings.level === 1) {
-      return moves[Math.floor(Math.random() * moves.length)];
-    }
-    let best = moves[0], bestScore = -Infinity;
-    for (const m of moves) {
-      const flips = flipsFor(m, WHITE).length;
-      let score;
-      if (settings.level === 2) {
-        score = flips + Math.random() * 2;
-      } else {
-        score = WEIGHTS[m] + flips * 2;
-        if (bonusCells.has(m)) score += 18; // おかわりマスは積極的に狙う
+    const empties = board.map((v, i) => (v === 0 ? i : -1)).filter(i => i >= 0);
+    if (settings.level === 1) return empties[Math.floor(Math.random() * empties.length)];
+
+    // 勝てるなら勝つ
+    for (const i of empties) if (wouldWin(i, 1)) return i;
+    // 相手の勝ちを防ぐ
+    for (const i of empties) if (wouldWin(i, 0)) return i;
+
+    if (settings.level === 3) {
+      // ダブルリーチ（フォーク）を作れるマスを探す
+      for (const i of empties) {
+        const removed = (settings.vanish && marks[1].length === 3) ? marks[1][0] : -1;
+        let threats = 0;
+        for (const line of LINES) {
+          const mine = line.filter(j => (j === i) || (board[j] === 2 && j !== removed)).length;
+          const blocked = line.some(j => board[j] === 1 && j !== i);
+          if (mine === 2 && !blocked) threats++;
+        }
+        if (threats >= 2) return i;
       }
-      if (score > bestScore) { bestScore = score; best = m; }
     }
-    return best;
+    // 中央 → 角 → 辺
+    if (board[4] === 0) return 4;
+    const corners = [0, 2, 6, 8].filter(i => board[i] === 0);
+    if (corners.length) return corners[Math.floor(Math.random() * corners.length)];
+    return empties[Math.floor(Math.random() * empties.length)];
   }
 
   function cpuTurn() {
     busy = true;
     setBanner('CPUが考えています…', '');
     render();
-    setTimeout(() => play(cpuPick()), 850);
+    setTimeout(() => { busy = false; play(cpuPick()); }, 650);
   }
 
   // ── 結果 ──
-  function showResult() {
-    const b = board.filter(v => v === BLACK).length;
-    const w = board.filter(v => v === WHITE).length;
+  function showResult(winner) {
     let emoji, title;
-    if (b === w) {
+    if (winner < 0) {
       emoji = '🤝'; title = '引き分け！';
+    } else if (settings.mode === 'cpu') {
+      emoji = winner === 0 ? '🏆' : '😢';
+      title = winner === 0 ? 'あなたの勝ち！' : 'CPUの勝ち…';
+    } else if (isOnline()) {
+      emoji = winner === myIndex ? '🏆' : '😢';
+      title = winner === myIndex ? 'あなたの勝ち！' : '相手の勝ち…';
     } else {
-      const winnerColor = b > w ? BLACK : WHITE;
-      if (settings.mode === 'cpu') {
-        emoji = winnerColor === BLACK ? '🏆' : '😢';
-        title = winnerColor === BLACK ? 'あなたの勝ち！' : 'CPUの勝ち…';
-      } else if (isOnline()) {
-        emoji = winnerColor === myColor ? '🏆' : '😢';
-        title = winnerColor === myColor ? 'あなたの勝ち！' : '相手の勝ち…';
-      } else {
-        emoji = '🏆';
-        title = (winnerColor === BLACK ? '黒' : '白') + 'の勝ち！';
-      }
+      emoji = '🏆';
+      title = MARKS[winner] + 'の勝ち！';
     }
     $('result-emoji').textContent = emoji;
     $('result-title').textContent = title;
-    $('result-detail').textContent = '黒 ' + b + ' ─ 白 ' + w +
-      (settings.bonusRule ? '（おかわりマスあり）' : '') +
+    $('result-detail').textContent = (winner >= 0 ? MARKS[winner] + ' が3つ並びました' : 'どちらも並べられませんでした') +
+      (settings.vanish ? '（消えるまるばつ）' : '') +
       (isOnline() && net && !net.isHost ? '　※部屋を作った人が「もう一度」を押すと再戦できます' : '');
-    // オンラインのゲストは再戦開始をホストに任せる
     $('retry-btn').classList.toggle('hidden', isOnline() && !(net && net.isHost));
     $('overlay').classList.remove('hidden');
   }
@@ -673,7 +575,7 @@
         showStatus(text + '<br /><button class="copy-btn" id="cancel-btn">さがすのをやめる</button>');
         bindCancelBtn();
       },
-      onMatched(isHost) { myColor = isHost ? BLACK : WHITE; },
+      onMatched(isHost) { myIndex = isHost ? 0 : 1; },
       onReady(code) {
         const invite = inviteUrl(code);
         showStatus(
@@ -691,7 +593,7 @@
       },
       onConnect() {
         if (net && net.isHost) {
-          startGame(); // ホストが盤面を作って init を送る
+          startGame(); // ホストが設定を決めて init を送る
         } else {
           showStatus('接続しました！まもなく対戦が始まります…');
         }
@@ -716,7 +618,7 @@
   function hostRoom() {
     if (net) net.close();
     showStatus('部屋を作成しています…');
-    net = BGP2P.host('reversi', netHandlers());
+    net = BGP2P.host('marubatsu', netHandlers());
   }
 
   function joinRoom(code) {
@@ -724,19 +626,19 @@
     if (!/^\d{4}$/.test(code)) { showStatus('⚠ 数字4ケタの部屋コードを入力してください'); return; }
     if (net) net.close();
     showStatus('部屋 ' + code + ' に接続しています…');
-    net = BGP2P.join('reversi', code, netHandlers());
+    net = BGP2P.join('marubatsu', code, netHandlers());
   }
 
   function quickPlay() {
     if (net) net.close();
-    net = BGP2P.quickMatch('reversi', $('quick-pass').value.trim(), netHandlers());
+    net = BGP2P.quickMatch('marubatsu', $('quick-pass').value.trim(), netHandlers());
   }
 
-  // 相手の手は演出が終わってから盤面に反映する
+  // 相手の手は手番が合っているときだけ反映する
   setInterval(() => {
-    if (!isOnline() || busy) return;
+    if (!isOnline() || busy || gameOver) return;
     if ($('game').classList.contains('hidden')) return;
-    if (remoteQueue.length && current !== myColor) play(remoteQueue.shift());
+    if (remoteQueue.length && current !== myIndex) play(remoteQueue.shift());
   }, 120);
 
   $('host-btn').addEventListener('click', hostRoom);
