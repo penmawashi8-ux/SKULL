@@ -64,6 +64,34 @@
     transition: transform 0.15s;
   }
   .start-btn:active { transform: scale(0.97); }
+  .start-btn:disabled { opacity: 0.4; cursor: default; }
+
+  /* ── オンライン対戦 ── */
+  .online-box { margin-top: 6px; display: flex; flex-direction: column; gap: 10px; }
+  .online-note { font-size: 11px; color: rgba(255,255,255,0.45); line-height: 1.7; }
+  .join-row { display: flex; gap: 8px; }
+  .code-input {
+    flex: 1; min-width: 0; padding: 12px 14px; border-radius: 14px; border: 2px solid rgba(255,255,255,0.16);
+    background: rgba(255,255,255,0.06); color: #fff; font-size: 16px; font-weight: 800; letter-spacing: 0.25em;
+    text-transform: uppercase; font-family: inherit; outline: none;
+  }
+  .code-input:focus { border-color: #67e8f9; }
+  .join-btn {
+    padding: 12px 20px; border-radius: 14px; border: none; background: rgba(103,232,249,0.18);
+    color: #67e8f9; border: 2px solid rgba(103,232,249,0.5); font-size: 13px; font-weight: 800;
+    cursor: pointer; font-family: inherit; flex-shrink: 0;
+  }
+  .online-status {
+    border-radius: 14px; padding: 14px 16px; background: rgba(255,255,255,0.05);
+    border: 1.5px solid rgba(255,255,255,0.12); font-size: 12px; line-height: 1.8;
+    color: rgba(255,255,255,0.7); word-break: break-all;
+  }
+  .online-status .room-code { font-size: 26px; font-weight: 900; letter-spacing: 0.3em; color: #67e8f9; }
+  .copy-btn {
+    margin-top: 8px; padding: 9px 16px; border-radius: 999px; border: 1.5px solid rgba(103,232,249,0.5);
+    background: rgba(103,232,249,0.14); color: #67e8f9; font-size: 12px; font-weight: 800;
+    cursor: pointer; font-family: inherit;
+  }
 
   /* ── ゲーム画面 ── */
   .hud { display: flex; align-items: stretch; gap: 8px; margin-bottom: 10px; }
@@ -164,7 +192,25 @@
   <p class="section-label">🎮 あそびかた</p>
   <div class="opt-row" id="mode-row">
     <button class="opt-btn sel" data-mode="cpu">CPUと対戦</button>
-    <button class="opt-btn" data-mode="pvp">2人で対戦<br /><span style="font-size:10px;font-weight:400;">（1台のスマホ/PCで交互に）</span></button>
+    <button class="opt-btn" data-mode="pvp">2人で対戦<br /><span style="font-size:10px;font-weight:400;">（1台で交互に）</span></button>
+    <button class="opt-btn" data-mode="online">オンライン対戦<br /><span style="font-size:10px;font-weight:400;">（離れた友達と）</span></button>
+  </div>
+
+  <div id="online-block" class="hidden">
+    <p class="section-label">🌐 オンライン対戦</p>
+    <div class="online-box">
+      <button class="join-btn" id="host-btn" style="width:100%;padding:14px;">部屋を作って友達を招待する</button>
+      <div class="join-row">
+        <input class="code-input" id="join-code" maxlength="4" placeholder="部屋コード" autocomplete="off" />
+        <button class="join-btn" id="join-btn">参加する</button>
+      </div>
+      <div class="online-status hidden" id="online-status"></div>
+      <p class="online-note">
+        部屋を作ると4文字の部屋コードと招待URLが表示されます。友達に送って同じ部屋に入れば対戦開始。
+        ローカルルールの設定は部屋を作った側のものが適用されます。
+        ※P2P通信のため、一部のネットワーク環境では接続できないことがあります。
+      </p>
+    </div>
   </div>
 
   <div id="level-block">
@@ -233,6 +279,8 @@
   </div>
 </div>
 
+<script src="/play/lib/peerjs.min.js"></script>
+<script src="/play/lib/p2p.js"></script>
 <script>
 (() => {
   'use strict';
@@ -251,6 +299,8 @@
       btn.classList.add('sel');
       settings.mode = btn.dataset.mode;
       $('level-block').classList.toggle('hidden', settings.mode !== 'cpu');
+      $('online-block').classList.toggle('hidden', settings.mode !== 'online');
+      $('start-btn').classList.toggle('hidden', settings.mode === 'online');
     });
   });
   document.querySelectorAll('#level-row .opt-btn').forEach(btn => {
@@ -273,7 +323,14 @@
   let busy = false;
   let cpuMemory = {};    // rank -> Set(index)  CPUが覚えているカード
 
+  // ── オンライン対戦の状態 ──
+  let net = null;          // BGP2P セッション
+  let myIndex = 0;         // オンライン時の自分の手番（ホスト=0で先攻）
+  let remoteQueue = [];    // 受信した相手のめくり（演出中は待たせる）
+
+  const isOnline = () => settings.mode === 'online';
   const isCpuTurn = () => settings.mode === 'cpu' && current === 1;
+  const isMyTurn = () => !isOnline() || current === myIndex;
 
   function shuffle(arr) {
     for (let i = arr.length - 1; i > 0; i--) {
@@ -285,23 +342,40 @@
 
   function rankLabel(rank) { return rank === 1 ? 'A' : String(rank); }
 
-  function startGame() {
-    const deck = [];
-    for (const rank of RANKS) {
-      deck.push({ rank, suit: '♥' });
-      deck.push({ rank, suit: '♠' });
+  function startGame(initData) {
+    let deck;
+    if (initData) {
+      // オンラインのゲスト側: ホストの設定と山札を受け取る
+      settings.thief = !!initData.thief;
+      $('thief-toggle').classList.toggle('on', settings.thief);
+      deck = initData.deck;
+    } else {
+      deck = [];
+      for (const rank of RANKS) {
+        deck.push({ rank, suit: '♥' });
+        deck.push({ rank, suit: '♠' });
+      }
+      shuffle(deck);
+      if (isOnline() && net) {
+        net.send({ t: 'init', deck: deck.map(c => ({ rank: c.rank, suit: c.suit })), thief: settings.thief });
+      }
     }
-    shuffle(deck);
 
-    cards = deck.map(c => ({ ...c, state: 'down', el: null }));
+    cards = deck.map(c => ({ rank: c.rank, suit: c.suit, state: 'down', el: null }));
     flipped = [];
     current = 0;
     pairs = [[], []];
     busy = false;
     cpuMemory = {};
+    remoteQueue = [];
 
-    $('name-0').textContent = settings.mode === 'cpu' ? 'あなた' : 'プレイヤー1';
-    $('name-1').textContent = settings.mode === 'cpu' ? 'CPU' : 'プレイヤー2';
+    if (isOnline()) {
+      $('name-0').textContent = myIndex === 0 ? 'あなた（先攻）' : '相手（先攻）';
+      $('name-1').textContent = myIndex === 1 ? 'あなた（後攻）' : '相手（後攻）';
+    } else {
+      $('name-0').textContent = settings.mode === 'cpu' ? 'あなた' : 'プレイヤー1';
+      $('name-1').textContent = settings.mode === 'cpu' ? 'CPU' : 'プレイヤー2';
+    }
     $('hud-rule').classList.toggle('hidden', !settings.thief);
 
     const grid = $('grid');
@@ -331,6 +405,7 @@
 
   function turnText() {
     if (settings.mode === 'cpu') return current === 0 ? 'あなたの番！カードを2枚めくってね' : 'CPUが考えています…';
+    if (isOnline()) return current === myIndex ? 'あなたの番！カードを2枚めくってね' : '相手の番です…';
     return 'プレイヤー' + (current + 1) + 'の番！カードを2枚めくってね';
   }
 
@@ -371,9 +446,18 @@
   }
 
   function onCardTap(index) {
-    if (busy || isCpuTurn()) return;
+    if (busy || isCpuTurn() || !isMyTurn()) return;
     const card = cards[index];
     if (card.state !== 'down' || flipped.length >= 2) return;
+    if (isOnline() && net) net.send({ t: 'flip', i: index });
+    flipUp(index);
+    if (flipped.length === 2) resolveFlip();
+  }
+
+  // 相手から受信しためくりを反映する
+  function applyRemoteFlip(index) {
+    const card = cards[index];
+    if (!card || card.state !== 'down' || flipped.length >= 2) return;
     flipUp(index);
     if (flipped.length === 2) resolveFlip();
   }
@@ -505,15 +589,18 @@
   // ── 結果 ──
   function showResult() {
     const [s0, s1] = [pairs[0].length, pairs[1].length];
-    const names = settings.mode === 'cpu' ? ['あなた', 'CPU'] : ['プレイヤー1', 'プレイヤー2'];
+    const names = settings.mode === 'cpu' ? ['あなた', 'CPU']
+      : isOnline() ? [myIndex === 0 ? 'あなた' : '相手', myIndex === 1 ? 'あなた' : '相手']
+      : ['プレイヤー1', 'プレイヤー2'];
     let emoji, title;
     if (s0 === s1) {
       emoji = '🤝'; title = '引き分け！';
     } else {
       const winner = s0 > s1 ? 0 : 1;
-      if (settings.mode === 'cpu') {
-        emoji = winner === 0 ? '🏆' : '😢';
-        title = winner === 0 ? 'あなたの勝ち！' : 'CPUの勝ち…';
+      if (settings.mode === 'cpu' || isOnline()) {
+        const won = names[winner] === 'あなた' || (settings.mode === 'cpu' && winner === 0);
+        emoji = won ? '🏆' : '😢';
+        title = won ? 'あなたの勝ち！' : names[winner] + 'の勝ち…';
       } else {
         emoji = '🏆';
         title = names[winner] + 'の勝ち！';
@@ -522,18 +609,126 @@
     $('result-emoji').textContent = emoji;
     $('result-title').textContent = title;
     $('result-detail').textContent = names[0] + ' ' + s0 + 'ペア ─ ' + names[1] + ' ' + s1 + 'ペア' +
-      (settings.thief ? '（泥棒セブンあり）' : '');
+      (settings.thief ? '（泥棒セブンあり）' : '') +
+      (isOnline() && net && !net.isHost ? '　※部屋を作った人が「もう一度」を押すと再戦できます' : '');
+    // オンラインのゲストは再戦開始をホストに任せる
+    $('retry-btn').classList.toggle('hidden', isOnline() && !(net && net.isHost));
+    $('overlay').classList.remove('hidden');
+  }
+
+  function showDisconnected() {
+    $('result-emoji').textContent = '📡';
+    $('result-title').textContent = '接続が切れました';
+    $('result-detail').textContent = '相手が退出したか、通信が途切れました。';
+    $('retry-btn').classList.add('hidden');
     $('overlay').classList.remove('hidden');
   }
 
   function backToMenu() {
+    if (net) { net.close(); net = null; }
+    remoteQueue = [];
+    $('online-status').classList.add('hidden');
+    $('retry-btn').classList.remove('hidden');
     $('game').classList.add('hidden');
     $('overlay').classList.add('hidden');
     $('menu').classList.remove('hidden');
   }
 
-  $('start-btn').addEventListener('click', startGame);
-  $('retry-btn').addEventListener('click', startGame);
+  // ── オンライン対戦（PeerJS / WebRTC・サーバー設定不要） ──
+  function showStatus(html) {
+    const el = $('online-status');
+    el.classList.remove('hidden');
+    el.innerHTML = html;
+  }
+
+  function inviteUrl(code) {
+    const url = new URL(location.href);
+    url.search = '';
+    const keep = new URLSearchParams(location.search);
+    for (const k of ['peerhost', 'peerport', 'peerpath', 'peersecure']) {
+      if (keep.get(k)) url.searchParams.set(k, keep.get(k));
+    }
+    url.searchParams.set('room', code);
+    return url.toString();
+  }
+
+  function netHandlers(asHost) {
+    return {
+      onReady(code) {
+        const invite = inviteUrl(code);
+        showStatus(
+          '部屋コード <span class="room-code">' + code + '</span><br />' +
+          'このURLを友達に送ってね：<br />' + invite + '<br />' +
+          '<button class="copy-btn" id="copy-btn">📋 招待URLをコピー</button><br />' +
+          '友達が来るのを待っています…',
+        );
+        document.getElementById('copy-btn').addEventListener('click', () => {
+          navigator.clipboard?.writeText(invite).then(
+            () => { document.getElementById('copy-btn').textContent = '✅ コピーしました！'; },
+            () => { /* 手動コピーにフォールバック */ },
+          );
+        });
+      },
+      onConnect() {
+        if (asHost) {
+          startGame(); // ホストが山札を作って init を送る
+        } else {
+          showStatus('接続しました！まもなく対戦が始まります…');
+        }
+      },
+      onData(d) {
+        if (!d || typeof d !== 'object') return;
+        if (d.t === 'init') { startGame(d); return; }
+        if (d.t === 'flip' && typeof d.i === 'number') remoteQueue.push(d.i);
+      },
+      onClose() {
+        if (!isOnline()) return;
+        remoteQueue = [];
+        if (!$('game').classList.contains('hidden')) showDisconnected();
+        else showStatus('⚠ 相手との接続が切れました。もう一度部屋を作り直してください。');
+      },
+      onError(e) {
+        showStatus('⚠ ' + BGP2P.errorText(e));
+      },
+    };
+  }
+
+  function hostRoom() {
+    if (net) net.close();
+    myIndex = 0;
+    showStatus('部屋を作成しています…');
+    net = BGP2P.host('shinkei', netHandlers(true));
+  }
+
+  function joinRoom(code) {
+    code = (code || '').trim().toUpperCase();
+    if (code.length !== 4) { showStatus('⚠ 4文字の部屋コードを入力してください'); return; }
+    if (net) net.close();
+    myIndex = 1;
+    showStatus('部屋 ' + code + ' に接続しています…');
+    net = BGP2P.join('shinkei', code, netHandlers(false));
+  }
+
+  // 相手のめくりは演出が終わってから反映する
+  setInterval(() => {
+    if (!isOnline() || busy) return;
+    if ($('game').classList.contains('hidden')) return;
+    if (remoteQueue.length && current !== myIndex) applyRemoteFlip(remoteQueue.shift());
+  }, 120);
+
+  $('host-btn').addEventListener('click', hostRoom);
+  $('join-btn').addEventListener('click', () => joinRoom($('join-code').value));
+
+  // 招待URL（?room=XXXX）から開いたら自動で参加
+  const roomParam = new URLSearchParams(location.search).get('room');
+  if (roomParam) {
+    document.querySelector('#mode-row [data-mode="online"]').click();
+    $('join-code').value = roomParam.toUpperCase();
+    joinRoom(roomParam);
+  }
+
+  $('start-btn').addEventListener('click', () => startGame());
+  $('retry-btn').addEventListener('click', () => startGame());
   $('menu-btn').addEventListener('click', backToMenu);
   $('quit-btn').addEventListener('click', backToMenu);
 })();

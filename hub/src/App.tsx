@@ -154,28 +154,28 @@ const games: Game[] = [
     name: '神経衰弱',
     nameEn: 'CONCENTRATION',
     symbol: 'SS',
-    description: '同じ数字のカードをめくってペアを集める定番の記憶ゲーム。ローカルルール「泥棒セブン」で7のペアを取れば相手のペアを奪える！',
+    description: '同じ数字のカードをめくってペアを集める定番の記憶ゲーム。ローカルルール「泥棒セブン」で7のペアを取れば相手のペアを奪える！招待URLでオンライン対戦にも対応。',
     status: 'available',
     url: '/play/shinkei/',
     accentColor: '#67e8f9',
     cardBg: 'linear-gradient(135deg, #164e63 0%, #0891b2 100%)',
     players: '1〜2人',
     duration: '約5〜10分',
-    tags: ['トランプ', '記憶力', '1人用'],
+    tags: ['トランプ', '記憶力', '1人用', 'オンライン対戦'],
   },
   {
     id: 'reversi',
     name: 'リバーシ',
     nameEn: 'REVERSI',
     symbol: 'RV',
-    description: '相手の石をはさんでひっくり返す定番ボードゲーム。ローカルルール「おかわりマス」で星マスに置けばもう1手打てる！',
+    description: '相手の石をはさんでひっくり返す定番ボードゲーム。ローカルルール「おかわりマス」で星マスに置けばもう1手打てる！招待URLでオンライン対戦にも対応。',
     status: 'available',
     url: '/play/reversi/',
     accentColor: '#a3e635',
     cardBg: 'linear-gradient(135deg, #1a2e05 0%, #4d7c0f 100%)',
     players: '1〜2人',
     duration: '約10〜15分',
-    tags: ['ボードゲーム', '戦略', '1人用'],
+    tags: ['ボードゲーム', '戦略', '1人用', 'オンライン対戦'],
   },
   {
     id: 'poko-light',
@@ -403,6 +403,12 @@ function GameRow({ game }: { game: Game }) {
 }
 
 const NOTICES = [
+  {
+    id: 7,
+    date: '2026.07.16',
+    title: '神経衰弱・リバーシがオンライン対戦に対応',
+    body: '部屋を作って招待URLを送るだけで、離れた友達と神経衰弱・リバーシで対戦できるようになりました。登録不要・無料のままです。',
+  },
   {
     id: 6,
     date: '2026.07.16',
