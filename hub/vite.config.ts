@@ -25,6 +25,9 @@ export default defineConfig(({ isSsrBuild }) => ({
             },
             workbox: {
               globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+              // /play/ 配下はゲーム本体（静的HTML）。SPAのindex.htmlに
+              // フォールバックさせず、常に実ファイルを返す。
+              navigateFallbackDenylist: [/^\/play\//],
             },
           }),
         ]),
