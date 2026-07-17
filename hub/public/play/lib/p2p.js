@@ -108,6 +108,62 @@ window.BGP2P = (() => {
     return session;
   }
 
+  // ── 複数人部屋（ホスト + 最大 maxGuests 人）──
+  // ホストが全ゲストと1対1で接続し、メッセージを中継するスター型。
+  // h: { onReady(code), onGuestJoin(gi, count), onGuestLeave(gi, count),
+  //      onGuestData(gi, d), onError(e) }
+  function hostMulti(game, maxGuests, h) {
+    const session = makeSession(true);
+    session.guests = [];   // DataConnection（切断は null）
+    session.locked = false; // ゲーム開始後は入室拒否
+    session.activeGuests = () =>
+      session.guests.map((c, i) => (c && c.open ? i : -1)).filter(i => i >= 0);
+    session.broadcast = obj => {
+      for (const c of session.guests) if (c && c.open) c.send(obj);
+    };
+    session.sendToGuest = (gi, obj) => {
+      const c = session.guests[gi];
+      if (c && c.open) c.send(obj);
+    };
+    session.lock = () => { session.locked = true; };
+
+    let attempts = 0;
+    function tryHost() {
+      if (session.closed) return;
+      const code = (params.get('forcecode') || makeCode());
+      const peer = new Peer(roomId(game, code), peerOptions());
+      session.peer = peer;
+      session.code = code;
+      peer.on('open', () => h.onReady && h.onReady(code));
+      peer.on('connection', conn => {
+        if (session.locked || session.activeGuests().length >= maxGuests) {
+          try { conn.close(); } catch { /* 満室 */ }
+          return;
+        }
+        const gi = session.guests.length;
+        session.guests.push(conn);
+        conn.on('open', () => h.onGuestJoin && h.onGuestJoin(gi, session.activeGuests().length));
+        conn.on('data', d => h.onGuestData && h.onGuestData(gi, d));
+        conn.on('close', () => {
+          session.guests[gi] = null;
+          h.onGuestLeave && h.onGuestLeave(gi, session.activeGuests().length);
+        });
+        conn.on('error', () => { /* close 側で処理 */ });
+      });
+      peer.on('disconnected', () => { if (!session.closed) try { peer.reconnect(); } catch { /* noop */ } });
+      peer.on('error', e => {
+        if (e.type === 'unavailable-id' && attempts++ < 5 && !params.get('forcecode')) {
+          try { peer.destroy(); } catch { /* noop */ }
+          tryHost();
+          return;
+        }
+        h.onError && h.onError(e);
+      });
+    }
+    tryHost();
+    return session;
+  }
+
   // ── 部屋コードで参加する ──
   function join(game, code, h) {
     const session = makeSession(false);
@@ -242,5 +298,5 @@ window.BGP2P = (() => {
     }
   }
 
-  return { host, join, quickMatch, errorText };
+  return { host, hostMulti, join, quickMatch, errorText };
 })();
