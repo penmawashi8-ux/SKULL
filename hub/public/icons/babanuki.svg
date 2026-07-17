@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <defs>
+    <radialGradient id="bn-bg" cx="40%" cy="35%" r="70%">
+      <stop offset="0%" stop-color="#3b1a5e"/>
+      <stop offset="100%" stop-color="#150726"/>
+    </radialGradient>
+    <linearGradient id="bn-card" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#dde4f0"/>
+    </linearGradient>
+    <linearGradient id="bn-back" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#223059"/>
+      <stop offset="100%" stop-color="#151d38"/>
+    </linearGradient>
+    <filter id="bn-shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000" flood-opacity="0.55"/>
+    </filter>
+    <clipPath id="bn-clip">
+      <circle cx="60" cy="60" r="50"/>
+    </clipPath>
+  </defs>
+
+  <circle cx="60" cy="60" r="50" fill="url(#bn-bg)"/>
+  <g clip-path="url(#bn-clip)">
+    <!-- 裏向きの扇（引く相手の手札） -->
+    <g filter="url(#bn-shadow)">
+      <rect x="18" y="52" width="28" height="42" rx="5" fill="url(#bn-back)" stroke="#c084fc" stroke-width="1.5" transform="rotate(-14 32 73)"/>
+      <rect x="38" y="48" width="28" height="42" rx="5" fill="url(#bn-back)" stroke="#c084fc" stroke-width="1.5" transform="rotate(-4 52 69)"/>
+      <rect x="58" y="48" width="28" height="42" rx="5" fill="url(#bn-back)" stroke="#c084fc" stroke-width="1.5" transform="rotate(6 72 69)"/>
+    </g>
+    <text x="32" y="78" font-size="12" text-anchor="middle" fill="#c084fc" opacity="0.8" transform="rotate(-14 32 73)">✦</text>
+    <text x="52" y="74" font-size="12" text-anchor="middle" fill="#c084fc" opacity="0.8" transform="rotate(-4 52 69)">✦</text>
+    <text x="72" y="74" font-size="12" text-anchor="middle" fill="#c084fc" opacity="0.8" transform="rotate(6 72 69)">✦</text>
+    <!-- ジョーカー2枚（本物とニセモノ） -->
+    <g transform="rotate(10 84 40)" filter="url(#bn-shadow)">
+      <rect x="70" y="18" width="28" height="42" rx="5" fill="url(#bn-card)" stroke="#94a3b8" stroke-width="1"/>
+      <text x="84" y="38" font-size="9" font-weight="900" text-anchor="middle" fill="#7c3aed" font-family="Arial, sans-serif">JOKER</text>
+      <text x="84" y="52" font-size="13" text-anchor="middle">🃏</text>
+    </g>
+    <g transform="rotate(-8 38 36)" filter="url(#bn-shadow)">
+      <rect x="24" y="14" width="28" height="42" rx="5" fill="url(#bn-card)" stroke="#94a3b8" stroke-width="1"/>
+      <text x="38" y="34" font-size="9" font-weight="900" text-anchor="middle" fill="#7c3aed" font-family="Arial, sans-serif">JOKER</text>
+      <text x="38" y="48" font-size="13" text-anchor="middle">🤡</text>
+    </g>
+    <text x="60" y="36" font-size="15" text-anchor="middle" filter="url(#bn-shadow)">❓</text>
+  </g>
+  <circle cx="60" cy="60" r="49" fill="none" stroke="#c084fc" stroke-width="2" opacity="0.55"/>
+</svg>
