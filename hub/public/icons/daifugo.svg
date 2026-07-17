@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <defs>
+    <radialGradient id="df-bg" cx="40%" cy="35%" r="70%">
+      <stop offset="0%" stop-color="#5f0f26"/>
+      <stop offset="100%" stop-color="#26060f"/>
+    </radialGradient>
+    <linearGradient id="df-card" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#dde4f0"/>
+    </linearGradient>
+    <filter id="df-shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000" flood-opacity="0.55"/>
+    </filter>
+    <clipPath id="df-clip">
+      <circle cx="60" cy="60" r="50"/>
+    </clipPath>
+  </defs>
+
+  <circle cx="60" cy="60" r="50" fill="url(#df-bg)"/>
+  <g clip-path="url(#df-clip)">
+    <!-- 扇形に並ぶカード -->
+    <g transform="rotate(-18 42 74)" filter="url(#df-shadow)">
+      <rect x="26" y="46" width="32" height="46" rx="5" fill="url(#df-card)" stroke="#94a3b8" stroke-width="1"/>
+      <text x="42" y="66" font-size="15" font-weight="900" text-anchor="middle" fill="#1e293b" font-family="Arial, sans-serif">2</text>
+      <text x="42" y="80" font-size="11" text-anchor="middle" fill="#1e293b" font-family="Arial, sans-serif">♠</text>
+    </g>
+    <g transform="rotate(0 60 70)" filter="url(#df-shadow)">
+      <rect x="44" y="42" width="32" height="46" rx="5" fill="url(#df-card)" stroke="#94a3b8" stroke-width="1"/>
+      <text x="60" y="62" font-size="15" font-weight="900" text-anchor="middle" fill="#dc2626" font-family="Arial, sans-serif">A</text>
+      <text x="60" y="76" font-size="11" text-anchor="middle" fill="#dc2626" font-family="Arial, sans-serif">♥</text>
+    </g>
+    <g transform="rotate(18 78 74)" filter="url(#df-shadow)">
+      <rect x="62" y="46" width="32" height="46" rx="5" fill="url(#df-card)" stroke="#94a3b8" stroke-width="1"/>
+      <text x="78" y="66" font-size="13" font-weight="900" text-anchor="middle" fill="#7c3aed" font-family="Arial, sans-serif">JK</text>
+      <text x="78" y="80" font-size="11" text-anchor="middle" fill="#7c3aed" font-family="Arial, sans-serif">🃏</text>
+    </g>
+    <!-- 王冠 -->
+    <g filter="url(#df-shadow)">
+      <path d="M40 36 L47 22 L56 32 L60 18 L64 32 L73 22 L80 36 Z" fill="#ffd43b" stroke="#b45309" stroke-width="1.5"/>
+      <circle cx="47" cy="22" r="3" fill="#ffd43b" stroke="#b45309" stroke-width="1"/>
+      <circle cx="60" cy="17" r="3" fill="#ffd43b" stroke="#b45309" stroke-width="1"/>
+      <circle cx="73" cy="22" r="3" fill="#ffd43b" stroke="#b45309" stroke-width="1"/>
+    </g>
+  </g>
+  <circle cx="60" cy="60" r="49" fill="none" stroke="#fb7185" stroke-width="2" opacity="0.55"/>
+</svg>
