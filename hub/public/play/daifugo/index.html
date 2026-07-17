@@ -37,25 +37,29 @@
   .opt-btn.sel { background: rgba(251,113,133,0.16); border-color: #fb7185; color: #fb7185; box-shadow: 0 0 14px rgba(251,113,133,0.25); }
   .opt-btn:active { transform: scale(0.96); }
 
-  .rule-card {
-    margin-top: 6px; border-radius: 16px; padding: 14px 16px;
-    background: linear-gradient(135deg, rgba(255,212,59,0.10) 0%, rgba(255,212,59,0.04) 100%);
-    border: 1.5px solid rgba(255,212,59,0.35);
+  .rules-list {
+    border-radius: 16px; overflow: hidden;
+    border: 1.5px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.04);
   }
-  .rule-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-  .rule-name { font-size: 14px; font-weight: 800; color: #ffd43b; }
-  .rule-tag { font-size: 9px; font-weight: 700; color: #1a1c30; background: #ffd43b; border-radius: 999px; padding: 2px 8px; letter-spacing: 0.08em; }
-  .rule-desc { font-size: 11.5px; color: rgba(255,255,255,0.62); line-height: 1.75; margin-top: 8px; }
+  .rule-row {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    padding: 11px 14px; border-bottom: 1px solid rgba(255,255,255,0.07);
+  }
+  .rule-row:last-child { border-bottom: none; }
+  .rule-row .rr-name { font-size: 13px; font-weight: 800; }
+  .rule-row .rr-name .orig { font-size: 8px; font-weight: 700; color: #1a1c30; background: #ffd43b; border-radius: 999px; padding: 1px 7px; margin-left: 6px; vertical-align: middle; }
+  .rule-row .rr-desc { font-size: 10.5px; color: rgba(255,255,255,0.5); line-height: 1.6; margin-top: 2px; }
   .toggle {
-    position: relative; width: 52px; height: 28px; border-radius: 999px; border: none; cursor: pointer;
+    position: relative; width: 46px; height: 26px; border-radius: 999px; border: none; cursor: pointer;
     background: rgba(255,255,255,0.15); transition: background 0.2s; flex-shrink: 0;
   }
   .toggle::after {
-    content: ''; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%;
+    content: ''; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%;
     background: #fff; transition: transform 0.2s;
   }
   .toggle.on { background: #ffd43b; }
-  .toggle.on::after { transform: translateX(24px); background: #1a1c30; }
+  .toggle.on::after { transform: translateX(20px); background: #1a1c30; }
 
   .start-btn {
     display: block; width: 100%; margin-top: 26px; padding: 16px; border: none; border-radius: 999px;
@@ -118,15 +122,17 @@
   .banner.rev { color: #fff; background: linear-gradient(135deg, #7c3aed, #a855f7); box-shadow: 0 4px 18px rgba(168,85,247,0.5); }
 
   .field {
-    min-height: 110px; border-radius: 16px; padding: 10px;
+    min-height: 110px; border-radius: 16px; padding: 22px 10px 10px;
     background: linear-gradient(135deg, #14532d 0%, #166534 100%);
     border: 2px solid rgba(255,255,255,0.12); box-shadow: inset 0 0 24px rgba(0,0,0,0.3);
     display: flex; align-items: center; justify-content: center; gap: 6px; position: relative;
+    flex-wrap: wrap;
   }
-  .rev-badge {
-    position: absolute; top: 6px; right: 10px; font-size: 10px; font-weight: 900;
-    background: #a855f7; color: #fff; border-radius: 999px; padding: 2px 10px;
-  }
+  .state-badges { position: absolute; top: 5px; right: 8px; display: flex; gap: 5px; }
+  .sbadge { font-size: 9px; font-weight: 900; color: #fff; border-radius: 999px; padding: 2px 9px; }
+  .sbadge.rev { background: #a855f7; }
+  .sbadge.back { background: #f97316; }
+  .sbadge.bind { background: #0ea5e9; }
   .field .empty-note { font-size: 12px; color: rgba(255,255,255,0.45); font-weight: 700; }
 
   .pcard {
@@ -193,7 +199,7 @@
 <div class="screen" id="menu">
   <p class="menu-title-en">✦ Daifugo ✦</p>
   <h1 class="menu-title">大富豪</h1>
-  <p class="menu-sub">強いカードで場を制し、いちばん早く手札を出し切れ！<br />革命・8切りありの定番ルール。</p>
+  <p class="menu-sub">強いカードで場を制し、いちばん早く手札を出し切れ！<br />ローカルルールは下のリストで自由に選べます。</p>
 
   <p class="section-label">🎮 あそびかた</p>
   <div class="opt-row" id="mode-row">
@@ -225,28 +231,14 @@
       <div class="online-status hidden" id="online-status"></div>
       <p class="online-note">
         部屋を作ると数字4ケタの部屋コードが表示されます。友達が集まったら（最大4人）ホストが開始ボタンで対戦スタート。
-        ローカルルールの設定は部屋を作った側のものが適用されます。
+        ローカルルールの設定は部屋を作った側のものが全員に適用されます。
         ※P2P通信のため、一部のネットワーク環境では接続できないことがあります。
       </p>
     </div>
   </div>
 
-  <p class="section-label">⭐ ローカルルール</p>
-  <div class="rule-card">
-    <div class="rule-head">
-      <div>
-        <span class="rule-name">💰 スチールセブン</span>
-        <span class="rule-tag">当サイトオリジナル</span>
-      </div>
-      <button class="toggle on" id="steal-toggle" aria-label="スチールセブンの有効・無効"></button>
-    </div>
-    <p class="rule-desc">
-      7を含む役を出した人は、好きな相手の手札からランダムに1枚奪える！
-      （残り1枚の相手からは奪えない）手札を増やしてでも相手を妨害するか、
-      戦力を奪って独走するか——ボドゲ広場オリジナルの追加ルールです。
-      革命・8切りは標準ルールとして常時有効。
-    </p>
-  </div>
+  <p class="section-label">⭐ ローカルルール（タップで切り替え）</p>
+  <div class="rules-list" id="rules-list"></div>
 
   <button class="start-btn" id="start-btn">ゲームスタート ▶</button>
 </div>
@@ -290,10 +282,11 @@
 
   // カード: 0..51 = 通常札（強さ順 3<4<…<K<A<2）、52,53 = ジョーカー
   // rank = id % 13（0=3 … 12=2）、suit = floor(id / 13)（0♠ 1♥ 2♦ 3♣）
-  const JOKER1 = 52, JOKER2 = 53;
+  const JOKER1 = 52;
   const SUITS = ['♠', '♥', '♦', '♣'];
   const RANKS = ['3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A', '2'];
-  const R7 = 4, R8 = 5; // 7と8のランク番号
+  const R5 = 2, R7 = 4, R8 = 5, R9 = 6, R10 = 7, RJ = 8, R2 = 12;
+  const SPADE3 = 0; // ♠3のカードid
   const MAX_ONLINE = 4;
   const TITLES = {
     2: ['大富豪', '大貧民'],
@@ -304,8 +297,51 @@
   const $ = id => document.getElementById(id);
   const urlParams = new URLSearchParams(location.search);
 
-  // ── 設定（メニュー） ──
-  const settings = { mode: 'cpu', cpus: 3, steal: true };
+  // ── 選べるローカルルール ──
+  const RULE_DEFS = [
+    { key: 'rev', name: '革命', desc: '同じ数字4枚（階段なら4枚以上）で強さが逆転する', def: true },
+    { key: 'cut8', name: '8切り', desc: '8を出すと場が流れて、続けて自分から出せる', def: true },
+    { key: 'spade3', name: 'スペ3返し', desc: '♠3の単騎でジョーカー単騎に勝てる（場が流れる）', def: true },
+    { key: 'back11', name: '11バック', desc: 'J（11）を出すと、場が流れるまで強さが逆転する', def: false },
+    { key: 'rev9', name: '9リバース', desc: '9を出すと手番の回り順が逆になる', def: false },
+    { key: 'skip5', name: '5飛び', desc: '5を出した枚数だけ、次のプレイヤーを飛ばす', def: false },
+    { key: 'give7', name: '7渡し', desc: '7を出した枚数だけ、手札から選んだカードを次の人に渡す', def: false, excl: 'steal' },
+    { key: 'drop10', name: '10捨て', desc: '10を出した枚数だけ、手札から選んだカードを捨てられる', def: false },
+    { key: 'stairs', name: '階段', desc: '同じマークで連続する3枚以上を役として出せる（数字の特殊効果は乗らない・ジョーカー不可）', def: false },
+    { key: 'bind', name: 'しばり', desc: '直前と同じマーク構成が続いたら、場が流れるまでそのマークしか出せなくなる', def: false },
+    { key: 'strict', name: '反則あがり禁止', desc: '2・ジョーカー・8で上がると反則負けで最下位になる', def: false },
+    { key: 'steal', name: 'スチールセブン', desc: '7を出すと好きな相手の手札から1枚奪える（残り1枚の相手からは不可）', def: true, orig: true, excl: 'give7' },
+  ];
+
+  const settings = { mode: 'cpu', cpus: 3, rules: {} };
+  RULE_DEFS.forEach(r => { settings.rules[r.key] = r.def; });
+  const rules = settings.rules;
+
+  function buildRulesList() {
+    const list = $('rules-list');
+    list.innerHTML = '';
+    for (const def of RULE_DEFS) {
+      const row = document.createElement('div');
+      row.className = 'rule-row';
+      row.innerHTML =
+        '<div><p class="rr-name">' + def.name + (def.orig ? '<span class="orig">当サイトオリジナル</span>' : '') + '</p>' +
+        '<p class="rr-desc">' + def.desc + '</p></div>' +
+        '<button class="toggle' + (rules[def.key] ? ' on' : '') + '" id="rule-' + def.key + '" aria-label="' + def.name + 'の有効・無効"></button>';
+      list.appendChild(row);
+      row.querySelector('.toggle').addEventListener('click', () => {
+        rules[def.key] = !rules[def.key];
+        if (rules[def.key] && def.excl && rules[def.excl]) rules[def.excl] = false; // 7渡しとスチールセブンは排他
+        syncRuleToggles();
+      });
+    }
+  }
+  function syncRuleToggles() {
+    for (const def of RULE_DEFS) {
+      const el = $('rule-' + def.key);
+      if (el) el.classList.toggle('on', !!rules[def.key]);
+    }
+  }
+  buildRulesList();
 
   document.querySelectorAll('#mode-row .opt-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -324,10 +360,6 @@
       settings.cpus = parseInt(btn.dataset.cpus, 10);
     });
   });
-  $('steal-toggle').addEventListener('click', () => {
-    settings.steal = !settings.steal;
-    $('steal-toggle').classList.toggle('on', settings.steal);
-  });
 
   function mulberry32(seed) {
     let a = seed >>> 0;
@@ -344,15 +376,19 @@
   let rng = null;
   let playerCount = 4;
   let names = [];
-  let hands = [];            // 各プレイヤーの手札（idの配列・昇順）
-  let field = null;          // { cards, rank, count, jokerOnly, by }
+  let hands = [];
+  let field = null;          // { cards, type:'set'|'stairs', rank, count, jokerOnly, by }
   let current = 0;
-  let lastPlayer = -1;       // 最後に場へ出した人
-  let revolution = false;
+  let lastPlayer = -1;
+  let revolution = false;    // 革命（ゲーム終了まで）
+  let direction = 1;         // 手番の回り順（9リバースで反転）
+  let elevenBack = false;    // 11バック（場が流れるまで）
+  let bindSuits = null;      // しばり中のマーク集合（場が流れるまで）
   let finishedOrder = [];
+  let foulOrder = [];        // 反則あがりした人（最下位グループ）
   let disconnected = [];
-  let stealPending = false;  // スチールセブンの奪う相手待ち
-  let selected = new Set();  // 自分の選択中カード
+  let pending = null;        // { kind:'steal'|'give'|'drop', n, ctx }
+  let selected = new Set();
   let gameOver = false;
   let busy = false;
 
@@ -365,44 +401,71 @@
 
   const isOnline = () => settings.mode === 'online';
   const isCpu = p => settings.mode === 'cpu' && p !== 0;
-  // テスト用: ?autoplay=1 で自分の手番もCPUロジックが自動で打つ
-  const AUTOPLAY = urlParams.get('autoplay') === '1';
-  const isBot = p => isCpu(p) || (AUTOPLAY && isMe(p));
   const isMe = p => (isOnline() ? p === myIndex : p === 0 && settings.mode === 'cpu');
+  const AUTOPLAY = urlParams.get('autoplay') === '1';
+  const D = ms => AUTOPLAY ? Math.max(15, Math.floor(ms / 12)) : ms;
+  const isBot = p => isCpu(p) || (AUTOPLAY && isMe(p));
   const active = p => hands[p] && hands[p].length > 0 && !disconnected[p];
-  // スチールセブンで奪える相手（残り1枚の人からは奪えない）
   const canStealFrom = p => active(p) && hands[p].length >= 2;
+  const isJoker = id => id >= JOKER1;
 
-  const rankOf = id => (id >= JOKER1 ? 13 : id % 13);
-  const eff = r => (revolution && r < 13 ? 12 - r : r); // 革命中はランク反転（ジョーカーは常に最強）
+  const flipped = () => (revolution !== elevenBack); // どちらか片方だけなら逆転中
+  const eff = r => (flipped() && r < 13 ? 12 - r : r);
 
   function cardFace(id) {
-    if (id >= JOKER1) return { txt: 'JOKER', suit: '🃏', cls: 'joker' };
+    if (isJoker(id)) return { txt: 'JOKER', suit: '🃏', cls: 'joker' };
     const r = RANKS[id % 13];
     const s = SUITS[Math.floor(id / 13)];
     return { txt: r, suit: s, cls: (s === '♥' || s === '♦') ? 'red' : 'black' };
   }
 
-  // 選択カードが役として成立するか（同ランク1〜4枚＋ジョーカーはワイルド）
+  // 役の判定: 同ランクの組（ジョーカーはワイルド）または階段（同マーク連続3枚以上）
   function parsePlay(cards) {
-    if (!cards.length || cards.length > 4) return null;
-    const normal = cards.filter(c => c < JOKER1);
-    if (normal.length === 0) {
-      return cards.length === 1 ? { rank: 13, count: 1, jokerOnly: true } : null; // ジョーカー単騎のみ
+    if (!cards.length) return null;
+    const normal = cards.filter(c => !isJoker(c));
+    // 同ランクの組
+    if (cards.length <= 4) {
+      if (normal.length === 0) {
+        if (cards.length === 1) return { type: 'set', rank: 13, count: 1, jokerOnly: true };
+      } else {
+        const r = normal[0] % 13;
+        if (normal.every(c => c % 13 === r)) return { type: 'set', rank: r, count: cards.length, jokerOnly: false };
+      }
     }
-    const r = normal[0] % 13;
-    if (!normal.every(c => c % 13 === r)) return null;
-    return { rank: r, count: cards.length, jokerOnly: false };
+    // 階段
+    if (rules.stairs && cards.length >= 3 && normal.length === cards.length) {
+      const suit = Math.floor(cards[0] / 13);
+      if (cards.every(c => Math.floor(c / 13) === suit)) {
+        const rs = cards.map(c => c % 13).sort((a, b) => a - b);
+        let seq = true;
+        for (let i = 1; i < rs.length; i++) if (rs[i] !== rs[i - 1] + 1) seq = false;
+        if (seq) return { type: 'stairs', rank: rs[0], count: cards.length, jokerOnly: false, suit };
+      }
+    }
+    return null;
   }
+
+  const effMin = cards => Math.min(...cards.filter(c => !isJoker(c)).map(c => eff(c % 13)));
 
   function canPlay(cards) {
     const p = parsePlay(cards);
     if (!p) return false;
+    // しばり: 場が開いている間は指定マーク以外出せない（ジョーカーは自由）
+    if (field && bindSuits) {
+      const ok = cards.every(c => isJoker(c) || bindSuits.includes(Math.floor(c / 13)));
+      if (!ok) return false;
+    }
     if (!field) return true;
-    if (p.count !== field.count) return false;
-    if (field.jokerOnly) return false;           // ジョーカー単騎の上には出せない
-    if (p.jokerOnly) return true;                // ジョーカー単騎は何にでも勝つ
-    return eff(p.rank) > eff(field.rank);
+    // スペ3返し
+    if (field.jokerOnly) {
+      return rules.spade3 && cards.length === 1 && cards[0] === SPADE3;
+    }
+    if (p.type !== field.type || p.count !== field.count) return false;
+    if (p.type === 'set') {
+      if (p.jokerOnly) return true;
+      return eff(p.rank) > eff(field.rank);
+    }
+    return effMin(cards) > effMin(field.cards);
   }
 
   // ── 開始 ──
@@ -411,9 +474,9 @@
       : parseInt(urlParams.get('seed') || '', 10) || Math.floor(Math.random() * 2 ** 31);
     rng = mulberry32(seed);
 
-    if (opts && opts.steal !== undefined) {
-      settings.steal = !!opts.steal;
-      $('steal-toggle').classList.toggle('on', settings.steal);
+    if (opts && opts.rules) {
+      for (const def of RULE_DEFS) rules[def.key] = !!opts.rules[def.key];
+      syncRuleToggles();
     }
 
     if (isOnline()) {
@@ -428,7 +491,6 @@
       for (let i = 1; i < playerCount; i++) names.push('CPU' + i);
     }
 
-    // 配る（共有シードで全員同じ配り）
     const deck = [];
     for (let i = 0; i < 54; i++) deck.push(i);
     for (let i = deck.length - 1; i > 0; i--) {
@@ -439,15 +501,18 @@
     deck.forEach((c, k) => hands[k % playerCount].push(c));
     hands.forEach(h => h.sort((a, b) => a - b));
 
-    // ♦3を持っている人が先頭（いなければプレイヤー1）
-    const D3 = 26;
+    const D3 = 26; // ♦3を持っている人が先頭
     current = Math.max(0, hands.findIndex(h => h.includes(D3)));
     field = null;
     lastPlayer = -1;
     revolution = false;
+    direction = 1;
+    elevenBack = false;
+    bindSuits = null;
     finishedOrder = [];
+    foulOrder = [];
     disconnected = new Array(playerCount).fill(false);
-    stealPending = false;
+    pending = null;
     selected = new Set();
     gameOver = false;
     busy = false;
@@ -482,17 +547,23 @@
       chip.innerHTML =
         '<p class="p-name">' + names[p] + '</p>' +
         '<p class="p-cards">' + (disconnected[p] ? '📡 切断'
+          : foulOrder.includes(p) ? '💥 反則'
           : fin >= 0 ? '👑 ' + (fin + 1) + '位'
           : '🂠 ' + hands[p].length + '枚') + '</p>';
       chip.classList.toggle('active', p === current && !gameOver);
       chip.classList.toggle('stealable',
-        stealPending && current !== p && isMe(current) && canStealFrom(p) && !gameOver);
+        !!(pending && pending.kind === 'steal' && current !== p && isMe(current) && canStealFrom(p) && !gameOver));
     }
   }
 
   function renderField() {
     const f = $('field');
-    f.innerHTML = revolution ? '<span class="rev-badge">⚡革命中</span>' : '';
+    let badges = '<span class="state-badges">';
+    if (revolution) badges += '<span class="sbadge rev">⚡革命中</span>';
+    if (elevenBack) badges += '<span class="sbadge back">🔄Jバック中</span>';
+    if (bindSuits) badges += '<span class="sbadge bind">🔒' + bindSuits.map(s => SUITS[s]).join('') + 'しばり</span>';
+    badges += '</span>';
+    f.innerHTML = badges;
     if (!field) {
       f.innerHTML += '<span class="empty-note">場は空。好きな役を出そう</span>';
       return;
@@ -509,7 +580,7 @@
   function renderHand() {
     const handEl = $('hand');
     handEl.innerHTML = '';
-    const mine = isOnline() || settings.mode === 'cpu' ? hands[myIndex] : hands[0];
+    const mine = hands[myIndex] || [];
     for (const c of mine) {
       const face = cardFace(c);
       const el = document.createElement('div');
@@ -525,9 +596,19 @@
   }
 
   function renderButtons() {
-    const myTurn = !gameOver && !busy && !stealPending && isMe(current) && active(current);
-    $('play-btn').disabled = !(myTurn && canPlay([...selected]));
-    $('pass-btn').disabled = !(myTurn && field); // 場が空のときはパス不可
+    const playBtn = $('play-btn');
+    const passBtn = $('pass-btn');
+    if (pending && isMe(current) && pending.kind !== 'steal') {
+      // 7渡し / 10捨て: 指定枚数を選んで確定
+      playBtn.textContent = (pending.kind === 'give' ? '渡す' : '捨てる') + '（' + selected.size + '/' + pending.n + '）';
+      playBtn.disabled = selected.size !== pending.n || ![...selected].every(c => hands[myIndex].includes(c));
+      passBtn.disabled = true;
+      return;
+    }
+    playBtn.textContent = '出す';
+    const myTurn = !gameOver && !busy && !pending && isMe(current) && active(current);
+    playBtn.disabled = !(myTurn && canPlay([...selected]));
+    passBtn.disabled = !(myTurn && field);
   }
 
   function renderAll() { renderHud(); renderField(); renderHand(); renderButtons(); }
@@ -548,7 +629,7 @@
   function nextActive(from) {
     let i = from;
     for (let g = 0; g < playerCount * 2; g++) {
-      i = (i + 1) % playerCount;
+      i = (i + direction + playerCount) % playerCount;
       if (active(i)) return i;
     }
     return from;
@@ -559,80 +640,151 @@
     return active(lastPlayer) ? lastPlayer : nextActive(lastPlayer);
   }
 
+  function clearField() {
+    field = null;
+    lastPlayer = -1;
+    elevenBack = false;
+    bindSuits = null;
+  }
+
+  const suitsOf = cards => [...new Set(cards.filter(c => !isJoker(c)).map(c => Math.floor(c / 13)))].sort();
+
   function doPlay(p, cards) {
-    if (gameOver || p !== current) return;
+    if (gameOver || p !== current || pending) return;
     const pr = parsePlay(cards);
     if (!pr || !canPlay(cards)) return;
     busy = true;
 
+    const prevField = field;
+    const spade3Used = !!(prevField && prevField.jokerOnly && cards.length === 1 && cards[0] === SPADE3);
+
+    // しばり判定（役を置き換える前に直前の役と比較）
+    if (rules.bind && prevField && !bindSuits && pr.type === 'set' && prevField.type === 'set'
+      && !pr.jokerOnly && !prevField.jokerOnly
+      && cards.every(c => !isJoker(c)) && prevField.cards.every(c => !isJoker(c))) {
+      const a = suitsOf(cards), b = suitsOf(prevField.cards);
+      if (a.length === b.length && a.every((s, i) => s === b[i])) bindSuits = a;
+    }
     hands[p] = hands[p].filter(c => !cards.includes(c));
-    field = { cards: cards.slice().sort((a, b) => a - b), rank: pr.rank, count: pr.count, jokerOnly: pr.jokerOnly, by: p };
+    field = { cards: cards.slice().sort((a, b) => a - b), type: pr.type, rank: pr.rank, count: pr.count, jokerOnly: pr.jokerOnly, by: p };
     lastPlayer = p;
     if (isMe(p)) selected = new Set();
 
     let notice = names[p] + 'が' + cards.length + '枚出した！';
     let tone = '';
+    if (pr.type === 'stairs') notice = names[p] + 'が階段' + cards.length + '枚！';
 
-    // ⚡ 革命（4枚出し）
-    if (pr.count === 4) {
+    // ⚡ 革命
+    if (rules.rev && ((pr.type === 'set' && pr.count === 4) || (pr.type === 'stairs' && pr.count >= 4))) {
       revolution = !revolution;
       notice = '⚡ 革命！ 強さが逆転した！';
       tone = 'rev';
     }
+    // 🔄 11バック
+    let elevenBackJustSet = false;
+    if (rules.back11 && pr.type === 'set' && !pr.jokerOnly && pr.rank === RJ) {
+      elevenBack = true;
+      elevenBackJustSet = true;
+      notice += '　🔄 11バック！場が流れるまで強さ逆転！';
+      tone = tone || 'rev';
+    }
+    if (rules.rev9 && pr.type === 'set' && !pr.jokerOnly && pr.rank === R9) {
+      direction = -direction;
+      notice += '　🔃 9リバース！回り順が逆になった！';
+    }
+    if (bindSuits && rules.bind && !tone) notice += '　🔒 しばり発生！';
 
-    const wentOut = hands[p].length === 0;
-    if (wentOut) {
-      finishedOrder.push(p);
-      notice += '　👑 ' + names[p] + 'があがり！';
+    const out = hands[p].length === 0;
+    if (out) {
+      // 💥 反則あがり: 2・ジョーカー・8での上がり
+      const foul = rules.strict && pr.type === 'set' &&
+        (pr.jokerOnly || cards.some(isJoker) || pr.rank === R2 || pr.rank === R8);
+      if (foul) {
+        foulOrder.push(p);
+        notice += '　💥 ' + names[p] + 'は反則あがり！最下位！';
+      } else {
+        finishedOrder.push(p);
+        notice += '　👑 ' + names[p] + 'があがり！';
+      }
     }
 
     setBanner(notice, tone);
     renderAll();
 
     setTimeout(() => {
-      // 勝負あり？（残り1人）
       const remain = [];
       for (let i = 0; i < playerCount; i++) if (active(i)) remain.push(i);
       if (remain.length <= 1) { endGame(remain[0]); return; }
 
-      // 💰 スチールセブン（あがった人は発動しない・奪える相手がいなければ不発）
-      const stealTargets = [];
-      for (let i = 0; i < playerCount; i++) if (i !== p && canStealFrom(i)) stealTargets.push(i);
-      if (settings.steal && pr.rank === R7 && !pr.jokerOnly && !wentOut && stealTargets.length) {
-        stealPending = true;
-        setBanner(isMe(p)
-          ? '💰 スチールセブン！奪う相手をタップしよう'
-          : '💰 スチールセブン！' + names[p] + 'が奪う相手を選んでいます…', 'steal');
-        busy = false;
-        renderAll();
-        if (isBot(p)) setTimeout(() => cpuSteal(p), 950);
-        return;
+      const ctx = { pr, out, p, spade3Used };
+
+      // インタラクティブなルール（同ランクの組のみ・あがった人は発動しない）
+      if (pr.type === 'set' && !pr.jokerOnly && !out) {
+        if (pr.rank === R7 && rules.steal) {
+          const targets = [];
+          for (let i = 0; i < playerCount; i++) if (i !== p && canStealFrom(i)) targets.push(i);
+          if (targets.length) {
+            pending = { kind: 'steal', n: 1, ctx };
+            setBanner(isMe(p) ? '💰 スチールセブン！奪う相手をタップしよう'
+              : '💰 スチールセブン！' + names[p] + 'が奪う相手を選んでいます…', 'steal');
+            busy = false;
+            renderAll();
+            if (isBot(p)) setTimeout(() => botSteal(p), AUTOPLAY ? 250 : 950);
+            return;
+          }
+        }
+        if (pr.rank === R7 && rules.give7 && hands[p].length > 0) {
+          pending = { kind: 'give', n: Math.min(pr.count, hands[p].length), ctx };
+          setBanner(isMe(p) ? '🎁 7渡し！次の人に渡すカードを' + pending.n + '枚選ぼう'
+            : '🎁 7渡し！' + names[p] + 'が渡すカードを選んでいます…', 'steal');
+          busy = false;
+          renderAll();
+          if (isBot(p)) setTimeout(() => botGiveDrop(p), AUTOPLAY ? 250 : 950);
+          return;
+        }
+        if (pr.rank === R10 && rules.drop10 && hands[p].length > 0) {
+          pending = { kind: 'drop', n: Math.min(pr.count, hands[p].length), ctx };
+          setBanner(isMe(p) ? '🗑 10捨て！捨てるカードを' + pending.n + '枚選ぼう'
+            : '🗑 10捨て！' + names[p] + 'が捨てるカードを選んでいます…', 'steal');
+          busy = false;
+          renderAll();
+          if (isBot(p)) setTimeout(() => botGiveDrop(p), AUTOPLAY ? 250 : 950);
+          return;
+        }
       }
 
-      afterPlayAdvance(pr, wentOut, p);
-    }, 900);
+      afterEffects(ctx);
+    }, D(900));
   }
 
-  function afterPlayAdvance(pr, wentOut, p) {
-    // ✂ 8切り: 場を流して本人（あがっていたら次の人）がリード
-    if (pr.rank === R8 && !pr.jokerOnly) {
-      field = null;
-      lastPlayer = -1;
-      current = wentOut ? nextActive(p) : p;
-      setBanner('✂ 8切り！場が流れた。' + turnPrompt(), 'good');
+  function afterEffects(ctx) {
+    const { pr, out, p, spade3Used } = ctx;
+    // ✂ 8切り / スペ3返し: 場が流れて本人がリード
+    const cut = spade3Used || (rules.cut8 && pr.type === 'set' && !pr.jokerOnly && pr.rank === R8);
+    if (cut) {
+      clearField();
+      current = out ? nextActive(p) : p;
+      setBanner((spade3Used ? '♠3返し！' : '✂ 8切り！') + '場が流れた。' + turnPrompt(), 'good');
       busy = false;
       renderAll();
       maybeCpu();
       return;
     }
-    current = nextActive(p);
-    startTurn();
+    // ⏭ 5飛び
+    let skips = 0;
+    if (rules.skip5 && pr.type === 'set' && !pr.jokerOnly && pr.rank === R5) skips = pr.count;
+    let nxt = nextActive(p);
+    const skipped = [];
+    for (let i = 0; i < skips; i++) { skipped.push(names[nxt]); nxt = nextActive(nxt); }
+    current = nxt;
+    startTurn(skipped.length ? '⏭ 5飛び！' + skipped.join('と') + 'を飛ばした。' : '');
   }
 
   function resolveSteal(p, target) {
-    if (!stealPending || gameOver || p !== current) return;
+    if (!pending || pending.kind !== 'steal' || gameOver || p !== current) return;
     if (!canStealFrom(target) || target === p) return;
-    stealPending = false;
+    const ctx = pending.ctx;
+    pending = null;
     busy = true;
     const idx = Math.floor(rng() * hands[target].length);
     const card = hands[target].splice(idx, 1)[0];
@@ -640,24 +792,49 @@
     hands[p].sort((a, b) => a - b);
     setBanner('💰 ' + names[p] + 'が' + names[target] + 'から1枚奪った！', 'steal');
     renderAll();
+    setTimeout(() => afterEffects(ctx), D(1000));
+  }
+
+  function resolveGiveDrop(p, cards) {
+    if (!pending || (pending.kind !== 'give' && pending.kind !== 'drop') || gameOver || p !== current) return;
+    if (cards.length !== pending.n || !cards.every(c => hands[p].includes(c))) return;
+    const kind = pending.kind;
+    const ctx = pending.ctx;
+    pending = null;
+    busy = true;
+    hands[p] = hands[p].filter(c => !cards.includes(c));
+    if (kind === 'give') {
+      const to = nextActive(p);
+      hands[to].push(...cards);
+      hands[to].sort((a, b) => a - b);
+      setBanner('🎁 ' + names[p] + 'が' + names[to] + 'にカードを' + cards.length + '枚渡した！', 'steal');
+    } else {
+      setBanner('🗑 ' + names[p] + 'がカードを' + cards.length + '枚捨てた！', 'steal');
+    }
+    if (isMe(p)) selected = new Set();
+    // 渡し/捨てで手札が空になったら上がり
+    if (hands[p].length === 0 && !finishedOrder.includes(p) && !foulOrder.includes(p)) {
+      finishedOrder.push(p);
+      ctx.out = true;
+    }
+    renderAll();
     setTimeout(() => {
-      // 奪われた人があがり判定になることはない（枚数が減るだけ）
-      const pr = { rank: field ? field.rank : -1, jokerOnly: false };
-      afterPlayAdvance(pr, false, p);
-    }, 1000);
+      const remain = [];
+      for (let i = 0; i < playerCount; i++) if (active(i)) remain.push(i);
+      if (remain.length <= 1) { endGame(remain[0]); return; }
+      afterEffects(ctx);
+    }, D(1000));
   }
 
   function doPass(p) {
-    if (gameOver || p !== current || !field) return;
+    if (gameOver || p !== current || !field || pending) return;
     busy = true;
     setBanner(names[p] + 'はパス', '');
     renderAll();
     setTimeout(() => {
       const nxt = nextActive(p);
       if (nxt === effectiveLeader()) {
-        // 全員パスで場が流れる
-        field = null;
-        lastPlayer = -1;
+        clearField();
         current = nxt;
         setBanner('場が流れた。' + turnPrompt(), 'good');
         busy = false;
@@ -667,18 +844,16 @@
       }
       current = nxt;
       startTurn();
-    }, 700);
+    }, D(700));
   }
 
-  function startTurn() {
+  function startTurn(note) {
     if (gameOver) return;
-    // 場を出した本人に戻ってきた（間の全員がパス/あがり）→ 場を流す
     if (field && current === effectiveLeader()) {
-      field = null;
-      lastPlayer = -1;
-      setBanner('場が流れた。' + turnPrompt(), 'good');
+      clearField();
+      setBanner((note || '') + '場が流れた。' + turnPrompt(), 'good');
     } else {
-      setBanner(turnPrompt(), '');
+      setBanner((note || '') + turnPrompt(), '');
     }
     busy = false;
     renderAll();
@@ -686,53 +861,59 @@
   }
 
   function maybeCpu() {
-    if (gameOver || !isBot(current) || stealPending) return;
+    if (gameOver || !isBot(current) || pending) return;
     setTimeout(cpuMove, AUTOPLAY ? 250 : 1000);
   }
 
   // ── CPU ──
-  function cpuMove() {
-    if (gameOver || !isBot(current) || busy || stealPending) return;
+  function cpuCandidates() {
     const hand = hands[current];
-    // ランクごとにまとめる（ジョーカーは温存し、単騎の切り札にだけ使う）
     const groups = {};
     for (const c of hand) {
-      if (c >= JOKER1) continue;
+      if (isJoker(c)) continue;
       (groups[c % 13] ||= []).push(c);
     }
-    const jokers = hand.filter(c => c >= JOKER1);
-    let play = null;
-
+    const jokers = hand.filter(isJoker);
+    const cands = [];
     if (!field) {
-      // リード: いちばん弱いランクをまとめて出す
-      let bestR = -1;
-      for (const r in groups) if (bestR < 0 || eff(+r) < eff(bestR)) bestR = +r;
-      if (bestR >= 0) play = groups[bestR].slice(0, 4);
-      else if (jokers.length) play = [jokers[0]];
+      for (const r in groups) cands.push(groups[r].slice(0, 4));
+      if (!cands.length && jokers.length) cands.push([jokers[0]]);
+    } else if (field.jokerOnly) {
+      if (rules.spade3 && hand.includes(SPADE3)) cands.push([SPADE3]);
     } else {
-      // フォロー: 出せるいちばん弱い役
-      let bestR = -1;
       for (const r in groups) {
-        if (groups[r].length >= field.count && !field.jokerOnly && eff(+r) > eff(field.rank)) {
-          if (bestR < 0 || eff(+r) < eff(bestR)) bestR = +r;
-        }
+        if (groups[r].length >= field.count) cands.push(groups[r].slice(0, field.count));
       }
-      if (bestR >= 0) play = groups[bestR].slice(0, field.count);
-      else if (jokers.length && field.count === 1 && !field.jokerOnly && hand.length <= 3) play = [jokers[0]];
+      if (jokers.length && field.count === 1 && hand.length <= 3) cands.push([jokers[0]]);
     }
+    return cands.filter(canPlay);
+  }
 
-    if (play) {
+  function cpuMove() {
+    if (gameOver || !isBot(current) || busy || pending) return;
+    const cands = cpuCandidates();
+    if (cands.length) {
+      cands.sort((a, b) => effMinOrJoker(a) - effMinOrJoker(b));
+      const play = cands[0];
       if (isOnline() && isMe(current)) sendMsg({ t: 'play', cards: play });
       doPlay(current, play);
     } else {
+      if (!field) { // 出せる役がないのに場が空（理論上ほぼ無い）: 1枚出す
+        const c = hands[current][0];
+        if (c !== undefined && canPlay([c])) {
+          if (isOnline() && isMe(current)) sendMsg({ t: 'play', cards: [c] });
+          doPlay(current, [c]);
+          return;
+        }
+      }
       if (isOnline() && isMe(current)) sendMsg({ t: 'pass' });
       doPass(current);
     }
   }
+  const effMinOrJoker = cards => (cards.every(isJoker) ? 99 : effMin(cards));
 
-  function cpuSteal(p) {
-    if (!stealPending || current !== p) return;
-    // いちばん残り枚数が少ない相手から奪う
+  function botSteal(p) {
+    if (!pending || pending.kind !== 'steal' || current !== p) return;
     let best = -1;
     for (let i = 0; i < playerCount; i++) {
       if (i === p || !canStealFrom(i)) continue;
@@ -744,21 +925,38 @@
     }
   }
 
+  function botGiveDrop(p) {
+    if (!pending || (pending.kind !== 'give' && pending.kind !== 'drop') || current !== p) return;
+    // いちばん弱いカードから渡す/捨てる
+    const sorted = hands[p].slice().sort((a, b) =>
+      (isJoker(a) ? 99 : eff(a % 13)) - (isJoker(b) ? 99 : eff(b % 13)));
+    const cards = sorted.slice(0, pending.n);
+    if (isOnline() && isMe(p)) sendMsg({ t: pending.kind, cards });
+    resolveGiveDrop(p, cards);
+  }
+
   // ── 入力 ──
   $('play-btn').addEventListener('click', () => {
-    if (gameOver || busy || stealPending || !isMe(current)) return;
+    if (gameOver || busy || !isMe(current)) return;
     const cards = [...selected];
+    if (pending && (pending.kind === 'give' || pending.kind === 'drop')) {
+      if (cards.length !== pending.n) return;
+      if (isOnline()) sendMsg({ t: pending.kind, cards });
+      resolveGiveDrop(current, cards);
+      return;
+    }
+    if (pending) return;
     if (!canPlay(cards)) return;
     if (isOnline()) sendMsg({ t: 'play', cards });
     doPlay(current, cards);
   });
   $('pass-btn').addEventListener('click', () => {
-    if (gameOver || busy || stealPending || !isMe(current) || !field) return;
+    if (gameOver || busy || pending || !isMe(current) || !field) return;
     if (isOnline()) sendMsg({ t: 'pass' });
     doPass(current);
   });
   function onChipTap(p) {
-    if (!stealPending || gameOver || !isMe(current)) return;
+    if (!pending || pending.kind !== 'steal' || gameOver || !isMe(current)) return;
     if (p === current || !canStealFrom(p)) return;
     if (isOnline()) sendMsg({ t: 'steal', target: p });
     resolveSteal(current, p);
@@ -767,24 +965,29 @@
   // ── 結果 ──
   function endGame(lastOne) {
     gameOver = true;
-    stealPending = false;
-    if (lastOne !== undefined && lastOne >= 0 && !finishedOrder.includes(lastOne)) finishedOrder.push(lastOne);
+    pending = null;
+    if (lastOne !== undefined && lastOne >= 0 && !finishedOrder.includes(lastOne) && !foulOrder.includes(lastOne)) {
+      finishedOrder.push(lastOne);
+    }
     renderAll();
-    setTimeout(showResult, 800);
+    setTimeout(showResult, D(800));
   }
 
   function showResult() {
-    const order = finishedOrder.filter(p => !disconnected[p]);
+    const order = finishedOrder.filter(p => !disconnected[p])
+      .concat(foulOrder.filter(p => !disconnected[p]));
     const titles = TITLES[Math.min(4, Math.max(2, order.length))] || TITLES[4];
     const lines = order.map((p, k) =>
       (k === 0 ? '🥇' : k === 1 ? '🥈' : k === 2 ? '🥉' : '　') +
-      ' ' + (titles[k] || (k + 1) + '位') + '　' + names[p]);
+      ' ' + (titles[k] || (k + 1) + '位') + '　' + names[p] +
+      (foulOrder.includes(p) ? '（反則あがり）' : ''));
     const winner = order[0];
     const meWon = isMe(winner);
+    const onRules = RULE_DEFS.filter(d => rules[d.key]).map(d => d.name).join('・');
     $('result-emoji').textContent = meWon ? '👑' : '😢';
     $('result-title').textContent = meWon ? 'あなたが大富豪！' : names[winner] + 'が大富豪！';
     $('result-detail').textContent = lines.join('\n') +
-      (settings.steal ? '\n（スチールセブンあり）' : '') +
+      '\n採用ルール: ' + (onRules || 'なし') +
       (isOnline() && net && !net.isHost ? '\n※部屋を作った人が「もう一度」を押すと再戦できます' : '');
     $('retry-btn').classList.toggle('hidden', isOnline() && !(net && net.isHost));
     $('overlay').classList.remove('hidden');
@@ -848,12 +1051,13 @@
 
   function handleGameData(d, fromPlayer) {
     if (!d || typeof d !== 'object') return;
-    if (d.t === 'init') { startGame({ seed: d.seed, count: d.count, you: d.you, steal: d.steal }); return; }
+    if (d.t === 'init') { startGame({ seed: d.seed, count: d.count, you: d.you, rules: d.rules }); return; }
     const p = d.p !== undefined ? d.p : fromPlayer;
     if (p === myIndex) return; // 自分の手のエコーは捨てる
     if (d.t === 'play' && Array.isArray(d.cards)) remoteQueue.push({ t: 'play', p, cards: d.cards });
     if (d.t === 'pass') remoteQueue.push({ t: 'pass', p });
     if (d.t === 'steal' && typeof d.target === 'number') remoteQueue.push({ t: 'steal', p, target: d.target });
+    if ((d.t === 'give' || d.t === 'drop') && Array.isArray(d.cards)) remoteQueue.push({ t: d.t, p, cards: d.cards });
     if (d.t === 'left' && typeof d.p === 'number') remoteQueue.push({ t: 'left', p: d.p });
   }
 
@@ -865,7 +1069,7 @@
     renderAll();
     if (gameOver) return;
     if (remain.length <= 1) { endGame(remain[0]); return; }
-    if (stealPending && current === p) { stealPending = false; afterPlayAdvance({ rank: -1, jokerOnly: false }, false, p); return; }
+    if (pending && current === p) { const ctx = pending.ctx; pending = null; afterEffects(ctx); return; }
     if (current === p && !busy) { current = nextActive(p); startTurn(); }
   }
 
@@ -923,9 +1127,9 @@
     playerOfGuest = {};
     gis.forEach((gi, k) => {
       playerOfGuest[gi] = k + 1;
-      net.sendToGuest(gi, { t: 'init', seed, steal: settings.steal, count: gis.length + 1, you: k + 1 });
+      net.sendToGuest(gi, { t: 'init', seed, rules: { ...rules }, count: gis.length + 1, you: k + 1 });
     });
-    startGame({ seed, count: gis.length + 1, you: 0, steal: settings.steal });
+    startGame({ seed, count: gis.length + 1, you: 0 });
   }
 
   function joinRoom(code) {
@@ -958,8 +1162,8 @@
       onConnect() {
         if (net && net.isHost) {
           const seed = Math.floor(Math.random() * 2 ** 31);
-          net.send({ t: 'init', seed, steal: settings.steal, count: 2, you: 1 });
-          startGame({ seed, count: 2, you: 0, steal: settings.steal });
+          net.send({ t: 'init', seed, rules: { ...rules }, count: 2, you: 1 });
+          startGame({ seed, count: 2, you: 0 });
         } else {
           showStatus('接続しました！まもなく対戦が始まります…');
         }
@@ -982,9 +1186,10 @@
     const m = remoteQueue[0];
     if (m.t === 'left') { remoteQueue.shift(); markLeft(m.p); return; }
     if (busy) return;
-    if (m.t === 'play' && current === m.p && !stealPending) { remoteQueue.shift(); doPlay(m.p, m.cards); return; }
-    if (m.t === 'pass' && current === m.p && !stealPending) { remoteQueue.shift(); doPass(m.p); return; }
-    if (m.t === 'steal' && current === m.p && stealPending) { remoteQueue.shift(); resolveSteal(m.p, m.target); return; }
+    if (m.t === 'play' && current === m.p && !pending) { remoteQueue.shift(); doPlay(m.p, m.cards); return; }
+    if (m.t === 'pass' && current === m.p && !pending) { remoteQueue.shift(); doPass(m.p); return; }
+    if (m.t === 'steal' && current === m.p && pending && pending.kind === 'steal') { remoteQueue.shift(); resolveSteal(m.p, m.target); return; }
+    if ((m.t === 'give' || m.t === 'drop') && current === m.p && pending && pending.kind === m.t) { remoteQueue.shift(); resolveGiveDrop(m.p, m.cards); return; }
   }, 120);
 
   $('host-btn').addEventListener('click', hostRoom);
@@ -998,6 +1203,14 @@
     joinRoom(roomParam);
   }
 
+  // テスト用: ?rules=back11,skip5 のように指定ルールだけONにできる
+  const rulesParam = urlParams.get('rules');
+  if (rulesParam !== null) {
+    const on = new Set(rulesParam.split(',').filter(Boolean));
+    for (const def of RULE_DEFS) rules[def.key] = on.has(def.key);
+    syncRuleToggles();
+  }
+
   $('start-btn').addEventListener('click', () => startGame());
   $('retry-btn').addEventListener('click', () => {
     if (isOnline()) {
@@ -1006,12 +1219,12 @@
       if (onlineKind === 'room') {
         const gis = Object.keys(playerOfGuest).map(Number).filter(gi => net.guests[gi] && net.guests[gi].open);
         gis.forEach(gi => {
-          net.sendToGuest(gi, { t: 'init', seed, steal: settings.steal, count: playerCount, you: playerOfGuest[gi] });
+          net.sendToGuest(gi, { t: 'init', seed, rules: { ...rules }, count: playerCount, you: playerOfGuest[gi] });
         });
-        startGame({ seed, count: playerCount, you: 0, steal: settings.steal });
+        startGame({ seed, count: playerCount, you: 0 });
       } else {
-        net.send({ t: 'init', seed, steal: settings.steal, count: 2, you: 1 });
-        startGame({ seed, count: 2, you: 0, steal: settings.steal });
+        net.send({ t: 'init', seed, rules: { ...rules }, count: 2, you: 1 });
+        startGame({ seed, count: 2, you: 0 });
       }
       return;
     }

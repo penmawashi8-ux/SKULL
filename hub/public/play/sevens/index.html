@@ -37,25 +37,29 @@
   .opt-btn.sel { background: rgba(56,189,248,0.16); border-color: #38bdf8; color: #38bdf8; box-shadow: 0 0 14px rgba(56,189,248,0.25); }
   .opt-btn:active { transform: scale(0.96); }
 
-  .rule-card {
-    margin-top: 6px; border-radius: 16px; padding: 14px 16px;
-    background: linear-gradient(135deg, rgba(255,212,59,0.10) 0%, rgba(255,212,59,0.04) 100%);
-    border: 1.5px solid rgba(255,212,59,0.35);
+  .rules-list {
+    border-radius: 16px; overflow: hidden;
+    border: 1.5px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.04);
   }
-  .rule-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-  .rule-name { font-size: 14px; font-weight: 800; color: #ffd43b; }
-  .rule-tag { font-size: 9px; font-weight: 700; color: #1a1c30; background: #ffd43b; border-radius: 999px; padding: 2px 8px; letter-spacing: 0.08em; }
-  .rule-desc { font-size: 11.5px; color: rgba(255,255,255,0.62); line-height: 1.75; margin-top: 8px; }
+  .rule-row {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    padding: 11px 14px; border-bottom: 1px solid rgba(255,255,255,0.07);
+  }
+  .rule-row:last-child { border-bottom: none; }
+  .rule-row .rr-name { font-size: 13px; font-weight: 800; }
+  .rule-row .rr-name .orig { font-size: 8px; font-weight: 700; color: #1a1c30; background: #ffd43b; border-radius: 999px; padding: 1px 7px; margin-left: 6px; vertical-align: middle; }
+  .rule-row .rr-desc { font-size: 10.5px; color: rgba(255,255,255,0.5); line-height: 1.6; margin-top: 2px; }
   .toggle {
-    position: relative; width: 52px; height: 28px; border-radius: 999px; border: none; cursor: pointer;
+    position: relative; width: 46px; height: 26px; border-radius: 999px; border: none; cursor: pointer;
     background: rgba(255,255,255,0.15); transition: background 0.2s; flex-shrink: 0;
   }
   .toggle::after {
-    content: ''; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%;
+    content: ''; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%;
     background: #fff; transition: transform 0.2s;
   }
   .toggle.on { background: #ffd43b; }
-  .toggle.on::after { transform: translateX(24px); background: #1a1c30; }
+  .toggle.on::after { transform: translateX(20px); background: #1a1c30; }
 
   .start-btn {
     display: block; width: 100%; margin-top: 26px; padding: 16px; border: none; border-radius: 999px;
@@ -112,7 +116,7 @@
     padding: 6px 12px; text-align: center; line-height: 1.5; transition: all 0.2s;
   }
   .banner.good { color: #38bdf8; background: rgba(56,189,248,0.1); }
-  .banner.okawari { color: #1a1c30; background: linear-gradient(135deg, #ffd43b, #f59e0b); box-shadow: 0 4px 18px rgba(255,212,59,0.45); }
+  .banner.brk { color: #1a1c30; background: linear-gradient(135deg, #ffd43b, #f59e0b); box-shadow: 0 4px 18px rgba(255,212,59,0.45); }
 
   .board {
     border-radius: 14px; padding: 8px 6px;
@@ -133,7 +137,10 @@
   .bcell.placed { background: linear-gradient(160deg, #ffffff 0%, #e8ecf5 100%); box-shadow: 0 1px 3px rgba(0,0,0,0.4); }
   .bcell.placed.red { color: #dc2626; }
   .bcell.placed.black { color: #1e293b; }
+  .bcell.placed.jk { color: #7c3aed; }
+  .bcell.dumped { background: linear-gradient(160deg, #6b7280 0%, #4b5563 100%); color: rgba(255,255,255,0.55); }
   .bcell.fresh { outline: 2px solid #ffd43b; }
+  .bcell.jtarget { outline: 2px dashed #a855f7; background: rgba(168,85,247,0.25); color: rgba(255,255,255,0.5); cursor: pointer; }
 
   .hand-wrap { margin-top: 10px; }
   .hand-label { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.4); margin-bottom: 4px; letter-spacing: 0.1em; }
@@ -150,10 +157,12 @@
   }
   .pcard.playable { opacity: 1; cursor: pointer; }
   .pcard.playable:active { transform: translateY(-6px); }
+  .pcard.sel { transform: translateY(-8px); border-color: #7c3aed; box-shadow: 0 0 0 2px #7c3aed, 0 6px 12px rgba(0,0,0,0.4); opacity: 1; }
   .pcard .r { font-size: 17px; line-height: 1; }
   .pcard .s { font-size: 13px; line-height: 1.2; }
   .pcard.red { color: #dc2626; }
   .pcard.black { color: #1e293b; }
+  .pcard.joker { color: #7c3aed; font-size: 10px; }
 
   .act-row { display: flex; gap: 10px; margin-top: 10px; }
   .act-btn {
@@ -163,6 +172,8 @@
   }
   .act-btn:active { transform: scale(0.97); }
   .act-btn:disabled { opacity: 0.35; cursor: default; }
+  .act-btn.brk { background: rgba(255,212,59,0.16); color: #ffd43b; border-color: rgba(255,212,59,0.5); }
+  .act-btn.brk.armed { background: linear-gradient(135deg, #ffd43b, #f59e0b); color: #1a1c30; }
 
   .quit-row { text-align: center; margin-top: 12px; }
   .quit-btn {
@@ -228,27 +239,15 @@
       <div class="online-status hidden" id="online-status"></div>
       <p class="online-note">
         部屋を作ると数字4ケタの部屋コードが表示されます。友達が集まったら（最大4人）ホストが開始ボタンで対戦スタート。
-        ローカルルールの設定は部屋を作った側のものが適用されます。
+        ローカルルールの設定は部屋を作った側のものが全員に適用されます。
         ※P2P通信のため、一部のネットワーク環境では接続できないことがあります。
       </p>
     </div>
   </div>
 
-  <p class="section-label">⭐ ローカルルール</p>
-  <div class="rule-card">
-    <div class="rule-head">
-      <div>
-        <span class="rule-name">🎁 おかわりエイト</span>
-        <span class="rule-tag">当サイトオリジナル</span>
-      </div>
-      <button class="toggle on" id="okawari-toggle" aria-label="おかわりエイトの有効・無効"></button>
-    </div>
-    <p class="rule-desc">
-      8を置いた人は、続けてもう1枚置ける！8→8とつなげば怒涛の連続出しも。
-      「8を残していつ使うか」の駆け引きが生まれる、ボドゲ広場オリジナルの追加ルールです。
-      パスは3回まで、4回目で失格（手札は全部場に並びます）。
-    </p>
-  </div>
+  <p class="section-label">⭐ ローカルルール（タップで切り替え）</p>
+  <div class="rules-list" id="rules-list"></div>
+  <p class="online-note" style="margin-top:8px;">※パスは3回まで。4回目のパスで失格になり、手札は場に開かれます（失格カードの隣には置けません）。</p>
 
   <button class="start-btn" id="start-btn">ゲームスタート ▶</button>
 </div>
@@ -259,10 +258,11 @@
   <div class="banner" id="banner"></div>
   <div class="board" id="board"></div>
   <div class="hand-wrap">
-    <p class="hand-label">🂡 あなたの手札（光っているカードを置ける）</p>
+    <p class="hand-label" id="hand-label">🂡 あなたの手札（光っているカードを置ける）</p>
     <div class="hand" id="hand"></div>
   </div>
   <div class="act-row">
+    <button class="act-btn brk hidden" id="brk-btn">🚀 ブレイクスルー</button>
     <button class="act-btn" id="pass-btn">パス（残り3回）</button>
   </div>
   <div class="quit-row">
@@ -289,17 +289,52 @@
 (() => {
   'use strict';
 
-  // カード: id = suit*13 + rank（rank 0=A … 6=7 … 12=K）
+  // カード: id = suit*13 + rank（rank 0=A … 6=7 … 12=K）、52,53 = ジョーカー
+  const JOKER1 = 52;
   const SUITS = ['♠', '♥', '♦', '♣'];
   const RANKS = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
-  const R7 = 6, R8 = 7;
+  const R7 = 6;
   const MAX_PASS = 3;
   const MAX_ONLINE = 4;
 
   const $ = id => document.getElementById(id);
   const urlParams = new URLSearchParams(location.search);
 
-  const settings = { mode: 'cpu', cpus: 3, okawari: true };
+  // ── 選べるローカルルール ──
+  const RULE_DEFS = [
+    { key: 'wrap', name: 'A-K連結（ラウンド）', desc: 'AとKがつながり、Kの次にA・Aの次にKを置けるようになる', def: false },
+    { key: 'joker', name: 'ジョーカー', desc: 'ジョーカー2枚をワイルドとして参加。好きな空きマス（隣にカードがある場所）に置ける', def: false },
+    { key: 'breakthrough', name: 'ブレイクスルー', desc: '置けずにパスすると「ブレイク」を1つ獲得。次の手番で手札を1枚どこでも自由に置いて突破できる（止め対策）', def: true, orig: true },
+  ];
+
+  const settings = { mode: 'cpu', cpus: 3, rules: {} };
+  RULE_DEFS.forEach(r => { settings.rules[r.key] = r.def; });
+  const rules = settings.rules;
+
+  function buildRulesList() {
+    const list = $('rules-list');
+    list.innerHTML = '';
+    for (const def of RULE_DEFS) {
+      const row = document.createElement('div');
+      row.className = 'rule-row';
+      row.innerHTML =
+        '<div><p class="rr-name">' + def.name + (def.orig ? '<span class="orig">当サイトオリジナル</span>' : '') + '</p>' +
+        '<p class="rr-desc">' + def.desc + '</p></div>' +
+        '<button class="toggle' + (rules[def.key] ? ' on' : '') + '" id="rule-' + def.key + '" aria-label="' + def.name + 'の有効・無効"></button>';
+      list.appendChild(row);
+      row.querySelector('.toggle').addEventListener('click', () => {
+        rules[def.key] = !rules[def.key];
+        $('rule-' + def.key).classList.toggle('on', rules[def.key]);
+      });
+    }
+  }
+  function syncRuleToggles() {
+    for (const def of RULE_DEFS) {
+      const el = $('rule-' + def.key);
+      if (el) el.classList.toggle('on', !!rules[def.key]);
+    }
+  }
+  buildRulesList();
 
   document.querySelectorAll('#mode-row .opt-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -318,10 +353,6 @@
       settings.cpus = parseInt(btn.dataset.cpus, 10);
     });
   });
-  $('okawari-toggle').addEventListener('click', () => {
-    settings.okawari = !settings.okawari;
-    $('okawari-toggle').classList.toggle('on', settings.okawari);
-  });
 
   function mulberry32(seed) {
     let a = seed >>> 0;
@@ -339,8 +370,11 @@
   let playerCount = 4;
   let names = [];
   let hands = [];
-  let placed = [];           // 4×13 の真偽
+  let placed = [];           // 4×13 の真偽（場に出ている）
+  let dumped = [];           // 4×13 失格で捨てられたカード（連結不可）
+  let jokerAt = [];          // 4×13 ジョーカーで埋まったマス（表示用）
   let passes = [];
+  let breaks = [];           // ブレイクスルーの権利
   let busted = [];
   let bustedOrder = [];
   let finishedOrder = [];
@@ -349,6 +383,8 @@
   let busy = false;
   let gameOver = false;
   let lastPlacedCard = -1;
+  let selJoker = -1;         // 選択中のジョーカーid（配置先タップ待ち）
+  let brkArmed = false;      // ブレイクスルー発動待ち
 
   // ── オンライン状態 ──
   let net = null;
@@ -361,24 +397,41 @@
   const isCpu = p => settings.mode === 'cpu' && p !== 0;
   const isMe = p => (isOnline() ? p === myIndex : p === 0);
   const AUTOPLAY = urlParams.get('autoplay') === '1';
+  const D = ms => AUTOPLAY ? Math.max(15, Math.floor(ms / 12)) : ms;
   const isBot = p => isCpu(p) || (AUTOPLAY && isMe(p));
   const inPlay = p => !busted[p] && hands[p] && hands[p].length > 0;
-
+  const isJoker = id => id >= JOKER1;
   const suitOf = id => Math.floor(id / 13);
   const rankOf = id => id % 13;
 
   function cardFace(id) {
+    if (isJoker(id)) return { txt: 'JOKER', suit: '🃏', cls: 'joker' };
     const s = suitOf(id);
     return { txt: RANKS[rankOf(id)], suit: SUITS[s], cls: (s === 1 || s === 2) ? 'red' : 'black' };
   }
 
-  function placeable(id) {
-    const s = suitOf(id), r = rankOf(id);
+  // 空きマス(s,r)にカードを置けるか（連結判定・失格カードは連結源にならない）
+  function cellOpen(s, r) {
     if (placed[s][r]) return false;
-    if (r === R7) return true;
-    if (r > R7) return placed[s][r - 1];
-    return placed[s][r + 1];
+    if (r === R7) return true; // 通常は開始時に埋まっている
+    const conn = rr => placed[s][rr] && !dumped[s][rr];
+    if (r > 0 && conn(r - 1)) return true;
+    if (r < 12 && conn(r + 1)) return true;
+    if (rules.wrap && r === 0 && conn(12)) return true;
+    if (rules.wrap && r === 12 && conn(0)) return true;
+    return false;
   }
+  // ジョーカーで埋まったマスは、その実カードで「取り返し」できる
+  const jokerCovered = id => !isJoker(id) && placed[suitOf(id)][rankOf(id)] && jokerAt[suitOf(id)][rankOf(id)];
+  const placeable = id => !isJoker(id) && (cellOpen(suitOf(id), rankOf(id)) || jokerCovered(id));
+  const anyJokerCell = () => {
+    for (let s = 0; s < 4; s++) for (let r = 0; r < 13; r++) if (cellOpen(s, r)) return true;
+    return false;
+  };
+  // 手詰まり（普通に置けるカードもジョーカーを置ける場所もない）
+  const isStuck = p =>
+    !hands[p].some(c => !isJoker(c) && placeable(c)) &&
+    !(rules.joker && hands[p].some(isJoker) && anyJokerCell());
 
   // ── 開始 ──
   function startGame(opts) {
@@ -386,9 +439,9 @@
       : parseInt(urlParams.get('seed') || '', 10) || Math.floor(Math.random() * 2 ** 31);
     rng = mulberry32(seed);
 
-    if (opts && opts.okawari !== undefined) {
-      settings.okawari = !!opts.okawari;
-      $('okawari-toggle').classList.toggle('on', settings.okawari);
+    if (opts && opts.rules) {
+      for (const def of RULE_DEFS) rules[def.key] = !!opts.rules[def.key];
+      syncRuleToggles();
     }
 
     if (isOnline()) {
@@ -405,6 +458,7 @@
 
     const deck = [];
     for (let i = 0; i < 52; i++) deck.push(i);
+    if (rules.joker) { deck.push(52); deck.push(53); }
     for (let i = deck.length - 1; i > 0; i--) {
       const j = Math.floor(rng() * (i + 1));
       [deck[i], deck[j]] = [deck[j], deck[i]];
@@ -412,13 +466,15 @@
     hands = Array.from({ length: playerCount }, () => []);
     deck.forEach((c, k) => hands[k % playerCount].push(c));
 
-    // 7は最初に自動で場に出す
     placed = Array.from({ length: 4 }, () => new Array(13).fill(false));
+    dumped = Array.from({ length: 4 }, () => new Array(13).fill(false));
+    jokerAt = Array.from({ length: 4 }, () => new Array(13).fill(false));
     for (let s = 0; s < 4; s++) placed[s][R7] = true;
-    hands = hands.map(h => h.filter(c => rankOf(c) !== R7));
+    hands = hands.map(h => h.filter(c => isJoker(c) || rankOf(c) !== R7));
     hands.forEach(h => h.sort((a, b) => a - b));
 
     passes = new Array(playerCount).fill(0);
+    breaks = new Array(playerCount).fill(0);
     busted = new Array(playerCount).fill(false);
     bustedOrder = [];
     finishedOrder = [];
@@ -426,6 +482,8 @@
     gameOver = false;
     busy = false;
     lastPlacedCard = -1;
+    selJoker = -1;
+    brkArmed = false;
     remoteQueue = [];
 
     buildHud();
@@ -450,13 +508,16 @@
     for (let p = 0; p < playerCount; p++) {
       const chip = $('chip-' + p);
       const fin = finishedOrder.indexOf(p);
+      const brkTag = (rules.breakthrough && breaks[p] > 0 && inPlay(p)) ? ' 🚀' : '';
       chip.innerHTML =
         '<p class="p-name">' + names[p] + '</p>' +
         '<p class="p-cards">' + (busted[p] ? '💥 失格'
           : fin >= 0 ? '👑 ' + (fin + 1) + '位'
-          : '🂠 ' + hands[p].length + '枚・パス残' + (MAX_PASS - passes[p])) + '</p>';
+          : '🂠 ' + hands[p].length + '・パス残' + (MAX_PASS - passes[p]) + brkTag) + '</p>';
       chip.classList.toggle('active', p === current && !gameOver);
     }
+
+    const canAct = awaitingMove && !busy && !gameOver && isMe(current) && !busted[myIndex];
 
     // 盤面
     const board = $('board');
@@ -471,9 +532,19 @@
       for (let r = 0; r < 13; r++) {
         const cell = document.createElement('div');
         const id = s * 13 + r;
-        cell.className = 'bcell' + (placed[s][r] ? ' placed ' + ((s === 1 || s === 2) ? 'red' : 'black') : '');
-        if (placed[s][r]) cell.textContent = RANKS[r];
+        let cls = 'bcell';
+        if (placed[s][r]) {
+          cls += ' placed ' + (jokerAt[s][r] ? 'jk' : (s === 1 || s === 2) ? 'red' : 'black');
+          if (dumped[s][r]) cls += ' dumped';
+        }
+        cell.className = cls;
+        if (placed[s][r]) cell.textContent = jokerAt[s][r] ? '🃏' : RANKS[r];
         if (id === lastPlacedCard) cell.classList.add('fresh');
+        // ジョーカー配置先の候補
+        if (canAct && selJoker >= 0 && cellOpen(s, r)) {
+          cell.classList.add('jtarget');
+          cell.addEventListener('click', () => onJokerTarget(s, r));
+        }
         row.appendChild(cell);
       }
       board.appendChild(row);
@@ -483,11 +554,15 @@
     const handEl = $('hand');
     handEl.innerHTML = '';
     const mine = hands[myIndex] || [];
-    const canAct = awaitingMove && !busy && !gameOver && isMe(current) && !busted[myIndex];
     for (const c of mine) {
       const face = cardFace(c);
       const el = document.createElement('div');
-      el.className = 'pcard ' + face.cls + (canAct && placeable(c) ? ' playable' : '');
+      // 置けるか: 通常配置可 / ジョーカーで置き場あり / ブレイク発動中はどれでも
+      const usable = canAct && (
+        brkArmed ? true :
+        isJoker(c) ? (rules.joker && anyJokerCell()) :
+        placeable(c));
+      el.className = 'pcard ' + face.cls + (usable ? ' playable' : '') + (c === selJoker ? ' sel' : '');
       el.innerHTML = '<span class="r">' + face.txt + '</span><span class="s">' + face.suit + '</span>';
       el.addEventListener('click', () => onCardTap(c));
       handEl.appendChild(el);
@@ -496,8 +571,17 @@
       handEl.innerHTML = '<p style="font-size:12px;color:rgba(255,255,255,0.4);font-weight:700;padding:20px 4px;">✅ あがり！みんなの結末を見届けよう</p>';
     }
 
+    $('hand-label').textContent = brkArmed ? '🚀 ブレイクスルー発動中！置きたいカードをタップ'
+      : selJoker >= 0 ? '🃏 ジョーカーの置き場所を盤面からタップ'
+      : '🂡 あなたの手札（光っているカードを置ける）';
+
+    const brkBtn = $('brk-btn');
+    brkBtn.classList.toggle('hidden', !(rules.breakthrough && canAct && breaks[myIndex] > 0));
+    brkBtn.classList.toggle('armed', brkArmed);
+    brkBtn.textContent = brkArmed ? '🚀 発動中（カードを選ぶ）' : '🚀 ブレイクスルー（残' + breaks[myIndex] + '）';
+
     $('pass-btn').textContent = 'パス（残り' + Math.max(0, MAX_PASS - passes[myIndex]) + '回）';
-    $('pass-btn').disabled = !canAct;
+    $('pass-btn').disabled = !canAct || selJoker >= 0 || brkArmed;
   }
 
   function setBanner(text, tone) {
@@ -525,108 +609,144 @@
     if (gameOver) return;
     awaitingMove = true;
     busy = false;
+    selJoker = -1;
+    brkArmed = false;
     setBanner((note ? note + '　' : '') + turnPrompt(), '');
     renderAll();
     if (isBot(current)) {
       setTimeout(() => {
         if (!awaitingMove || gameOver || !isBot(current)) return;
         botAct();
-      }, AUTOPLAY ? 200 : 900);
+      }, AUTOPLAY ? 180 : 850);
     }
   }
 
-  function botAct() {
-    const options = hands[current].filter(placeable);
-    if (options.length) {
-      // なるべく端に近い（自分しか困らない）カードから置く
-      options.sort((a, b) => Math.abs(rankOf(b) - R7) - Math.abs(rankOf(a) - R7));
-      const c = options[0];
-      if (isOnline() && isMe(current)) sendMsg({ t: 'move', c });
-      doMove(current, c);
-    } else {
-      if (isOnline() && isMe(current)) sendMsg({ t: 'pass' });
-      doPass(current);
-    }
-  }
-
+  // ── 入力 ──
   function onCardTap(c) {
     if (!awaitingMove || busy || gameOver || !isMe(current)) return;
-    if (!hands[current].includes(c) || !placeable(c)) return;
-    if (isOnline()) sendMsg({ t: 'move', c });
-    doMove(current, c);
+    if (!hands[current].includes(c)) return;
+    if (brkArmed) {
+      // ブレイクスルー: どこでも自由に置く（ジョーカーは通常配置へ）
+      if (isJoker(c)) { selJoker = c; brkArmed = false; renderAll(); return; }
+      sendAndPlay({ t: 'move', c, brk: true });
+      return;
+    }
+    if (isJoker(c)) {
+      if (!rules.joker || !anyJokerCell()) return;
+      selJoker = (selJoker === c ? -1 : c);
+      renderAll();
+      return;
+    }
+    if (!placeable(c)) return;
+    sendAndPlay({ t: 'move', c });
+  }
+
+  function onJokerTarget(s, r) {
+    if (!awaitingMove || busy || gameOver || !isMe(current) || selJoker < 0) return;
+    if (!cellOpen(s, r)) return;
+    sendAndPlay({ t: 'move', c: selJoker, cell: s * 13 + r });
+  }
+
+  function onBrkTap() {
+    if (!awaitingMove || busy || gameOver || !isMe(current)) return;
+    if (!rules.breakthrough || breaks[myIndex] <= 0) return;
+    brkArmed = !brkArmed;
+    selJoker = -1;
+    renderAll();
   }
 
   function onPassTap() {
     if (!awaitingMove || busy || gameOver || !isMe(current)) return;
-    if (isOnline()) sendMsg({ t: 'pass' });
-    doPass(current);
+    sendAndPlay({ t: 'pass' });
   }
 
-  function doMove(p, c) {
+  function sendAndPlay(msg) {
+    if (isOnline()) sendMsg(msg);
+    applyMove(current, msg);
+  }
+
+  // ── 手の適用（ローカル・オンライン共通） ──
+  function applyMove(p, msg) {
     if (gameOver || p !== current || !awaitingMove) return;
+    if (msg.t === 'pass') { doPass(p); return; }
+    // move
+    const c = msg.c;
+    if (c === undefined) return;
+    if (isJoker(c)) {
+      if (!hands[p].includes(c) || msg.cell === undefined) return;
+      const s = Math.floor(msg.cell / 13), r = msg.cell % 13;
+      if (!cellOpen(s, r)) return;
+      commitPlace(p, c, s, r, { joker: true });
+      return;
+    }
+    if (msg.brk) {
+      if (!hands[p].includes(c) || breaks[p] <= 0) return;
+      const s = suitOf(c), r = rankOf(c);
+      if (placed[s][r] && !jokerAt[s][r]) return; // ジョーカー上なら取り返しでOK
+      breaks[p]--;
+      commitPlace(p, c, s, r, { brk: true });
+      return;
+    }
     if (!hands[p].includes(c) || !placeable(c)) return;
+    commitPlace(p, c, suitOf(c), rankOf(c), {});
+  }
+
+  function commitPlace(p, c, s, r, kind) {
     awaitingMove = false;
     busy = true;
-
+    const reclaim = !kind.joker && jokerAt[s][r]; // 実カードでジョーカーを置き換え
     hands[p] = hands[p].filter(x => x !== c);
-    placed[suitOf(c)][rankOf(c)] = true;
-    lastPlacedCard = c;
-    const face = cardFace(c);
-    let notice = names[p] + 'が ' + face.suit + face.txt + ' を置いた';
+    placed[s][r] = true;
+    dumped[s][r] = false;
+    jokerAt[s][r] = !!kind.joker;
+    lastPlacedCard = s * 13 + r;
+
+    let notice;
+    if (kind.joker) notice = names[p] + 'がジョーカーを ' + SUITS[s] + RANKS[r] + ' の位置に置いた！';
+    else if (reclaim) notice = names[p] + 'が ' + SUITS[s] + RANKS[r] + ' でジョーカーを取り返した！';
+    else notice = names[p] + 'が ' + SUITS[s] + RANKS[r] + ' を置いた';
     let tone = '';
+    if (kind.brk) { notice = '🚀 ブレイクスルー！' + names[p] + 'が ' + SUITS[s] + RANKS[r] + ' を強引に置いた！'; tone = 'brk'; }
 
     const wentOut = hands[p].length === 0;
     if (wentOut && !finishedOrder.includes(p)) {
       finishedOrder.push(p);
       notice += '　👑 あがり！';
-      tone = 'good';
+      tone = tone || 'good';
     }
-
-    // 🎁 おかわりエイト: 8を置いたら続けてもう1枚
-    const okawariNow = settings.okawari && rankOf(c) === R8 && !wentOut;
-
     setBanner(notice, tone);
     renderAll();
-
-    setTimeout(() => {
-      if (checkEnd()) return;
-      if (okawariNow) {
-        if (hands[p].some(placeable)) {
-          setBanner('🎁 おかわりエイト！もう1枚置ける！', 'okawari');
-          setTimeout(() => startTurn(), 900);
-          return;
-        }
-        setBanner('🎁 おかわりエイト！…でも置けるカードがない', 'okawari');
-        setTimeout(() => advance(p), 900);
-        return;
-      }
-      advance(p);
-    }, 850);
+    setTimeout(() => { if (!checkEnd()) advance(p); }, D(820));
   }
 
   function doPass(p) {
-    if (gameOver || p !== current || !awaitingMove) return;
     awaitingMove = false;
     busy = true;
+    const stuck = isStuck(p);
     passes[p]++;
+    if (rules.breakthrough && stuck && breaks[p] < 1) breaks[p] = 1; // 手詰まりパスでブレイク獲得
+
     if (passes[p] > MAX_PASS) {
-      // 💥 失格: 手札をすべて場に並べる
+      // 💥 失格: 手札をすべて場に開く（連結源にはならない＝dumped）
       busted[p] = true;
       bustedOrder.push(p);
       const dump = hands[p].slice();
       hands[p] = [];
-      dump.forEach(c => { placed[suitOf(c)][rankOf(c)] = true; });
-      setBanner('💥 ' + names[p] + 'は4回目のパスで失格！手札がすべて場に並んだ', '');
+      dump.forEach(c => {
+        if (isJoker(c)) return; // ジョーカーは盤面に置き場所がないので破棄
+        const s = suitOf(c), r = rankOf(c);
+        placed[s][r] = true;
+        dumped[s][r] = true;
+      });
+      setBanner('💥 ' + names[p] + 'は4回目のパスで失格！手札が場に開かれた（連結には使えない）', '');
       renderAll();
-      setTimeout(() => {
-        if (checkEnd()) return;
-        advance(p);
-      }, 1300);
+      setTimeout(() => { if (!checkEnd()) advance(p); }, D(1300));
       return;
     }
-    setBanner(names[p] + 'はパス（残り' + (MAX_PASS - passes[p]) + '回）', '');
+    const gained = rules.breakthrough && stuck && breaks[p] === 1;
+    setBanner(names[p] + 'はパス（残り' + (MAX_PASS - passes[p]) + '回）' + (gained ? '　🚀 ブレイク獲得！' : ''), gained ? 'brk' : '');
     renderAll();
-    setTimeout(() => advance(p), 750);
+    setTimeout(() => advance(p), D(720));
   }
 
   function advance(p) {
@@ -640,21 +760,63 @@
   function checkEnd(force) {
     const playing = [];
     for (let i = 0; i < playerCount; i++) if (inPlay(i)) playing.push(i);
-    if (!force && playing.length > 1) return false;
-    if (!force && playing.length === 1) {
-      // 残り1人でも置き切るまで続ける（必ず置けるので自動で終わる）
-      return false;
-    }
-    if (playing.length > 0 && !force) return false;
+    if (!force && playing.length > 0) return false;
     gameOver = true;
     renderAll();
-    setTimeout(showResult, 700);
+    setTimeout(showResult, D(700));
     return true;
+  }
+
+  // ── CPU ──
+  function botAct() {
+    const hand = hands[current];
+    const real = hand.filter(c => !isJoker(c) && placeable(c));
+    if (real.length) {
+      // 端に近いカードから出す（7周辺は温存して主導権を握る）
+      real.sort((a, b) => Math.abs(rankOf(b) - R7) - Math.abs(rankOf(a) - R7));
+      sendAndPlayBot({ t: 'move', c: real[0] });
+      return;
+    }
+    // ジョーカーを持っていて置ける場所があれば、自分の手札が続く場所に置く
+    if (rules.joker && hand.some(isJoker) && anyJokerCell()) {
+      const jk = hand.find(isJoker);
+      let best = -1, bestScore = -1;
+      for (let s = 0; s < 4; s++) for (let r = 0; r < 13; r++) {
+        if (!cellOpen(s, r)) continue;
+        let score = 0;
+        if (r > 0 && hand.includes(s * 13 + (r - 1))) score += 2;
+        if (r < 12 && hand.includes(s * 13 + (r + 1))) score += 2;
+        score += 1;
+        if (score > bestScore) { bestScore = score; best = s * 13 + r; }
+      }
+      if (best >= 0) { sendAndPlayBot({ t: 'move', c: jk, cell: best }); return; }
+    }
+    // ブレイクスルーで突破（自分の手札が連なる位置を開ける）
+    if (rules.breakthrough && breaks[current] > 0) {
+      const reals = hand.filter(c => !isJoker(c));
+      if (reals.length) {
+        reals.sort((a, b) => brkScore(hand, b) - brkScore(hand, a));
+        sendAndPlayBot({ t: 'move', c: reals[0], brk: true });
+        return;
+      }
+    }
+    sendAndPlayBot({ t: 'pass' });
+  }
+  function brkScore(hand, c) {
+    const s = suitOf(c), r = rankOf(c);
+    let sc = 0;
+    if (r > 0 && hand.includes(s * 13 + (r - 1))) sc += 2;
+    if (r < 12 && hand.includes(s * 13 + (r + 1))) sc += 2;
+    sc -= Math.abs(r - R7) * 0.1;
+    return sc;
+  }
+  function sendAndPlayBot(msg) {
+    if (isOnline() && isMe(current)) sendMsg(msg);
+    applyMove(current, msg);
   }
 
   // ── 結果 ──
   function showResult() {
-    // あがり順 → 失格は遅い順で下位
     const order = finishedOrder.slice();
     const bustRanked = bustedOrder.slice().reverse();
     const lines = [];
@@ -666,10 +828,11 @@
     });
     const winner = order[0] !== undefined ? order[0] : bustRanked[0];
     const meWon = isMe(winner);
+    const onRules = RULE_DEFS.filter(d => rules[d.key]).map(d => d.name.replace(/（.*）/, '')).join('・');
     $('result-emoji').textContent = meWon ? '🏆' : '😢';
     $('result-title').textContent = meWon ? 'あなたの勝ち！' : names[winner] + 'の勝ち！';
     $('result-detail').textContent = lines.join('\n') +
-      (settings.okawari ? '\n（おかわりエイトあり）' : '') +
+      '\n採用ルール: ' + (onRules || 'なし') +
       (isOnline() && net && !net.isHost ? '\n※部屋を作った人が「もう一度」を押すと再戦できます' : '');
     $('retry-btn').classList.toggle('hidden', isOnline() && !(net && net.isHost));
     $('overlay').classList.remove('hidden');
@@ -733,21 +896,24 @@
 
   function handleGameData(d, fromPlayer) {
     if (!d || typeof d !== 'object') return;
-    if (d.t === 'init') { startGame({ seed: d.seed, count: d.count, you: d.you, okawari: d.okawari }); return; }
+    if (d.t === 'init') { startGame({ seed: d.seed, count: d.count, you: d.you, rules: d.rules }); return; }
     const p = d.p !== undefined ? d.p : fromPlayer;
     if (p === myIndex) return;
-    if (d.t === 'move' && typeof d.c === 'number') remoteQueue.push({ t: 'move', p, c: d.c });
+    if (d.t === 'move') remoteQueue.push({ t: 'move', p, c: d.c, cell: d.cell, brk: d.brk });
     if (d.t === 'pass') remoteQueue.push({ t: 'pass', p });
     if (d.t === 'left' && typeof d.p === 'number') remoteQueue.push({ t: 'left', p: d.p });
   }
 
-  // 途中退出者は失格扱いにして手札を場に並べ、残りで続行する
   function markLeft(p) {
     if (gameOver || p < 0 || p >= playerCount || busted[p]) return;
     busted[p] = true;
     if (hands[p] && hands[p].length) {
       bustedOrder.push(p);
-      hands[p].forEach(c => { placed[suitOf(c)][rankOf(c)] = true; });
+      hands[p].forEach(c => {
+        if (isJoker(c)) return;
+        placed[suitOf(c)][rankOf(c)] = true;
+        dumped[suitOf(c)][rankOf(c)] = true;
+      });
       hands[p] = [];
     }
     setBanner('📡 ' + names[p] + 'が退出したため失格扱いになりました', '');
@@ -811,9 +977,9 @@
     playerOfGuest = {};
     gis.forEach((gi, k) => {
       playerOfGuest[gi] = k + 1;
-      net.sendToGuest(gi, { t: 'init', seed, okawari: settings.okawari, count: gis.length + 1, you: k + 1 });
+      net.sendToGuest(gi, { t: 'init', seed, rules: { ...rules }, count: gis.length + 1, you: k + 1 });
     });
-    startGame({ seed, count: gis.length + 1, you: 0, okawari: settings.okawari });
+    startGame({ seed, count: gis.length + 1, you: 0 });
   }
 
   function joinRoom(code) {
@@ -846,8 +1012,8 @@
       onConnect() {
         if (net && net.isHost) {
           const seed = Math.floor(Math.random() * 2 ** 31);
-          net.send({ t: 'init', seed, okawari: settings.okawari, count: 2, you: 1 });
-          startGame({ seed, count: 2, you: 0, okawari: settings.okawari });
+          net.send({ t: 'init', seed, rules: { ...rules }, count: 2, you: 1 });
+          startGame({ seed, count: 2, you: 0 });
         } else {
           showStatus('接続しました！まもなく対戦が始まります…');
         }
@@ -869,10 +1035,11 @@
     const m = remoteQueue[0];
     if (m.t === 'left') { remoteQueue.shift(); markLeft(m.p); return; }
     if (busy) return;
-    if (m.t === 'move' && awaitingMove && current === m.p) { remoteQueue.shift(); doMove(m.p, m.c); return; }
+    if (m.t === 'move' && awaitingMove && current === m.p) { remoteQueue.shift(); applyMove(m.p, m); return; }
     if (m.t === 'pass' && awaitingMove && current === m.p) { remoteQueue.shift(); doPass(m.p); return; }
   }, 120);
 
+  $('brk-btn').addEventListener('click', onBrkTap);
   $('pass-btn').addEventListener('click', onPassTap);
   $('host-btn').addEventListener('click', hostRoom);
   $('join-btn').addEventListener('click', () => joinRoom($('join-code').value));
@@ -884,6 +1051,13 @@
     $('join-code').value = roomParam;
     joinRoom(roomParam);
   }
+  // テスト用: ?rules=wrap,joker のように指定ルールだけONにできる
+  const rulesParam = urlParams.get('rules');
+  if (rulesParam !== null) {
+    const on = new Set(rulesParam.split(',').filter(Boolean));
+    for (const def of RULE_DEFS) rules[def.key] = on.has(def.key);
+    syncRuleToggles();
+  }
 
   $('start-btn').addEventListener('click', () => startGame());
   $('retry-btn').addEventListener('click', () => {
@@ -893,12 +1067,12 @@
       if (onlineKind === 'room') {
         const gis = Object.keys(playerOfGuest).map(Number).filter(gi => net.guests[gi] && net.guests[gi].open);
         gis.forEach(gi => {
-          net.sendToGuest(gi, { t: 'init', seed, okawari: settings.okawari, count: playerCount, you: playerOfGuest[gi] });
+          net.sendToGuest(gi, { t: 'init', seed, rules: { ...rules }, count: playerCount, you: playerOfGuest[gi] });
         });
-        startGame({ seed, count: playerCount, you: 0, okawari: settings.okawari });
+        startGame({ seed, count: playerCount, you: 0 });
       } else {
-        net.send({ t: 'init', seed, okawari: settings.okawari, count: 2, you: 1 });
-        startGame({ seed, count: 2, you: 0, okawari: settings.okawari });
+        net.send({ t: 'init', seed, rules: { ...rules }, count: 2, you: 1 });
+        startGame({ seed, count: 2, you: 0 });
       }
       return;
     }
