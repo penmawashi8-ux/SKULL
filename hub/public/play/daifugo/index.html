@@ -172,11 +172,17 @@
   .hand-wrap { margin-top: 10px; }
   .hand-label { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.4); margin-bottom: 6px; letter-spacing: 0.1em; }
   .hand {
-    display: flex; gap: 4px; overflow-x: auto; padding: 12px 4px 6px;
-    -webkit-overflow-scrolling: touch; min-height: 96px;
+    display: flex; flex-wrap: wrap; justify-content: center; align-content: flex-start;
+    gap: 5px 4px; padding: 12px 4px 6px; min-height: 84px;
   }
-  .hand .pcard { cursor: pointer; transition: transform 0.12s; }
-  .hand .pcard.sel { transform: translateY(-10px); border-color: #fb7185; box-shadow: 0 0 0 2px #fb7185, 0 6px 12px rgba(0,0,0,0.4); }
+  .hand .pcard {
+    width: 44px; height: 62px; cursor: pointer; transition: transform 0.12s;
+  }
+  .hand .pcard .r { font-size: 17px; }
+  .hand .pcard .s { font-size: 13px; }
+  .hand .pcard.joker .r { font-size: 8.5px; letter-spacing: -0.5px; }
+  .hand .pcard.joker .s { font-size: 12px; }
+  .hand .pcard.sel { transform: translateY(-8px); border-color: #fb7185; box-shadow: 0 0 0 2px #fb7185, 0 6px 12px rgba(0,0,0,0.4); }
 
   .act-row { display: flex; gap: 10px; margin-top: 10px; }
   .act-btn {
@@ -735,10 +741,17 @@
     }
   }
 
+  // 手札の並び順: 数字の弱い順（3→2）、同じ数字はマーク順、ジョーカーは最強なので右端
+  function handOrder(a, b) {
+    const ja = isJoker(a) ? 1 : 0, jb = isJoker(b) ? 1 : 0;
+    if (ja !== jb) return ja - jb;
+    if (ja && jb) return a - b;
+    return (a % 13) - (b % 13) || Math.floor(a / 13) - Math.floor(b / 13);
+  }
   function renderHand() {
     const handEl = $('hand');
     handEl.innerHTML = '';
-    const mine = hands[myIndex] || [];
+    const mine = (hands[myIndex] || []).slice().sort(handOrder);
     for (const c of mine) {
       const face = cardFace(c);
       const el = document.createElement('div');
