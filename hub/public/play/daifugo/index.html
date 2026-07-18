@@ -61,6 +61,24 @@
   .toggle.on { background: #ffd43b; }
   .toggle.on::after { transform: translateX(20px); background: #1a1c30; }
 
+  .custom-box { border-radius: 16px; padding: 14px; background: rgba(255,255,255,0.04); border: 1.5px solid rgba(255,255,255,0.12); }
+  .custom-note { font-size: 10.5px; color: rgba(255,255,255,0.5); line-height: 1.65; margin-bottom: 12px; }
+  .custom-form { display: flex; align-items: center; gap: 6px; }
+  .cr-sel {
+    flex: 1; min-width: 0; padding: 10px 8px; border-radius: 10px; font-family: inherit; font-size: 12px; font-weight: 700;
+    background: rgba(255,255,255,0.08); color: #fff; border: 1.5px solid rgba(255,255,255,0.18); outline: none;
+  }
+  .cr-sel option { color: #1a1c30; }
+  .cr-arrow { color: rgba(255,255,255,0.5); font-weight: 900; flex-shrink: 0; }
+  .cr-add { padding: 10px 14px; border-radius: 10px; border: none; background: #fb7185; color: #4a0715; font-size: 12px; font-weight: 900; cursor: pointer; font-family: inherit; flex-shrink: 0; }
+  .custom-list { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+  .cr-item {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    padding: 8px 12px; border-radius: 10px; background: rgba(251,113,133,0.12); border: 1px solid rgba(251,113,133,0.35);
+    font-size: 11.5px; font-weight: 700; color: #fecdd3;
+  }
+  .cr-del { background: rgba(255,255,255,0.12); border: none; color: rgba(255,255,255,0.7); width: 22px; height: 22px; border-radius: 50%; font-size: 12px; font-weight: 900; cursor: pointer; flex-shrink: 0; }
+
   .start-btn {
     display: block; width: 100%; margin-top: 26px; padding: 16px; border: none; border-radius: 999px;
     background: linear-gradient(135deg, #fb7185cc, #fb7185); color: #4a0715; font-size: 16px; font-weight: 900;
@@ -240,6 +258,18 @@
   <p class="section-label">⭐ ローカルルール（タップで切り替え）</p>
   <div class="rules-list" id="rules-list"></div>
 
+  <p class="section-label">🛠 自分だけのルールを作る</p>
+  <div class="custom-box">
+    <p class="custom-note">「どの数字を出したら」「何が起きる」かを選んで追加。組み込みルールより優先されます。作ったルールは端末に保存され、オンラインでは部屋を作った人のルールが全員に適用されます。</p>
+    <div class="custom-form">
+      <select id="cr-rank" class="cr-sel"></select>
+      <span class="cr-arrow">→</span>
+      <select id="cr-effect" class="cr-sel"></select>
+      <button id="cr-add" class="cr-add">追加</button>
+    </div>
+    <div class="custom-list" id="custom-list"></div>
+  </div>
+
   <button class="start-btn" id="start-btn">ゲームスタート ▶</button>
 </div>
 
@@ -285,7 +315,7 @@
   const JOKER1 = 52;
   const SUITS = ['♠', '♥', '♦', '♣'];
   const RANKS = ['3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A', '2'];
-  const R5 = 2, R7 = 4, R8 = 5, R9 = 6, R10 = 7, RJ = 8, R2 = 12;
+  const R4 = 1, R5 = 2, R7 = 4, R8 = 5, R9 = 6, R10 = 7, RJ = 8, R2 = 12;
   const SPADE3 = 0; // ♠3のカードid
   const MAX_ONLINE = 4;
   const TITLES = {
@@ -301,21 +331,58 @@
   const RULE_DEFS = [
     { key: 'rev', name: '革命', desc: '同じ数字4枚（階段なら4枚以上）で強さが逆転する', def: true },
     { key: 'cut8', name: '8切り', desc: '8を出すと場が流れて、続けて自分から出せる', def: true },
+    { key: 'stop4', name: '4止め', desc: '4を出すと場が流れる（8切りの4版・マニアック地方ルール）', def: false },
     { key: 'spade3', name: 'スペ3返し', desc: '♠3の単騎でジョーカー単騎に勝てる（場が流れる）', def: true },
-    { key: 'back11', name: '11バック', desc: 'J（11）を出すと、場が流れるまで強さが逆転する', def: false },
+    { key: 'back11', name: '11バック（Jバック）', desc: 'J（11）を出すと、場が流れるまで強さが逆転する', def: false },
     { key: 'rev9', name: '9リバース', desc: '9を出すと手番の回り順が逆になる', def: false },
-    { key: 'skip5', name: '5飛び', desc: '5を出した枚数だけ、次のプレイヤーを飛ばす', def: false },
+    { key: 'skip5', name: '5飛び（5スキップ）', desc: '5を出した枚数だけ、次のプレイヤーを飛ばす', def: false },
     { key: 'give7', name: '7渡し', desc: '7を出した枚数だけ、手札から選んだカードを次の人に渡す', def: false, excl: 'steal' },
     { key: 'drop10', name: '10捨て', desc: '10を出した枚数だけ、手札から選んだカードを捨てられる', def: false },
-    { key: 'stairs', name: '階段', desc: '同じマークで連続する3枚以上を役として出せる（数字の特殊効果は乗らない・ジョーカー不可）', def: false },
-    { key: 'bind', name: 'しばり', desc: '直前と同じマーク構成が続いたら、場が流れるまでそのマークしか出せなくなる', def: false },
-    { key: 'strict', name: '反則あがり禁止', desc: '2・ジョーカー・8で上がると反則負けで最下位になる', def: false },
+    { key: 'stairs', name: '階段（シークエンス）', desc: '同じマークで連続する3枚以上を役として出せる（ジョーカー不可）', def: false },
+    { key: 'bind', name: 'しばり（マーク縛り）', desc: '直前と同じマーク構成が続いたら、場が流れるまでそのマークしか出せなくなる', def: false },
+    { key: 'foul2', name: '2上がり禁止', desc: '最強の2で上がると反則負けで最下位になる', def: false },
+    { key: 'foul8', name: '8上がり禁止（8切り上がり禁止）', desc: '場を流す8で上がると反則負けになる', def: false },
+    { key: 'fouljoker', name: 'ジョーカー上がり禁止', desc: 'ジョーカーで上がると反則負けになる', def: false },
+    { key: 'foul3rev', name: '革命中の3上がり禁止', desc: '逆転中に最強となる3で上がると反則負けになる', def: false },
     { key: 'steal', name: 'スチールセブン', desc: '7を出すと好きな相手の手札から1枚奪える（残り1枚の相手からは不可）', def: true, orig: true, excl: 'give7' },
   ];
 
   const settings = { mode: 'cpu', cpus: 3, rules: {} };
   RULE_DEFS.forEach(r => { settings.rules[r.key] = r.def; });
   const rules = settings.rules;
+
+  // ── 数字の効果（データ駆動）。組み込みルールと自作ルールをまとめて rankEffects に集約 ──
+  // 効果の種類: cut=場を流す / skip=次を飛ばす / reverse=手番逆回り /
+  //             back=場が流れるまで逆転 / give=次の人へ渡す / drop=捨てる / steal=1枚奪う
+  const EFFECTS = [
+    { key: 'cut', label: '場を流してもう1回（8切りタイプ）', icon: '✂' },
+    { key: 'skip', label: '出した枚数だけ次を飛ばす（5飛びタイプ）', icon: '⏭' },
+    { key: 'reverse', label: '手番の回り順を逆にする（9リバースタイプ）', icon: '🔃' },
+    { key: 'back', label: '場が流れるまで強さ逆転（11バックタイプ）', icon: '🔄' },
+    { key: 'give', label: '出した枚数だけ次の人にカードを渡す（7渡しタイプ）', icon: '🎁' },
+    { key: 'drop', label: '出した枚数だけカードを捨てる（10捨てタイプ）', icon: '🗑' },
+    { key: 'steal', label: '相手から1枚奪う（スチールタイプ）', icon: '💰' },
+  ];
+  const EFFECT_LABEL = k => (EFFECTS.find(e => e.key === k) || {}).label || k;
+  // 組み込みトグル → ランク→効果
+  const BUILTIN_EFFECT = { cut8: [R8, 'cut'], stop4: [R4, 'cut'], skip5: [R5, 'skip'], rev9: [R9, 'reverse'], back11: [RJ, 'back'], give7: [R7, 'give'], drop10: [R10, 'drop'], steal: [R7, 'steal'] };
+
+  // 自作ルール（localStorageに保存）: [{ rank: 0-12, effect: 'cut'... }]
+  const CUSTOM_KEY = 'daifugo_custom_rules';
+  function loadCustom() {
+    try { const a = JSON.parse(localStorage.getItem(CUSTOM_KEY)); return Array.isArray(a) ? a.filter(c => c && typeof c.rank === 'number' && EFFECTS.some(e => e.key === c.effect)) : []; }
+    catch { return []; }
+  }
+  function saveCustom() { try { localStorage.setItem(CUSTOM_KEY, JSON.stringify(customRules)); } catch { /* noop */ } }
+  let customRules = loadCustom();
+
+  let rankEffects = {}; // rank(0-12) -> 効果キー
+  function computeRankEffects() {
+    rankEffects = {};
+    for (const k in BUILTIN_EFFECT) if (rules[k]) { const [rk, ef] = BUILTIN_EFFECT[k]; rankEffects[rk] = ef; }
+    for (const c of customRules) rankEffects[c.rank] = c.effect; // 自作ルールが優先
+  }
+  const effectOf = rank => rankEffects[rank];
 
   function buildRulesList() {
     const list = $('rules-list');
@@ -342,6 +409,39 @@
     }
   }
   buildRulesList();
+
+  // ── 自作ルールビルダー ──
+  function buildCustomUI() {
+    const rankSel = $('cr-rank'), effSel = $('cr-effect');
+    rankSel.innerHTML = RANKS.map((r, i) => '<option value="' + i + '">' + r + ' を出したら</option>').join('');
+    effSel.innerHTML = EFFECTS.map(e => '<option value="' + e.key + '">' + e.icon + ' ' + e.label + '</option>').join('');
+    renderCustomList();
+  }
+  function renderCustomList() {
+    const list = $('custom-list');
+    list.innerHTML = '';
+    customRules.forEach((c, idx) => {
+      const ef = EFFECTS.find(e => e.key === c.effect);
+      const row = document.createElement('div');
+      row.className = 'cr-item';
+      row.innerHTML = '<span>' + (ef ? ef.icon : '') + ' 「' + RANKS[c.rank] + '」を出すと ' + EFFECT_LABEL(c.effect).replace(/（.*）/, '') + '</span>' +
+        '<button class="cr-del" aria-label="削除">✕</button>';
+      row.querySelector('.cr-del').addEventListener('click', () => {
+        customRules.splice(idx, 1); saveCustom(); renderCustomList();
+      });
+      list.appendChild(row);
+    });
+  }
+  $('cr-add').addEventListener('click', () => {
+    const rank = parseInt($('cr-rank').value, 10);
+    const effect = $('cr-effect').value;
+    if (!(rank >= 0 && rank <= 12) || !EFFECTS.some(e => e.key === effect)) return;
+    customRules = customRules.filter(c => c.rank !== rank); // 同じ数字は1つの効果に
+    customRules.push({ rank, effect });
+    saveCustom();
+    renderCustomList();
+  });
+  buildCustomUI();
 
   document.querySelectorAll('#mode-row .opt-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -391,6 +491,8 @@
   let selected = new Set();
   let gameOver = false;
   let busy = false;
+  let botTimer = null; // 同時に1つのbot行動しか予約しない（多重予約レース防止）
+  function scheduleBot(fn, delay) { if (botTimer) clearTimeout(botTimer); botTimer = setTimeout(() => { botTimer = null; fn(); }, delay); }
 
   // ── オンライン状態 ──
   let net = null;
@@ -478,6 +580,8 @@
       for (const def of RULE_DEFS) rules[def.key] = !!opts.rules[def.key];
       syncRuleToggles();
     }
+    if (opts && Array.isArray(opts.custom)) customRules = opts.custom; // オンライン: ホストの自作ルール
+    computeRankEffects();
 
     if (isOnline()) {
       playerCount = opts.count;
@@ -516,6 +620,7 @@
     selected = new Set();
     gameOver = false;
     busy = false;
+    if (botTimer) { clearTimeout(botTimer); botTimer = null; }
     remoteQueue = [];
 
     buildHud();
@@ -680,25 +785,31 @@
       notice = '⚡ 革命！ 強さが逆転した！';
       tone = 'rev';
     }
-    // 🔄 11バック
-    let elevenBackJustSet = false;
-    if (rules.back11 && pr.type === 'set' && !pr.jokerOnly && pr.rank === RJ) {
+    const rankEff = (pr.type === 'set' && !pr.jokerOnly) ? effectOf(pr.rank) : undefined;
+    // 🔄 場が流れるまで逆転（11バックタイプ）
+    if (rankEff === 'back') {
       elevenBack = true;
-      elevenBackJustSet = true;
-      notice += '　🔄 11バック！場が流れるまで強さ逆転！';
+      notice += '　🔄 ' + RANKS[pr.rank] + 'バック！場が流れるまで強さ逆転！';
       tone = tone || 'rev';
     }
-    if (rules.rev9 && pr.type === 'set' && !pr.jokerOnly && pr.rank === R9) {
+    // 🔃 手番の回り順を逆に（9リバースタイプ）
+    if (rankEff === 'reverse') {
       direction = -direction;
-      notice += '　🔃 9リバース！回り順が逆になった！';
+      notice += '　🔃 ' + RANKS[pr.rank] + 'リバース！回り順が逆になった！';
     }
     if (bindSuits && rules.bind && !tone) notice += '　🔒 しばり発生！';
 
     const out = hands[p].length === 0;
     if (out) {
-      // 💥 反則あがり: 2・ジョーカー・8での上がり
-      const foul = rules.strict && pr.type === 'set' &&
-        (pr.jokerOnly || cards.some(isJoker) || pr.rank === R2 || pr.rank === R8);
+      // 💥 あがり禁止（各ルールごとに個別判定）
+      let foul = false;
+      if (pr.type === 'set') {
+        if (rules.fouljoker && (pr.jokerOnly || cards.some(isJoker))) foul = true;
+        if (rules.foul2 && !pr.jokerOnly && pr.rank === R2) foul = true;
+        if (rules.foul8 && !pr.jokerOnly && pr.rank === R8) foul = true;
+        // 革命/Jバックで逆転中の最強＝3 での上がり禁止
+        if (rules.foul3rev && flipped() && !pr.jokerOnly && pr.rank === 0) foul = true;
+      }
       if (foul) {
         foulOrder.push(p);
         notice += '　💥 ' + names[p] + 'は反則あがり！最下位！';
@@ -719,36 +830,36 @@
       const ctx = { pr, out, p, spade3Used };
 
       // インタラクティブなルール（同ランクの組のみ・あがった人は発動しない）
-      if (pr.type === 'set' && !pr.jokerOnly && !out) {
-        if (pr.rank === R7 && rules.steal) {
+      if (rankEff && !out) {
+        if (rankEff === 'steal') {
           const targets = [];
           for (let i = 0; i < playerCount; i++) if (i !== p && canStealFrom(i)) targets.push(i);
           if (targets.length) {
             pending = { kind: 'steal', n: 1, ctx };
-            setBanner(isMe(p) ? '💰 スチールセブン！奪う相手をタップしよう'
-              : '💰 スチールセブン！' + names[p] + 'が奪う相手を選んでいます…', 'steal');
+            setBanner(isMe(p) ? '💰 スチール！奪う相手をタップしよう'
+              : '💰 スチール！' + names[p] + 'が奪う相手を選んでいます…', 'steal');
             busy = false;
             renderAll();
-            if (isBot(p)) setTimeout(() => botSteal(p), AUTOPLAY ? 250 : 950);
+            if (isBot(p)) scheduleBot(() => botSteal(p), AUTOPLAY ? 250 : 950);
             return;
           }
         }
-        if (pr.rank === R7 && rules.give7 && hands[p].length > 0) {
+        if (rankEff === 'give' && hands[p].length > 0) {
           pending = { kind: 'give', n: Math.min(pr.count, hands[p].length), ctx };
-          setBanner(isMe(p) ? '🎁 7渡し！次の人に渡すカードを' + pending.n + '枚選ぼう'
-            : '🎁 7渡し！' + names[p] + 'が渡すカードを選んでいます…', 'steal');
+          setBanner(isMe(p) ? '🎁 ' + RANKS[pr.rank] + '渡し！次の人に渡すカードを' + pending.n + '枚選ぼう'
+            : '🎁 ' + RANKS[pr.rank] + '渡し！' + names[p] + 'が渡すカードを選んでいます…', 'steal');
           busy = false;
           renderAll();
-          if (isBot(p)) setTimeout(() => botGiveDrop(p), AUTOPLAY ? 250 : 950);
+          if (isBot(p)) scheduleBot(() => botGiveDrop(p), AUTOPLAY ? 250 : 950);
           return;
         }
-        if (pr.rank === R10 && rules.drop10 && hands[p].length > 0) {
+        if (rankEff === 'drop' && hands[p].length > 0) {
           pending = { kind: 'drop', n: Math.min(pr.count, hands[p].length), ctx };
-          setBanner(isMe(p) ? '🗑 10捨て！捨てるカードを' + pending.n + '枚選ぼう'
-            : '🗑 10捨て！' + names[p] + 'が捨てるカードを選んでいます…', 'steal');
+          setBanner(isMe(p) ? '🗑 ' + RANKS[pr.rank] + '捨て！捨てるカードを' + pending.n + '枚選ぼう'
+            : '🗑 ' + RANKS[pr.rank] + '捨て！' + names[p] + 'が捨てるカードを選んでいます…', 'steal');
           busy = false;
           renderAll();
-          if (isBot(p)) setTimeout(() => botGiveDrop(p), AUTOPLAY ? 250 : 950);
+          if (isBot(p)) scheduleBot(() => botGiveDrop(p), AUTOPLAY ? 250 : 950);
           return;
         }
       }
@@ -759,25 +870,26 @@
 
   function afterEffects(ctx) {
     const { pr, out, p, spade3Used } = ctx;
-    // ✂ 8切り / スペ3返し: 場が流れて本人がリード
-    const cut = spade3Used || (rules.cut8 && pr.type === 'set' && !pr.jokerOnly && pr.rank === R8);
+    const rankEff = (pr.type === 'set' && !pr.jokerOnly) ? effectOf(pr.rank) : undefined;
+    // ✂ 場を流す（8切りタイプ）/ スペ3返し: 場が流れて本人がリード
+    const cut = spade3Used || rankEff === 'cut';
     if (cut) {
       clearField();
       current = out ? nextActive(p) : p;
-      setBanner((spade3Used ? '♠3返し！' : '✂ 8切り！') + '場が流れた。' + turnPrompt(), 'good');
+      setBanner((spade3Used ? '♠3返し！' : '✂ ' + RANKS[pr.rank] + '切り！') + '場が流れた。' + turnPrompt(), 'good');
       busy = false;
       renderAll();
       maybeCpu();
       return;
     }
-    // ⏭ 5飛び
+    // ⏭ 飛ばし（5飛びタイプ）
     let skips = 0;
-    if (rules.skip5 && pr.type === 'set' && !pr.jokerOnly && pr.rank === R5) skips = pr.count;
+    if (rankEff === 'skip') skips = pr.count;
     let nxt = nextActive(p);
     const skipped = [];
     for (let i = 0; i < skips; i++) { skipped.push(names[nxt]); nxt = nextActive(nxt); }
     current = nxt;
-    startTurn(skipped.length ? '⏭ 5飛び！' + skipped.join('と') + 'を飛ばした。' : '');
+    startTurn(skipped.length ? '⏭ ' + RANKS[pr.rank] + '飛び！' + skipped.join('と') + 'を飛ばした。' : '');
   }
 
   function resolveSteal(p, target) {
@@ -862,7 +974,7 @@
 
   function maybeCpu() {
     if (gameOver || !isBot(current) || pending) return;
-    setTimeout(cpuMove, AUTOPLAY ? 250 : 1000);
+    scheduleBot(cpuMove, AUTOPLAY ? 250 : 1000);
   }
 
   // ── CPU ──
@@ -890,7 +1002,10 @@
   }
 
   function cpuMove() {
-    if (gameOver || !isBot(current) || busy || pending) return;
+    if (gameOver) return;
+    if (!isBot(current)) return;
+    // まだ演出中／別処理中なら手番を捨てず少し待って再試行（タイミングレース対策）
+    if (busy || pending) { scheduleBot(cpuMove, 60); return; }
     const cands = cpuCandidates();
     if (cands.length) {
       cands.sort((a, b) => effMinOrJoker(a) - effMinOrJoker(b));
@@ -913,7 +1028,8 @@
   const effMinOrJoker = cards => (cards.every(isJoker) ? 99 : effMin(cards));
 
   function botSteal(p) {
-    if (!pending || pending.kind !== 'steal' || current !== p) return;
+    if (gameOver || !pending || pending.kind !== 'steal' || current !== p) return;
+    if (busy) { scheduleBot(() => botSteal(p), 60); return; }
     let best = -1;
     for (let i = 0; i < playerCount; i++) {
       if (i === p || !canStealFrom(i)) continue;
@@ -926,7 +1042,8 @@
   }
 
   function botGiveDrop(p) {
-    if (!pending || (pending.kind !== 'give' && pending.kind !== 'drop') || current !== p) return;
+    if (gameOver || !pending || (pending.kind !== 'give' && pending.kind !== 'drop') || current !== p) return;
+    if (busy) { scheduleBot(() => botGiveDrop(p), 60); return; }
     // いちばん弱いカードから渡す/捨てる
     const sorted = hands[p].slice().sort((a, b) =>
       (isJoker(a) ? 99 : eff(a % 13)) - (isJoker(b) ? 99 : eff(b % 13)));
@@ -983,11 +1100,13 @@
       (foulOrder.includes(p) ? '（反則あがり）' : ''));
     const winner = order[0];
     const meWon = isMe(winner);
-    const onRules = RULE_DEFS.filter(d => rules[d.key]).map(d => d.name).join('・');
+    const onRules = RULE_DEFS.filter(d => rules[d.key]).map(d => d.name.replace(/（.*）/, ''));
+    const customTxt = customRules.map(c => RANKS[c.rank] + '＝' + EFFECT_LABEL(c.effect).replace(/（.*）/, ''));
+    const ruleTxt = onRules.concat(customTxt.length ? ['自作:' + customTxt.join('/')] : []).join('・');
     $('result-emoji').textContent = meWon ? '👑' : '😢';
     $('result-title').textContent = meWon ? 'あなたが大富豪！' : names[winner] + 'が大富豪！';
     $('result-detail').textContent = lines.join('\n') +
-      '\n採用ルール: ' + (onRules || 'なし') +
+      '\n採用ルール: ' + (ruleTxt || 'なし') +
       (isOnline() && net && !net.isHost ? '\n※部屋を作った人が「もう一度」を押すと再戦できます' : '');
     $('retry-btn').classList.toggle('hidden', isOnline() && !(net && net.isHost));
     $('overlay').classList.remove('hidden');
@@ -1003,6 +1122,7 @@
   }
 
   function backToMenu() {
+    if (botTimer) { clearTimeout(botTimer); botTimer = null; }
     if (net) { net.close(); net = null; }
     onlineKind = null;
     remoteQueue = [];
@@ -1051,7 +1171,7 @@
 
   function handleGameData(d, fromPlayer) {
     if (!d || typeof d !== 'object') return;
-    if (d.t === 'init') { startGame({ seed: d.seed, count: d.count, you: d.you, rules: d.rules }); return; }
+    if (d.t === 'init') { startGame({ seed: d.seed, count: d.count, you: d.you, rules: d.rules, custom: d.custom }); return; }
     const p = d.p !== undefined ? d.p : fromPlayer;
     if (p === myIndex) return; // 自分の手のエコーは捨てる
     if (d.t === 'play' && Array.isArray(d.cards)) remoteQueue.push({ t: 'play', p, cards: d.cards });
@@ -1127,7 +1247,7 @@
     playerOfGuest = {};
     gis.forEach((gi, k) => {
       playerOfGuest[gi] = k + 1;
-      net.sendToGuest(gi, { t: 'init', seed, rules: { ...rules }, count: gis.length + 1, you: k + 1 });
+      net.sendToGuest(gi, { t: 'init', seed, rules: { ...rules }, custom: customRules, count: gis.length + 1, you: k + 1 });
     });
     startGame({ seed, count: gis.length + 1, you: 0 });
   }
@@ -1162,7 +1282,7 @@
       onConnect() {
         if (net && net.isHost) {
           const seed = Math.floor(Math.random() * 2 ** 31);
-          net.send({ t: 'init', seed, rules: { ...rules }, count: 2, you: 1 });
+          net.send({ t: 'init', seed, rules: { ...rules }, custom: customRules, count: 2, you: 1 });
           startGame({ seed, count: 2, you: 0 });
         } else {
           showStatus('接続しました！まもなく対戦が始まります…');
@@ -1210,6 +1330,15 @@
     for (const def of RULE_DEFS) rules[def.key] = on.has(def.key);
     syncRuleToggles();
   }
+  // テスト用: ?custom=0:cut,4:steal のように「ランク:効果」で自作ルールを注入
+  const customParam = urlParams.get('custom');
+  if (customParam !== null) {
+    customRules = customParam.split(',').filter(Boolean).map(s => {
+      const [r, e] = s.split(':');
+      return { rank: parseInt(r, 10), effect: e };
+    }).filter(c => c.rank >= 0 && c.rank <= 12 && EFFECTS.some(e => e.key === c.effect));
+    renderCustomList();
+  }
 
   $('start-btn').addEventListener('click', () => startGame());
   $('retry-btn').addEventListener('click', () => {
@@ -1219,11 +1348,11 @@
       if (onlineKind === 'room') {
         const gis = Object.keys(playerOfGuest).map(Number).filter(gi => net.guests[gi] && net.guests[gi].open);
         gis.forEach(gi => {
-          net.sendToGuest(gi, { t: 'init', seed, rules: { ...rules }, count: playerCount, you: playerOfGuest[gi] });
+          net.sendToGuest(gi, { t: 'init', seed, rules: { ...rules }, custom: customRules, count: playerCount, you: playerOfGuest[gi] });
         });
         startGame({ seed, count: playerCount, you: 0 });
       } else {
-        net.send({ t: 'init', seed, rules: { ...rules }, count: 2, you: 1 });
+        net.send({ t: 'init', seed, rules: { ...rules }, custom: customRules, count: 2, you: 1 });
         startGame({ seed, count: 2, you: 0 });
       }
       return;
