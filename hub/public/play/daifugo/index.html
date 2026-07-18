@@ -49,7 +49,10 @@
   .rule-row:last-child { border-bottom: none; }
   .rule-row .rr-name { font-size: 13px; font-weight: 800; }
   .rule-row .rr-name .orig { font-size: 8px; font-weight: 700; color: #1a1c30; background: #ffd43b; border-radius: 999px; padding: 1px 7px; margin-left: 6px; vertical-align: middle; }
+  .rule-row .rr-name .cpu-only { font-size: 8px; font-weight: 700; color: #fff; background: rgba(255,255,255,0.18); border-radius: 999px; padding: 1px 7px; margin-left: 6px; vertical-align: middle; }
   .rule-row .rr-desc { font-size: 10.5px; color: rgba(255,255,255,0.5); line-height: 1.6; margin-top: 2px; }
+  .rule-row.rule-off { opacity: 0.45; }
+  .toggle[disabled] { cursor: not-allowed; opacity: 0.6; }
   .toggle {
     position: relative; width: 46px; height: 26px; border-radius: 999px; border: none; cursor: pointer;
     background: rgba(255,255,255,0.15); transition: background 0.2s; flex-shrink: 0;
@@ -298,6 +301,7 @@
     <p class="result-title" id="result-title"></p>
     <p class="result-detail" id="result-detail"></p>
     <div class="result-btns">
+      <button class="r-btn primary hidden" id="next-round-btn">次のラウンドへ ▶</button>
       <button class="r-btn primary" id="retry-btn">もう一度あそぶ</button>
       <button class="r-btn ghost" id="menu-btn">メニューにもどる</button>
     </div>
@@ -315,7 +319,7 @@
   const JOKER1 = 52;
   const SUITS = ['♠', '♥', '♦', '♣'];
   const RANKS = ['3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A', '2'];
-  const R4 = 1, R5 = 2, R7 = 4, R8 = 5, R9 = 6, R10 = 7, RJ = 8, R2 = 12;
+  const R4 = 1, R5 = 2, R6 = 3, R7 = 4, R8 = 5, R9 = 6, R10 = 7, RJ = 8, RK = 10, R2 = 12;
   const SPADE3 = 0; // ♠3のカードid
   const MAX_ONLINE = 4;
   const TITLES = {
@@ -344,7 +348,12 @@
     { key: 'foul8', name: '8上がり禁止（8切り上がり禁止）', desc: '場を流す8で上がると反則負けになる', def: false },
     { key: 'fouljoker', name: 'ジョーカー上がり禁止', desc: 'ジョーカーで上がると反則負けになる', def: false },
     { key: 'foul3rev', name: '革命中の3上がり禁止', desc: '逆転中に最強となる3で上がると反則負けになる', def: false },
+    { key: 'rev6', name: '6リバース', desc: '6を出すと手番の回り順が逆になる（9リバースの地方版）', def: false },
+    { key: 'back13', name: '13バック（Kバック）', desc: 'K（13）を出すと、場が流れるまで強さが逆転する（Jバックのマニアック版）', def: false },
     { key: 'steal', name: 'スチールセブン', desc: '7を出すと好きな相手の手札から1枚奪える（残り1枚の相手からは不可）', def: true, orig: true, excl: 'give7' },
+    { key: 'rensen', name: '連戦モード（3ラウンド・CPU戦）', desc: '3ラウンド戦い、順位ポイントの合計で総合優勝を決める（CPU対戦のみ）', def: false, cpuOnly: true },
+    { key: 'miyako', name: '都落ち', desc: '前回の大富豪が今回1位を逃した瞬間、即・大貧民に転落（連戦モード時）', def: false, cpuOnly: true, need: 'rensen' },
+    { key: 'tribute', name: 'カード交換（貢ぎ）', desc: '2戦目以降、大貧民は最強札を大富豪へ、大富豪は不要札を大貧民へ渡す（連戦モード時）', def: false, cpuOnly: true, need: 'rensen' },
   ];
 
   const settings = { mode: 'cpu', cpus: 3, rules: {} };
@@ -365,7 +374,7 @@
   ];
   const EFFECT_LABEL = k => (EFFECTS.find(e => e.key === k) || {}).label || k;
   // 組み込みトグル → ランク→効果
-  const BUILTIN_EFFECT = { cut8: [R8, 'cut'], stop4: [R4, 'cut'], skip5: [R5, 'skip'], rev9: [R9, 'reverse'], back11: [RJ, 'back'], give7: [R7, 'give'], drop10: [R10, 'drop'], steal: [R7, 'steal'] };
+  const BUILTIN_EFFECT = { cut8: [R8, 'cut'], stop4: [R4, 'cut'], skip5: [R5, 'skip'], rev9: [R9, 'reverse'], rev6: [R6, 'reverse'], back11: [RJ, 'back'], back13: [RK, 'back'], give7: [R7, 'give'], drop10: [R10, 'drop'], steal: [R7, 'steal'] };
 
   // 自作ルール（localStorageに保存）: [{ rank: 0-12, effect: 'cut'... }]
   const CUSTOM_KEY = 'daifugo_custom_rules';
@@ -384,21 +393,33 @@
   }
   const effectOf = rank => rankEffects[rank];
 
+  // cpuOnly ルールはオンライン時は使えない／need 依存は親ルールがオフだと使えない
+  function ruleDisabled(def) {
+    if (def.cpuOnly && settings.mode === 'online') return true;
+    if (def.need && !rules[def.need]) return true;
+    return false;
+  }
   function buildRulesList() {
     const list = $('rules-list');
     list.innerHTML = '';
     for (const def of RULE_DEFS) {
+      const dis = ruleDisabled(def);
+      if (dis) rules[def.key] = false; // 使えないルールは強制オフ
+      const note = def.cpuOnly && settings.mode === 'online' ? '<span class="cpu-only">CPU戦のみ</span>'
+        : def.need && !rules[def.need] ? '<span class="cpu-only">「連戦モード」をONにすると使えます</span>' : '';
       const row = document.createElement('div');
-      row.className = 'rule-row';
+      row.className = 'rule-row' + (dis ? ' rule-off' : '');
       row.innerHTML =
-        '<div><p class="rr-name">' + def.name + (def.orig ? '<span class="orig">当サイトオリジナル</span>' : '') + '</p>' +
+        '<div><p class="rr-name">' + def.name + (def.orig ? '<span class="orig">当サイトオリジナル</span>' : '') + note + '</p>' +
         '<p class="rr-desc">' + def.desc + '</p></div>' +
-        '<button class="toggle' + (rules[def.key] ? ' on' : '') + '" id="rule-' + def.key + '" aria-label="' + def.name + 'の有効・無効"></button>';
+        '<button class="toggle' + (rules[def.key] ? ' on' : '') + '" id="rule-' + def.key + '" aria-label="' + def.name + 'の有効・無効"' + (dis ? ' disabled' : '') + '></button>';
       list.appendChild(row);
       row.querySelector('.toggle').addEventListener('click', () => {
+        if (ruleDisabled(def)) return;
         rules[def.key] = !rules[def.key];
         if (rules[def.key] && def.excl && rules[def.excl]) rules[def.excl] = false; // 7渡しとスチールセブンは排他
-        syncRuleToggles();
+        // 親ルール（連戦）を切ると子ルール（都落ち・貢ぎ）の表示が変わるので再描画
+        if (RULE_DEFS.some(d => d.need === def.key)) buildRulesList(); else syncRuleToggles();
       });
     }
   }
@@ -451,6 +472,7 @@
       $('cpu-count-block').classList.toggle('hidden', settings.mode !== 'cpu');
       $('online-block').classList.toggle('hidden', settings.mode !== 'online');
       $('start-btn').classList.toggle('hidden', settings.mode === 'online');
+      buildRulesList(); // CPU戦のみのルール（連戦など）の有効・無効を切り替え
     });
   });
   document.querySelectorAll('#cpu-count-row .opt-btn').forEach(btn => {
@@ -486,7 +508,9 @@
   let bindSuits = null;      // しばり中のマーク集合（場が流れるまで）
   let finishedOrder = [];
   let foulOrder = [];        // 反則あがりした人（最下位グループ）
+  let demotedOrder = [];     // 都落ちで最下位に転落した人（連戦モード）
   let disconnected = [];
+  let session = null;        // 連戦モード: { round, total, pts:[], daifugo, hinmin, done }
   let pending = null;        // { kind:'steal'|'give'|'drop', n, ctx }
   let selected = new Set();
   let gameOver = false;
@@ -570,6 +594,19 @@
     return effMin(cards) > effMin(field.cards);
   }
 
+  // 貢ぎ（カード交換）: 大貧民の最強札 n枚 ⇔ 大富豪の最弱札 n枚
+  const tributeVal = c => isJoker(c) ? 99 : c % 13;
+  function doTribute() {
+    const rich = session.daifugo, poor = session.hinmin;
+    if (rich < 0 || poor < 0 || rich === poor || rich >= playerCount || poor >= playerCount) return;
+    if (!hands[rich].length || !hands[poor].length) return;
+    const n = Math.min(2, hands[poor].length, hands[rich].length);
+    const give = hands[poor].slice().sort((a, b) => tributeVal(b) - tributeVal(a)).slice(0, n); // 大貧民 → 大富豪（最強札）
+    const back = hands[rich].slice().sort((a, b) => tributeVal(a) - tributeVal(b)).slice(0, n); // 大富豪 → 大貧民（不要札）
+    hands[poor] = hands[poor].filter(c => !give.includes(c)).concat(back).sort((a, b) => a - b);
+    hands[rich] = hands[rich].filter(c => !back.includes(c)).concat(give).sort((a, b) => a - b);
+  }
+
   // ── 開始 ──
   function startGame(opts) {
     const seed = opts && opts.seed !== undefined ? opts.seed
@@ -595,6 +632,15 @@
       for (let i = 1; i < playerCount; i++) names.push('CPU' + i);
     }
 
+    // ── 連戦モード（CPU戦のみ）: セッション状態を初期化 or 継続 ──
+    if (!isOnline() && rules.rensen) {
+      if (!(opts && opts.nextRound) || !session) {
+        session = { round: 1, total: 3, pts: new Array(playerCount).fill(0), daifugo: -1, hinmin: -1, done: false };
+      }
+    } else {
+      session = null;
+    }
+
     const deck = [];
     for (let i = 0; i < 54; i++) deck.push(i);
     for (let i = deck.length - 1; i > 0; i--) {
@@ -604,6 +650,9 @@
     hands = Array.from({ length: playerCount }, () => []);
     deck.forEach((c, k) => hands[k % playerCount].push(c));
     hands.forEach(h => h.sort((a, b) => a - b));
+
+    // 貢ぎ（カード交換）: 2戦目以降、大貧民⇔大富豪でカードを交換
+    if (session && session.round > 1 && rules.tribute) doTribute();
 
     const D3 = 26; // ♦3を持っている人が先頭
     current = Math.max(0, hands.findIndex(h => h.includes(D3)));
@@ -615,6 +664,7 @@
     bindSuits = null;
     finishedOrder = [];
     foulOrder = [];
+    demotedOrder = [];
     disconnected = new Array(playerCount).fill(false);
     pending = null;
     selected = new Set();
@@ -628,7 +678,9 @@
     $('menu').classList.add('hidden');
     $('game').classList.remove('hidden');
     $('overlay').classList.add('hidden');
-    setBanner('♦3を持つ ' + names[current] + ' からスタート！　' + turnPrompt(), '');
+    const roundTag = session ? '【第' + session.round + '戦／全' + session.total + '戦】' : '';
+    const tributeTag = (session && session.round > 1 && rules.tribute && session.daifugo >= 0) ? ' 貢ぎでカード交換ずみ' : '';
+    setBanner(roundTag + '♦3を持つ ' + names[current] + ' からスタート！' + tributeTag + '　' + turnPrompt(), '');
     maybeCpu();
   }
 
@@ -653,6 +705,7 @@
         '<p class="p-name">' + names[p] + '</p>' +
         '<p class="p-cards">' + (disconnected[p] ? '📡 切断'
           : foulOrder.includes(p) ? '💥 反則'
+          : demotedOrder.includes(p) ? '⬇️ 都落ち'
           : fin >= 0 ? '👑 ' + (fin + 1) + '位'
           : '🂠 ' + hands[p].length + '枚') + '</p>';
       chip.classList.toggle('active', p === current && !gameOver);
@@ -816,6 +869,14 @@
       } else {
         finishedOrder.push(p);
         notice += '　👑 ' + names[p] + 'があがり！';
+        // 都落ち: 前回の大富豪が今回1位を逃した瞬間、即・大貧民へ転落
+        if (session && rules.miyako && finishedOrder.length === 1 && session.daifugo >= 0
+            && session.daifugo !== p && active(session.daifugo)) {
+          const fallen = session.daifugo;
+          hands[fallen] = []; // 手札を没収して即脱落
+          demotedOrder.push(fallen);
+          notice += '　⬇️ 都落ち！前回の大富豪 ' + names[fallen] + ' が大貧民に転落！';
+        }
       }
     }
 
@@ -1083,7 +1144,8 @@
   function endGame(lastOne) {
     gameOver = true;
     pending = null;
-    if (lastOne !== undefined && lastOne >= 0 && !finishedOrder.includes(lastOne) && !foulOrder.includes(lastOne)) {
+    if (lastOne !== undefined && lastOne >= 0 && !finishedOrder.includes(lastOne)
+        && !foulOrder.includes(lastOne) && !demotedOrder.includes(lastOne)) {
       finishedOrder.push(lastOne);
     }
     renderAll();
@@ -1091,18 +1153,53 @@
   }
 
   function showResult() {
+    // 最終順位: あがり順 → 都落ち（大貧民） → 反則あがり（最下位）
     const order = finishedOrder.filter(p => !disconnected[p])
+      .concat(demotedOrder.filter(p => !disconnected[p]))
       .concat(foulOrder.filter(p => !disconnected[p]));
     const titles = TITLES[Math.min(4, Math.max(2, order.length))] || TITLES[4];
     const lines = order.map((p, k) =>
       (k === 0 ? '🥇' : k === 1 ? '🥈' : k === 2 ? '🥉' : '　') +
       ' ' + (titles[k] || (k + 1) + '位') + '　' + names[p] +
-      (foulOrder.includes(p) ? '（反則あがり）' : ''));
+      (foulOrder.includes(p) ? '（反則あがり）' : demotedOrder.includes(p) ? '（都落ち）' : ''));
     const winner = order[0];
     const meWon = isMe(winner);
     const onRules = RULE_DEFS.filter(d => rules[d.key]).map(d => d.name.replace(/（.*）/, ''));
     const customTxt = customRules.map(c => RANKS[c.rank] + '＝' + EFFECT_LABEL(c.effect).replace(/（.*）/, ''));
     const ruleTxt = onRules.concat(customTxt.length ? ['自作:' + customTxt.join('/')] : []).join('・');
+
+    // ── 連戦モード: 順位ポイントを加算してラウンド結果 or 総合結果を表示 ──
+    if (session) {
+      order.forEach((p, k) => { session.pts[p] += (order.length - 1 - k); }); // 1位=人数-1点…最下位=0点
+      session.daifugo = order[0];
+      session.hinmin = order[order.length - 1];
+      const isFinal = session.round >= session.total;
+      const rank = session.pts.map((pt, p) => ({ p, pt }))
+        .sort((a, b) => b.pt - a.pt || finishedOrder.indexOf(a.p) - finishedOrder.indexOf(b.p));
+      const standing = rank.map((r, k) =>
+        (k === 0 ? '🏆' : '　') + ' ' + (k + 1) + '位　' + names[r.p] + '　' + r.pt + 'pt').join('\n');
+      $('next-round-btn').classList.toggle('hidden', isFinal);
+      $('retry-btn').classList.toggle('hidden', !isFinal);
+      if (isFinal) {
+        session.done = true;
+        const champ = rank[0].p;
+        $('result-emoji').textContent = isMe(champ) ? '🏆' : '😢';
+        $('result-title').textContent = (isMe(champ) ? 'あなた' : names[champ]) + 'が総合優勝！';
+        $('result-detail').textContent = '── 総合成績（全' + session.total + '戦） ──\n' + standing +
+          '\n\n最終戦の順位:\n' + lines.join('\n') +
+          '\n採用ルール: ' + (ruleTxt || 'なし');
+      } else {
+        $('result-emoji').textContent = meWon ? '👑' : '🎯';
+        $('result-title').textContent = '第' + session.round + '戦 終了！' + (meWon ? ' あなたが大富豪！' : '');
+        $('result-detail').textContent = lines.join('\n') +
+          '\n\n── 通算成績（' + session.round + '／' + session.total + '戦） ──\n' + standing;
+      }
+      $('overlay').classList.remove('hidden');
+      if (AUTOPLAY && !isFinal) setTimeout(() => { session.round++; startGame({ nextRound: true }); }, D(600));
+      return;
+    }
+
+    $('next-round-btn').classList.add('hidden');
     $('result-emoji').textContent = meWon ? '👑' : '😢';
     $('result-title').textContent = meWon ? 'あなたが大富豪！' : names[winner] + 'が大富豪！';
     $('result-detail').textContent = lines.join('\n') +
@@ -1118,6 +1215,7 @@
     $('result-title').textContent = '接続が切れました';
     $('result-detail').textContent = msg || '相手が退出したか、通信が途切れました。';
     $('retry-btn').classList.add('hidden');
+    $('next-round-btn').classList.add('hidden');
     $('overlay').classList.remove('hidden');
   }
 
@@ -1128,6 +1226,8 @@
     remoteQueue = [];
     $('online-status').classList.add('hidden');
     $('retry-btn').classList.remove('hidden');
+    $('next-round-btn').classList.add('hidden');
+    session = null;
     $('game').classList.add('hidden');
     $('overlay').classList.add('hidden');
     $('menu').classList.remove('hidden');
@@ -1358,6 +1458,9 @@
       return;
     }
     startGame();
+  });
+  $('next-round-btn').addEventListener('click', () => {
+    if (session && !session.done) { session.round++; startGame({ nextRound: true }); }
   });
   $('menu-btn').addEventListener('click', backToMenu);
   $('quit-btn').addEventListener('click', backToMenu);
