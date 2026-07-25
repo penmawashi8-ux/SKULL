@@ -1,6 +1,9 @@
 import { useEffect } from 'react'
 import { useCanonical } from '../useCanonical'
-import { GAME_CONTENT } from '../gameContent'
+import { COMMON_FAQ, GAME_CONTENT } from '../gameContent'
+
+/** ベータ版で内容が薄いページは検索エンジンにインデックスさせない。 */
+const NOINDEX_GAMES = new Set(['racing-board', 'g-board-app'])
 
 function setMeta(name: string, content: string) {
   let tag = document.querySelector<HTMLMetaElement>(`meta[name="${name}"]`)
@@ -44,6 +47,7 @@ export default function GameEmbed({ gameId }: { gameId: string }) {
       'description',
       `${game.name}（${game.nameEn}）はブラウザで無料で遊べるオンラインゲーム（${genre}）。${game.tagline}。プレイ人数${players}。登録不要・インストール不要でスマホからもすぐ遊べます。遊び方・ルールも解説。`,
     )
+    if (NOINDEX_GAMES.has(gameId)) setMeta('robots', 'noindex, follow')
     setGameJsonLd({
       '@context': 'https://schema.org',
       '@graph': [
@@ -57,6 +61,14 @@ export default function GameEmbed({ gameId }: { gameId: string }) {
           inLanguage: 'ja',
           isAccessibleForFree: true,
           genre: genre.split('・'),
+        },
+        {
+          '@type': 'FAQPage',
+          mainEntity: [...game.faq, ...COMMON_FAQ].map(item => ({
+            '@type': 'Question',
+            name: item.q,
+            acceptedAnswer: { '@type': 'Answer', text: item.a },
+          })),
         },
         {
           '@type': 'BreadcrumbList',
@@ -109,6 +121,22 @@ export default function GameEmbed({ gameId }: { gameId: string }) {
         </a>
       </header>
 
+      {/* ── Lead (記事としての導入。埋め込みより先に本文を見せる) ── */}
+      <div style={{ maxWidth: '720px', margin: '0 auto', padding: '24px 16px 4px' }}>
+        <p style={{ fontSize: '10px', letterSpacing: '0.2em', textTransform: 'uppercase', color: accent, fontWeight: 700, marginBottom: '6px' }}>
+          {game.nameEn}
+        </p>
+        <h1 style={{ fontSize: '24px', fontWeight: 900, lineHeight: 1.4, marginBottom: '10px' }}>
+          {game.name}を無料でオンラインプレイ
+        </h1>
+        <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.6)', lineHeight: 1.7, marginBottom: '14px' }}>
+          {game.tagline}
+        </p>
+        <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.75)', lineHeight: 1.85, background: 'rgba(255,255,255,0.04)', borderLeft: `3px solid ${accent}`, borderRadius: '0 8px 8px 0', padding: '14px 16px' }}>
+          {game.intro[0]}
+        </p>
+      </div>
+
       {/* ── Play area (embedded, playable immediately) ── */}
       <div style={{ maxWidth: '900px', margin: '0 auto', padding: '12px 12px 0' }}>
         <div
@@ -124,7 +152,7 @@ export default function GameEmbed({ gameId }: { gameId: string }) {
           <iframe
             src={game.url}
             title={`${game.name}をプレイ`}
-            style={{ display: 'block', width: '100%', height: '82dvh', minHeight: '460px', border: 'none' }}
+            style={{ display: 'block', width: '100%', height: '68dvh', minHeight: '440px', border: 'none' }}
             allow="fullscreen"
           />
         </div>
@@ -144,25 +172,12 @@ export default function GameEmbed({ gameId }: { gameId: string }) {
       </div>
 
       <div style={{ maxWidth: '720px', margin: '0 auto', padding: '0 16px 64px' }}>
-        {/* ── Title block ── */}
-        <div style={{ padding: '28px 4px 8px' }}>
-          <p style={{ fontSize: '10px', letterSpacing: '0.2em', textTransform: 'uppercase', color: accent, fontWeight: 700, marginBottom: '6px' }}>
-            {game.nameEn}
-          </p>
-          <h1 style={{ fontSize: '24px', fontWeight: 900, lineHeight: 1.4, marginBottom: '8px' }}>
-            {game.name}
-          </h1>
-          <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.6)', lineHeight: 1.7 }}>
-            {game.tagline}
-          </p>
-        </div>
-
         {/* ── Overview ── */}
-        <section style={{ marginTop: '28px' }}>
+        <section style={{ marginTop: '36px' }}>
           <h2 style={{ fontSize: '18px', fontWeight: 700, borderLeft: `3px solid ${accent}`, paddingLeft: '12px', marginBottom: '14px' }}>
             {game.name}とは？
           </h2>
-          {game.intro.map((p, i) => (
+          {game.intro.slice(1).map((p, i) => (
             <p key={i} style={{ fontSize: '14px', color: 'rgba(255,255,255,0.72)', lineHeight: 1.85, marginBottom: '14px' }}>
               {p}
             </p>
@@ -209,6 +224,48 @@ export default function GameEmbed({ gameId }: { gameId: string }) {
               <div key={i} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '14px', padding: '16px 18px' }}>
                 <p style={{ fontSize: '14px', fontWeight: 700, color: accent, marginBottom: '6px' }}>{f.title}</p>
                 <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.65)', lineHeight: 1.75 }}>{f.body}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ── Tips ── */}
+        <section style={{ marginTop: '36px' }}>
+          <h2 style={{ fontSize: '18px', fontWeight: 700, borderLeft: `3px solid ${accent}`, paddingLeft: '12px', marginBottom: '8px' }}>
+            {game.name}に勝つためのコツ
+          </h2>
+          <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', lineHeight: 1.8, marginBottom: '16px' }}>
+            ルールを覚えたら、次は勝ち方です。{game.name}で差がつくポイントをまとめました。
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {game.tips.map((tip, i) => (
+              <div key={i} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '14px', padding: '16px 18px' }}>
+                <h3 style={{ fontSize: '14px', fontWeight: 700, color: '#fff', marginBottom: '6px' }}>
+                  <span style={{ color: accent, marginRight: '8px' }}>{i + 1}.</span>
+                  {tip.title}
+                </h3>
+                <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.65)', lineHeight: 1.85 }}>{tip.body}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ── FAQ ── */}
+        <section style={{ marginTop: '36px' }}>
+          <h2 style={{ fontSize: '18px', fontWeight: 700, borderLeft: `3px solid ${accent}`, paddingLeft: '12px', marginBottom: '16px' }}>
+            {game.name}のよくある質問
+          </h2>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {[...game.faq, ...COMMON_FAQ].map((item, i) => (
+              <div key={i} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '14px', padding: '16px 18px' }}>
+                <h3 style={{ fontSize: '13px', fontWeight: 700, color: '#fff', lineHeight: 1.65, marginBottom: '8px' }}>
+                  <span style={{ color: accent, marginRight: '6px' }}>Q.</span>
+                  {item.q}
+                </h3>
+                <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.65)', lineHeight: 1.85 }}>
+                  <span style={{ color: 'rgba(255,255,255,0.35)', fontWeight: 700, marginRight: '6px' }}>A.</span>
+                  {item.a}
+                </p>
               </div>
             ))}
           </div>

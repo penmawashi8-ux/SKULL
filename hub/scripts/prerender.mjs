@@ -12,9 +12,13 @@ import { fileURLToPath } from 'node:url'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const dist = resolve(root, 'dist')
-const { render, GAME_CONTENT } = await import(
+const { render, GAME_CONTENT, COMMON_FAQ } = await import(
   new URL('../dist-ssr/entry-server.js', import.meta.url).href
 )
+
+// ベータ版で内容が薄いページは検索エンジンにインデックスさせない。
+// GameEmbed.tsx の NOINDEX_GAMES と同期させること。
+const NOINDEX_GAMES = new Set(['racing-board', 'g-board-app'])
 
 const ORIGIN = 'https://boardgamecat.com'
 const template = readFileSync(resolve(dist, 'index.html'), 'utf8')
@@ -28,7 +32,7 @@ function replaceOrThrow(html, pattern, replacement, label) {
   return html.replace(pattern, replacement)
 }
 
-function buildPage({ path, title, description, jsonLd }) {
+function buildPage({ path, title, description, jsonLd, noindex = false }) {
   const body = render(path)
   const url = `${ORIGIN}${path}`
   let out = template
@@ -37,7 +41,8 @@ function buildPage({ path, title, description, jsonLd }) {
   out = replaceOrThrow(
     out,
     /<meta name="description" content="[^"]*"\s*\/?>/,
-    `<meta name="description" content="${escapeAttr(description)}" />`,
+    `<meta name="description" content="${escapeAttr(description)}" />` +
+      (noindex ? '\n    <meta name="robots" content="noindex, follow" />' : ''),
     'meta description',
   )
   out = replaceOrThrow(
@@ -126,6 +131,14 @@ for (const [id, game] of Object.entries(GAME_CONTENT)) {
         genre: genre.split('・'),
       },
       {
+        '@type': 'FAQPage',
+        mainEntity: [...game.faq, ...COMMON_FAQ].map(item => ({
+          '@type': 'Question',
+          name: item.q,
+          acceptedAnswer: { '@type': 'Answer', text: item.a },
+        })),
+      },
+      {
         '@type': 'BreadcrumbList',
         itemListElement: [
           { '@type': 'ListItem', position: 1, name: 'ボドゲ広場', item: `${ORIGIN}/` },
@@ -134,7 +147,10 @@ for (const [id, game] of Object.entries(GAME_CONTENT)) {
       },
     ],
   }
-  writeFileSync(resolve(dist, `games/${id}.html`), buildPage({ path, title, description, jsonLd }))
+  writeFileSync(
+    resolve(dist, `games/${id}.html`),
+    buildPage({ path, title, description, jsonLd, noindex: NOINDEX_GAMES.has(id) }),
+  )
   console.log(`prerender: ${path} -> dist/games/${id}.html`)
 }
 
