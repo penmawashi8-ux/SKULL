@@ -7,7 +7,7 @@ import { StrictMode } from 'react'
 import { renderToString } from 'react-dom/server'
 import App from './App'
 
-export { GAME_CONTENT } from './gameContent'
+export { COMMON_FAQ, GAME_CONTENT } from './gameContent'
 
 export function render(path: string): string {
   return renderToString(

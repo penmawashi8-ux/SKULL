@@ -275,32 +275,9 @@ const games: Game[] = [
     duration: '数分〜',
     tags: ['パズル', '1人用'],
   },
-  {
-    id: 'tbd-1',
-    name: '？？？',
-    nameEn: 'TBD',
-    symbol: '?',
-    description: '鋭意制作中……',
-    status: 'coming-soon',
-    accentColor: '#7dd3fc',
-    cardBg: 'linear-gradient(135deg, #0c4a6e 0%, #0284c7 100%)',
-    players: '未定',
-    duration: '未定',
-    tags: ['未定'],
-  },
-  {
-    id: 'tbd-2',
-    name: '？？？',
-    nameEn: 'TBD',
-    symbol: '?',
-    description: '鋭意制作中……',
-    status: 'coming-soon',
-    accentColor: '#fcd34d',
-    cardBg: 'linear-gradient(135deg, #451a03 0%, #b45309 100%)',
-    players: '未定',
-    duration: '未定',
-    tags: ['未定'],
-  },
+  // 「？？？ 鋭意制作中」のプレースホルダーは中身が無く、
+  // 制作中ページとみなされるため掲載しない。公開できる新作が
+  // 出来た時点で status: 'coming-soon' の実エントリを追加すること。
 ]
 
 function Tag({ text, accentColor }: { text: string; accentColor?: string }) {
