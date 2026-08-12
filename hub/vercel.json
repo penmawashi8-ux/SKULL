@@ -31,7 +31,7 @@
   "rewrites": [
     { "source": "/sitemap.xml", "destination": "/api/sitemap" },
     {
-      "source": "/games/:id(bomb|pig-tail|keiba|page-one|coup|racing-board|g-board-app|poko-light|shinkei|reversi|gomoku|marubatsu|sugoroku|daifugo|babanuki|sevens)",
+      "source": "/games/:id(bomb|pig-tail|keiba|page-one|coup|poko-light|shinkei|reversi|gomoku|marubatsu|sugoroku|daifugo|babanuki|sevens)",
       "destination": "/games/:id.html"
     },
     { "source": "/about", "destination": "/about.html" },

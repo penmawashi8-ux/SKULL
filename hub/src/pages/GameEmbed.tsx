@@ -3,7 +3,7 @@ import { useCanonical } from '../useCanonical'
 import { COMMON_FAQ, GAME_CONTENT } from '../gameContent'
 
 /** ベータ版で内容が薄いページは検索エンジンにインデックスさせない。 */
-const NOINDEX_GAMES = new Set(['racing-board', 'g-board-app'])
+const NOINDEX_GAMES = new Set<string>()
 
 function setMeta(name: string, content: string) {
   let tag = document.querySelector<HTMLMetaElement>(`meta[name="${name}"]`)
@@ -250,6 +250,27 @@ export default function GameEmbed({ gameId }: { gameId: string }) {
           </div>
         </section>
 
+        {/* ── Pitfalls ── */}
+        <section style={{ marginTop: '36px' }}>
+          <h2 style={{ fontSize: '18px', fontWeight: 700, borderLeft: `3px solid ${accent}`, paddingLeft: '12px', marginBottom: '8px' }}>
+            初心者がつまずくポイント
+          </h2>
+          <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', lineHeight: 1.8, marginBottom: '16px' }}>
+            {game.name}で負けが込むときは、たいてい同じところでつまずいています。よくある間違いと直し方をまとめました。
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {game.pitfalls.map((p, i) => (
+              <div key={i} style={{ background: 'rgba(234,179,8,0.06)', border: '1px solid rgba(234,179,8,0.2)', borderRadius: '14px', padding: '16px 18px' }}>
+                <h3 style={{ fontSize: '14px', fontWeight: 700, color: '#fde68a', marginBottom: '6px' }}>
+                  <span style={{ marginRight: '8px' }}>⚠</span>
+                  {p.title}
+                </h3>
+                <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.65)', lineHeight: 1.85 }}>{p.body}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
         {/* ── FAQ ── */}
         <section style={{ marginTop: '36px' }}>
           <h2 style={{ fontSize: '18px', fontWeight: 700, borderLeft: `3px solid ${accent}`, paddingLeft: '12px', marginBottom: '16px' }}>
@@ -267,6 +288,27 @@ export default function GameEmbed({ gameId }: { gameId: string }) {
                   {item.a}
                 </p>
               </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ── Similar games ── */}
+        <section style={{ marginTop: '36px' }}>
+          <h2 style={{ fontSize: '18px', fontWeight: 700, borderLeft: `3px solid ${accent}`, paddingLeft: '12px', marginBottom: '16px' }}>
+            {game.name}が好きな人におすすめのゲーム
+          </h2>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {game.similar.map(sg => (
+              <a
+                key={sg.id}
+                href={`/games/${sg.id}`}
+                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '14px', padding: '16px 18px', textDecoration: 'none', display: 'block' }}
+              >
+                <p style={{ fontSize: '14px', fontWeight: 700, color: accent, marginBottom: '6px' }}>
+                  {sg.name} →
+                </p>
+                <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.65)', lineHeight: 1.75 }}>{sg.reason}</p>
+              </a>
             ))}
           </div>
         </section>

@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>7並べのルールと勝ち方｜パスの使いどころと「止め」の技術 - ボドゲ広場</title>
+  <meta name="description" content="7並べの基本ルールをわかりやすく解説。パス3回制・失格処理・A-K連結・ジョーカーなど地域差のあるルールも整理しました。あわせて「どのカードを止めるか」「いつパスを使うか」という勝率に直結する判断基準を具体例で解説します。" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="https://boardgamecat.com/blog/sevens-rules.html" />
+  <meta property="og:title" content="7並べのルールと勝ち方｜パスの使いどころと「止め」の技術 - ボドゲ広場" />
+  <meta property="og:description" content="7並べの基本ルールをわかりやすく解説。パス3回制・失格処理・A-K連結・ジョーカーなど地域差のあるルールも整理しました。あわせて「どのカードを止めるか」「いつパスを使うか」という勝率に直結する判断基準を具体例で解説します。" />
+  <meta property="og:image" content="https://boardgamecat.com/og-image.png" />
+  <meta property="og:locale" content="ja_JP" />
+  <link rel="canonical" href="https://boardgamecat.com/blog/sevens-rules.html" />
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5436923510883200" crossorigin="anonymous"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=M+PLUS+Rounded+1c:wght@400;700;800&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet" />
+  <script type="application/ld+json">
+  {
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "7並べのルールと勝ち方｜パスの使いどころと「止め」の技術",
+  "description": "7並べの基本ルールをわかりやすく解説。パス3回制・失格処理・A-K連結・ジョーカーなど地域差のあるルールも整理しました。あわせて「どのカードを止めるか」「いつパスを使うか」という勝率に直結する判断基準を具体例で解説します。",
+  "url": "https://boardgamecat.com/blog/sevens-rules.html",
+  "datePublished": "2026-08-12",
+  "dateModified": "2026-08-12",
+  "inLanguage": "ja",
+  "author": {
+    "@type": "Person",
+    "name": "ボドゲ広場 管理人",
+    "url": "https://boardgamecat.com/about"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "ボドゲ広場",
+    "url": "https://boardgamecat.com"
+  },
+  "about": {
+    "@type": "Game",
+    "name": "7並べ",
+    "url": "https://boardgamecat.com/games/sevens"
+  }
+}
+  </script>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #1a1c30; color: #fff; font-family: 'M PLUS Rounded 1c', 'Noto Sans JP', sans-serif; line-height: 1.8; -webkit-font-smoothing: antialiased; }
+    a { color: inherit; text-decoration: none; }
+    header { background: rgba(26,28,48,0.95); border-bottom: 2px solid rgba(255,255,255,0.07); padding: 14px 20px; position: sticky; top: 0; z-index: 10; backdrop-filter: blur(20px); }
+    .header-inner { max-width: 720px; margin: 0 auto; display: flex; align-items: center; gap: 8px; }
+    .breadcrumb-link { font-size: 12px; color: rgba(255,255,255,0.45); }
+    .breadcrumb-link:hover { color: #34d399; }
+    .sep { color: rgba(255,255,255,0.2); font-size: 12px; }
+    .current-bc { font-size: 12px; color: rgba(255,255,255,0.6); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .container { max-width: 720px; margin: 0 auto; padding: 0 20px 80px; }
+    .article-header { padding: 36px 0 28px; }
+    .tag { display: inline-block; font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: #34d399; background: #34d3991a; border: 1px solid #34d3994d; padding: 3px 10px; border-radius: 20px; margin-bottom: 14px; }
+    h1 { font-family: 'M PLUS Rounded 1c', sans-serif; font-size: 24px; font-weight: 900; color: #ffffff; line-height: 1.55; margin-bottom: 14px; }
+    .meta { font-size: 11px; color: rgba(255,255,255,0.3); }
+    .divider { height: 1px; background: linear-gradient(to right, transparent, rgba(255,255,255,0.1), transparent); margin: 0 0 28px; }
+    .lead { font-size: 14px; color: rgba(255,255,255,0.75); background: rgba(255,255,255,0.04); border-left: 3px solid #34d399; padding: 14px 16px; border-radius: 0 8px 8px 0; margin-bottom: 32px; line-height: 1.8; }
+    .toc { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 18px 20px; margin-bottom: 32px; }
+    .toc-title { font-size: 11px; letter-spacing: 0.15em; color: #34d399; margin-bottom: 10px; font-weight: 700; }
+    .toc ol { padding-left: 20px; margin: 0; }
+    .toc li { font-size: 13px; color: rgba(255,255,255,0.65); margin-bottom: 5px; }
+    .toc a:hover { color: #fff; }
+    h2 { font-family: 'M PLUS Rounded 1c', sans-serif; font-size: 18px; font-weight: 700; color: #fff; margin: 36px 0 12px; padding-left: 12px; border-left: 3px solid #34d399; line-height: 1.5; scroll-margin-top: 70px; }
+    h3 { font-size: 15px; font-weight: 700; color: rgba(255,255,255,0.9); margin: 24px 0 8px; }
+    p { font-size: 14px; color: rgba(255,255,255,0.72); margin-bottom: 16px; line-height: 1.85; }
+    ul, ol { padding-left: 22px; margin-bottom: 16px; }
+    li { font-size: 14px; color: rgba(255,255,255,0.72); margin-bottom: 6px; line-height: 1.8; }
+    strong { color: rgba(255,255,255,0.95); }
+    .info-box { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 18px 20px; margin: 20px 0; }
+    .info-box-title { font-size: 11px; letter-spacing: 0.15em; color: #34d399; margin-bottom: 10px; font-weight: 700; }
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .info-item { font-size: 13px; color: rgba(255,255,255,0.65); }
+    .info-item strong { display: block; font-size: 12px; color: rgba(255,255,255,0.4); font-weight: 400; margin-bottom: 2px; }
+    .table-wrap { overflow-x: auto; margin: 20px 0 28px; }
+    .card-table { width: 100%; border-collapse: collapse; min-width: 420px; }
+    .card-table th { font-size: 11px; letter-spacing: 0.1em; color: #34d399; font-weight: 700; padding: 8px 12px; border-bottom: 1px solid #34d39940; text-align: left; white-space: nowrap; }
+    .card-table td { font-size: 13px; color: rgba(255,255,255,0.7); padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.06); line-height: 1.6; vertical-align: top; }
+    .card-table tr:last-child td { border-bottom: none; }
+    .card-num { font-weight: 700; color: #34d399; font-size: 14px; white-space: nowrap; }
+    .use-box { background: #34d39912; border: 1px solid #34d39933; border-radius: 14px; padding: 16px 18px; margin: 16px 0; }
+    .use-label { font-size: 10px; letter-spacing: 0.15em; color: #34d399; font-weight: 700; margin-bottom: 8px; }
+    .use-box p { font-size: 13px; color: rgba(255,255,255,0.65); margin: 0; line-height: 1.75; }
+    .tip-box { background: #34d39912; border: 1px solid #34d39933; border-radius: 14px; padding: 16px 18px; margin: 24px 0; }
+    .tip-label { font-size: 10px; letter-spacing: 0.2em; color: #34d399; font-weight: 700; margin-bottom: 8px; }
+    .tip-box p { font-size: 13px; color: rgba(255,255,255,0.65); margin: 0; }
+    .warn-box { background: rgba(234,179,8,0.06); border: 1px solid rgba(234,179,8,0.2); border-radius: 14px; padding: 16px 18px; margin: 20px 0; }
+    .warn-label { font-size: 10px; letter-spacing: 0.2em; color: #eab308; font-weight: 700; margin-bottom: 8px; }
+    .warn-box p { font-size: 13px; color: rgba(255,255,255,0.65); margin: 0; }
+    .diagram { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; background: rgba(0,0,0,0.28); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 16px 18px; margin: 18px 0; font-size: 14px; line-height: 1.7; color: rgba(255,255,255,0.8); overflow-x: auto; white-space: pre; }
+    .cta { display: block; background: linear-gradient(135deg, #34d399, #059669); color: #fff; text-align: center; padding: 18px 24px; border-radius: 999px; font-weight: 700; font-size: 16px; margin: 36px 0 20px; box-shadow: 0 0 24px #34d39966; transition: opacity 0.2s; font-family: 'M PLUS Rounded 1c', sans-serif; }
+    .cta:hover { opacity: 0.9; }
+    .cta-sub { font-size: 11px; font-weight: 400; opacity: 0.8; display: block; margin-top: 4px; }
+    .author-box { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 18px 20px; margin: 32px 0; }
+    .author-label { font-size: 9px; letter-spacing: 0.2em; color: rgba(255,255,255,0.35); font-weight: 700; margin-bottom: 6px; }
+    .author-name { font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 6px; }
+    .author-bio { font-size: 13px; color: rgba(255,255,255,0.6); line-height: 1.75; margin: 0; }
+    .related { margin-top: 48px; padding-top: 28px; border-top: 1px solid rgba(255,255,255,0.08); }
+    .related-title { font-size: 11px; letter-spacing: 0.2em; color: rgba(255,255,255,0.35); margin-bottom: 14px; }
+    .related-list { display: flex; flex-direction: column; gap: 10px; }
+    .related-link { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 12px 16px; font-size: 13px; color: rgba(255,255,255,0.7); transition: border-color 0.2s; }
+    .related-link:hover { border-color: #34d3994d; color: #fff; }
+    footer { border-top: 2px solid rgba(255,255,255,0.06); padding: 32px 20px; text-align: center; }
+    .footer-logo { font-size: 11px; color: #ffd43b; letter-spacing: 0.2em; margin-bottom: 10px; }
+    .footer-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 20px; margin-bottom: 14px; }
+    .footer-links a { font-size: 11px; color: rgba(255,255,255,0.4); white-space: nowrap; }
+    .footer-links a:hover { color: rgba(255,255,255,0.7); }
+    .footer-copy { font-size: 11px; color: rgba(255,255,255,0.25); }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <a href="/" class="breadcrumb-link">ボドゲ広場</a>
+      <span class="sep">/</span>
+      <a href="/blog/" class="breadcrumb-link">ブログ</a>
+      <span class="sep">/</span>
+      <span class="current-bc">7並べ ルール</span>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="article-header">
+      <span class="tag">ルール・攻略</span>
+      <h1>7並べのルールと勝ち方<br>パスの使いどころと「止め」の技術</h1>
+      <p class="meta">2026.08.12 ｜ ボドゲ広場</p>
+    </div>
+    <div class="divider"></div>
+
+    <div class="lead">7並べは「7から順につなげて置くだけ」の簡単なゲームに見えて、実は<strong>カードを出さずに止める</strong>という選択肢があるせいで、かなり戦略的なゲームです。とくに<strong>パスの残り回数</strong>という資源の管理が勝敗を分けます。この記事では基本ルールと地域差のあるルールを整理したうえで、勝率が上がる具体的な判断基準を解説します。</div>
+
+    <div class="toc">
+      <p class="toc-title">この記事の内容</p>
+      <ol>
+        <li><a href="#kihon">7並べの基本ルール</a></li>
+        <li><a href="#pass">パスと失格——このゲームの心臓部</a></li>
+        <li><a href="#local">地域差のあるルール（A-K連結・ジョーカー・ブレイクスルー）</a></li>
+        <li><a href="#tome">勝ち方①：止めるカードの選び方</a></li>
+        <li><a href="#passtech">勝ち方②：パスを使うタイミング</a></li>
+        <li><a href="#yomi">勝ち方③：相手の手札を推理する</a></li>
+        <li><a href="#mistake">よくある負けパターン3つ</a></li>
+        <li><a href="#faq">よくある質問</a></li>
+      </ol>
+    </div>
+
+
+    <h2 id="kihon">7並べの基本ルール</h2>
+
+    <div class="info-box">
+      <p class="info-box-title">ゲーム基本情報</p>
+      <div class="info-grid">
+        <div class="info-item"><strong>プレイ人数</strong>3〜4人が最適</div>
+        <div class="info-item"><strong>使うカード</strong>トランプ52枚（＋ジョーカー）</div>
+        <div class="info-item"><strong>プレイ時間</strong>1ラウンド5〜10分</div>
+        <div class="info-item"><strong>別名</strong>ファンタン・並べ・七渡し</div>
+      </div>
+    </div>
+
+    <h3>準備と進め方</h3>
+    <ol>
+      <li>カードを全員に配りきります。</li>
+      <li>4枚の7（♠7・♥7・♦7・♣7）を最初に場に出します。</li>
+      <li>手番では、<strong>場に出ているカードの隣の数字</strong>を、同じマークの列に置きます。</li>
+      <li>置けない、または置きたくないときは「パス」。</li>
+      <li>手札を先になくした人が勝ちです。</li>
+    </ol>
+
+    <div class="diagram">    A  2  3  4  5  6 [7] 8  9  10 J  Q  K
+♠         ■  ■  ■  ■ [7] ■
+♥               ■  ■ [7] ■  ■  ■
+♦                    [7] ■
+♣            ■  ■  ■ [7] ■  ■</div>
+
+    <p>ポイントは<strong>「7から外側へ順番にしか置けない」</strong>こと。♠の5を出すには、先に♠6が場に出ていなければいけません。だから「6を持っている人が出さない限り、5・4・3……を持っている全員が動けない」という膠着が生まれます。これが7並べの駆け引きの正体です。</p>
+
+    <h2 id="pass">パスと失格——このゲームの心臓部</h2>
+    <p>7並べで最も重要なのが<strong>パスの回数制限</strong>です。多くのルールでは<strong>パスは3回まで</strong>と決められています。</p>
+
+    <div class="warn-box">
+      <p class="warn-label">4回目のパスで失格</p>
+      <p>3回パスを使い切ったあと、さらにパスしなければならない状況になると<strong>失格</strong>です。失格した人の手札はすべて場に開かれ、そのラウンドは最下位が確定します。</p>
+    </div>
+
+    <p>つまりパスは「置きたくないときに使える便利機能」ではなく、<strong>3枚しかない有限の資源</strong>です。序盤に何も考えずパスを消費すると、終盤に置けるカードがない場面で一気に失格します。</p>
+
+    <h3>失格したカードの扱い</h3>
+    <p>失格者の手札が場に開かれると、そこから先の列は自動的につながります。ただし多くのルールでは<strong>失格で開かれたカードは「連結」の起点としては使えない</strong>——つまり、そのカードの隣に他の人が置くことはできない、という処理をとります。ここは地域差があるので、遊ぶ前に確認しておきましょう。</p>
+
+    <h2 id="local">地域差のあるルール（A-K連結・ジョーカー・ブレイクスルー）</h2>
+
+    <h3>A-K連結</h3>
+    <p>通常はAとKが列の両端で行き止まりですが、<strong>AとKをつなげて輪にする</strong>ルールです。Kまで置いたら、そのままA・2・3……と反対側から続けられます。行き止まりのカードで詰む事故が減るため、初心者が多いときには入れると遊びやすくなります。</p>
+
+    <h3>ジョーカー</h3>
+    <p>ジョーカーを<strong>好きな数字の代わりとして1枚だけ置ける</strong>ルールです。膠着した列を無理やりこじ開けられる切り札になります。多くのルールでは、<strong>本物のカードを持っている人が後からジョーカーと交換して取り返せる</strong>という処理がセットになっています。取り返したジョーカーは、また好きな場所に使えます。</p>
+
+    <h3>ブレイクスルー（当サイトのオリジナルルール）</h3>
+    <p>列の端で詰まったときに一手だけ飛び越えて置ける、という発想のルールです。止めによる膠着が長引きにくくなり、ゲームのテンポが上がります。標準ルールではないので、採用するかは事前に決めておきます。</p>
+
+    <h2 id="tome">勝ち方①：止めるカードの選び方</h2>
+    <p>7並べで勝つには「自分が早く出す」だけでは足りません。<strong>相手を止める</strong>ことが同じくらい重要です。ただし止めるカードには向き不向きがあります。</p>
+
+    <div class="table-wrap">
+      <table class="card-table">
+        <thead>
+          <tr><th>止めるカード</th><th>効果</th><th>評価</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><span class="card-num">6 や 8</span></td><td>その列全体をせき止める。後ろに5枚以上が詰まる</td><td>最強の止め。ただし自分も置けなくなる</td></tr>
+          <tr><td><span class="card-num">5 や 9</span></td><td>後ろ4枚をせき止める</td><td>バランスがよく実用的</td></tr>
+          <tr><td><span class="card-num">2 や Q</span></td><td>後ろ1〜2枚しか止まらない</td><td>止め札としては価値が低い</td></tr>
+          <tr><td><span class="card-num">A や K</span></td><td>誰も困らない（行き止まりのため）</td><td>止める意味なし。早めに処理する</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="use-box">
+      <p class="use-label">止めの原則</p>
+      <p><strong>7に近いカードほど止めの価値が高い</strong>——これが7並べの基本原則です。6や8を握れば列ごと凍結できますが、その列に自分のカードが多いと自分の首も絞まります。<strong>自分のカードが少ない列の6・8を止める</strong>のが理想形です。</p>
+    </div>
+
+    <h3>止めっぱなしは危険</h3>
+    <p>止めているあいだ、自分も手札を減らせていません。相手が別の列で順調に減らしていれば、止めているつもりが<strong>自分だけ取り残される</strong>状況になります。止めは「相手のパスを消費させるための一時的な手段」と考え、狙った相手がパスを使ったら解放するくらいの感覚が適切です。</p>
+
+    <h2 id="passtech">勝ち方②：パスを使うタイミング</h2>
+
+    <h3>序盤のパスは原則使わない</h3>
+    <p>序盤は置けるカードがあるはずなので、パスを使う必要はありません。ここで「止めたいから」とパスを消費すると、終盤の選択肢が消えます。<strong>パス3回は終盤のためにとっておく</strong>のが基本方針です。</p>
+
+    <h3>パスを使うべき唯一の場面</h3>
+    <p>それは<strong>「今出すと、相手が一気に何枚も出せてしまう」場面</strong>です。たとえば自分が♥8を出せば、♥9・10・J・Kを持っている相手が連続で出しきってしまう——このときだけはパスを切る価値があります。逆に、出しても相手の得にならないカードは、出し惜しみせず処理しましょう。</p>
+
+    <h3>残りパス回数は全員分を数える</h3>
+    <p>自分のパス残数だけでなく、<strong>相手が何回パスしたか</strong>を数えておくことが決定打になります。パスを2回使った相手を止め続ければ、3回目・4回目で失格に追い込めます。オンラインでもテーブルでも、パスの回数は必ず公開情報です。数えるだけで勝率が上がる、いちばん費用対効果の高いテクニックです。</p>
+
+    <div class="tip-box">
+      <p class="tip-label">POINT</p>
+      <p>「誰かを失格に追い込む」のは、その人を最下位にするだけでなく、<strong>失格者の手札が全部場に開かれて列が一気に開通する</strong>という副作用があります。自分の手札が開通後に有利になる並びかどうかまで見てから、追い込むかを決めましょう。</p>
+    </div>
+
+    <h2 id="yomi">勝ち方③：相手の手札を推理する</h2>
+    <p>7並べは<strong>ほぼすべての情報が公開されている</strong>ゲームです。場に出ているカードを見れば、まだ出ていないカードは全部わかります。あとは「誰が持っているか」を絞るだけです。</p>
+
+    <h3>パスは最大のヒント</h3>
+    <p>誰かがパスした瞬間、その人は<strong>場に置けるカードを1枚も持っていない</strong>（または戦略的に隠している）ことが確定します。置けるカードの候補は場を見ればわかるので、その人が持っていないカードのリストが手に入ります。</p>
+
+    <h3>置かれなかったカードを疑う</h3>
+    <p>列が長く開通しているのに特定の1枚だけ出てこない場合、それは誰かが意図的に止めています。<strong>その1枚の後ろに詰まっているカードの枚数</strong>を数えれば、止めている人がどれだけ得をしているかがわかり、その人が本命の対抗馬だと判断できます。</p>
+
+    <h2 id="mistake">よくある負けパターン3つ</h2>
+
+    <h3>1. 端のカードを最後まで残してしまう</h3>
+    <p>A・K・2・Qといった端のカードは、列がそこまで開通しないと絶対に出せません。<strong>手札に端のカードが多い人は、終盤に必ず詰まります</strong>。序盤〜中盤のうちに列を伸ばして、端のカードを出せる道を作っておくのが先決です。</p>
+
+    <h3>2. 止めに夢中でパスを使い切る</h3>
+    <p>止め続けるにはパスが必要です。序盤から止めにこだわると、パスが尽きた瞬間に全部吐き出すことになり、止めていた列が一気に開通して相手を利する結果になります。</p>
+
+    <h3>3. 自分の列を自分でふさぐ</h3>
+    <p>♠の6を止めているのに、自分の手札に♠の5・4・3が固まっている——これは自滅です。止めるカードを選ぶときは、<strong>必ずその列に自分のカードが何枚残っているか</strong>を確認しましょう。</p>
+
+    <h2 id="faq">よくある質問</h2>
+
+    <h3>何人で遊ぶのが一番おもしろいですか？</h3>
+    <p>3〜4人です。2人だと手札が26枚ずつになり、止めても自分が損をするだけで駆け引きが成立しにくくなります。5人以上だと1人あたりの手札が少なく、パスを使う前に終わってしまいがちです。</p>
+
+    <h3>7を持っている人は必ず最初に出さないといけませんか？</h3>
+    <p>ルールによります。「7は場に出す義務がある」とする地域と、「7も止められる」とする地域があります。7を止められるルールにすると膠着が激しくなるので、初心者が多いときは義務にしておくのが無難です。</p>
+
+    <h3>パスの回数は何回が標準ですか？</h3>
+    <p>3回が最も一般的です。人数が多いときは2回にすると失格が出やすくなり、ゲームが早く終わります。</p>
+
+    <h3>1人でも練習できますか？</h3>
+    <p>ボドゲ広場の7並べはCPU対戦に対応しているので、CPUを1〜3人選んで1人で練習できます。出せるカードは手札で光って表示されるため、ルールがうろ覚えでも迷わず進められます。パスの残り回数も画面に表示されるので、この記事で紹介した「パス管理」の感覚をつかむのにちょうどいいはずです。</p>
+
+
+    <a href="https://boardgamecat.com/games/sevens" class="cta">
+      7並べを今すぐ無料で遊ぶ →
+      <span class="cta-sub">登録不要・ブラウザで即プレイ</span>
+    </a>
+
+    <div class="author-box">
+      <p class="author-label">AUTHOR</p>
+      <p class="author-name">ボドゲ広場 管理人</p>
+      <p class="author-bio">ボードゲーム歴10年以上の個人開発者。ブラウザで誰でも気軽に遊べるゲームを作りたくてボドゲ広場を開設。BOMB・謀略・大富豪など複数のゲームを自作・運営しています。この記事のルール解説は、実際に自分でゲームを実装しながら各ルールの挙動を検証した内容にもとづいています。</p>
+    </div>
+
+    <div class="related">
+      <p class="related-title">関連記事</p>
+      <div class="related-list">
+        <a href="/blog/daifugo-rules.html" class="related-link">大富豪のルール完全ガイド｜基本ルールとローカルルール21種を一覧で解説</a>
+        <a href="/blog/babanuki-rules.html" class="related-link">ババ抜きのルールと勝率を上げる引き方・引かせ方</a>
+        <a href="/blog/free-online-boardgames.html" class="related-link">無料で遊べるオンラインボードゲームおすすめ5選【ブラウザ完結・登録不要】</a>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p class="footer-logo">ボドゲ広場</p>
+    <div class="footer-links">
+      <a href="/">トップ</a>
+      <a href="/blog/">ブログ</a>
+      <a href="/about">運営者情報</a>
+      <a href="/privacy-policy">プライバシーポリシー</a>
+      <a href="/terms">利用規約</a>
+      <a href="/contact">お問い合わせ</a>
+    </div>
+    <p class="footer-copy">© 2026 ボドゲ広場</p>
+  </footer>
+</body>
+</html>

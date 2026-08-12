@@ -79,16 +79,6 @@ export default function handler(_req: any, res: any) {
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://boardgamecat.com/games/racing-board</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://boardgamecat.com/games/g-board-app</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://boardgamecat.com/privacy-policy</loc>
     <changefreq>monthly</changefreq>
     <priority>0.3</priority>
@@ -217,6 +207,61 @@ export default function handler(_req: any, res: any) {
     <loc>https://boardgamecat.com/blog/bouryaku-strategy.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://boardgamecat.com/blog/daifugo-rules.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://boardgamecat.com/blog/sevens-rules.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://boardgamecat.com/blog/babanuki-rules.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://boardgamecat.com/blog/reversi-strategy.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://boardgamecat.com/blog/gomoku-strategy.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://boardgamecat.com/blog/shinkei-suijaku-tips.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://boardgamecat.com/blog/marubatsu-strategy.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://boardgamecat.com/blog/sugoroku-guide.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://boardgamecat.com/blog/daifugo-strategy.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://boardgamecat.com/blog/four-player-online-boardgame.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://boardgamecat.com/blog/trump-games-guide.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
   </url>
 </urlset>`);
 }
