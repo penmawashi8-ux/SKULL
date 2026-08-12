@@ -237,6 +237,7 @@ export const GAME_CONTENT: Record<string, GameContent> = {
     related: [
       { title: 'ぶたのしっぽのルールと遊び方｜オンラインで無料プレイ', href: '/blog/pigtail-online-free.html' },
       { title: 'ぶたのしっぽで勝つ！攻略と戦略ガイド', href: '/blog/pigtail-strategy.html' },
+      { title: 'トランプゲームの選び方ガイド｜人数・時間・覚えやすさで選ぶ', href: '/blog/trump-games-guide.html' },
     ],
   },
 
@@ -397,6 +398,7 @@ export const GAME_CONTENT: Record<string, GameContent> = {
     related: [
       { title: 'ページワンのルールと遊び方｜宣言・ジョーカー完全解説', href: '/blog/pageone-online-free.html' },
       { title: 'ページワン攻略ガイド｜手札を0にする戦術', href: '/blog/pageone-strategy.html' },
+      { title: 'トランプゲームの選び方ガイド｜人数・時間・覚えやすさで選ぶ', href: '/blog/trump-games-guide.html' },
     ],
   },
 
@@ -557,6 +559,7 @@ export const GAME_CONTENT: Record<string, GameContent> = {
     related: [
       { title: '神経衰弱で勝つ記憶術｜覚え方のコツと1枚目の選び方', href: '/blog/shinkei-suijaku-tips.html' },
       { title: '無料で遊べるオンラインボードゲームおすすめ5選', href: '/blog/free-online-boardgames.html' },
+      { title: 'トランプゲームの選び方ガイド｜人数・時間・覚えやすさで選ぶ', href: '/blog/trump-games-guide.html' },
     ],
   },
 
@@ -888,6 +891,8 @@ export const GAME_CONTENT: Record<string, GameContent> = {
     related: [
       { title: '大富豪のルール完全ガイド｜基本ルールとローカルルール21種を一覧で解説', href: '/blog/daifugo-rules.html' },
       { title: '7並べのルールと勝ち方｜パスの使いどころと「止め」の技術', href: '/blog/sevens-rules.html' },
+      { title: '大富豪の勝ち方｜強いカードを「枚数」で数える発想', href: '/blog/daifugo-strategy.html' },
+      { title: '4人で遊べる無料オンラインボードゲームおすすめ', href: '/blog/four-player-online-boardgame.html' },
     ],
   },
 
@@ -967,6 +972,7 @@ export const GAME_CONTENT: Record<string, GameContent> = {
     related: [
       { title: 'ババ抜きのルールと勝率を上げる引き方・引かせ方', href: '/blog/babanuki-rules.html' },
       { title: '大富豪のルール完全ガイド｜基本ルールとローカルルール21種を一覧で解説', href: '/blog/daifugo-rules.html' },
+      { title: 'トランプゲームの選び方ガイド｜人数・時間・覚えやすさで選ぶ', href: '/blog/trump-games-guide.html' },
     ],
   },
 
@@ -1046,6 +1052,7 @@ export const GAME_CONTENT: Record<string, GameContent> = {
     related: [
       { title: '7並べのルールと勝ち方｜パスの使いどころと「止め」の技術', href: '/blog/sevens-rules.html' },
       { title: '大富豪のルール完全ガイド｜基本ルールとローカルルール21種を一覧で解説', href: '/blog/daifugo-rules.html' },
+      { title: '4人で遊べる無料オンラインボードゲームおすすめ', href: '/blog/four-player-online-boardgame.html' },
     ],
   },
 
@@ -1125,6 +1132,7 @@ export const GAME_CONTENT: Record<string, GameContent> = {
     related: [
       { title: 'すごろくの遊び方と歴史｜盤双六と絵双六の違い・盛り上がるマスの作り方', href: '/blog/sugoroku-guide.html' },
       { title: '友達とオンラインボードゲームを楽しむ方法', href: '/blog/friends-online-boardgame.html' },
+      { title: '4人で遊べる無料オンラインボードゲームおすすめ', href: '/blog/four-player-online-boardgame.html' },
     ],
   },
 

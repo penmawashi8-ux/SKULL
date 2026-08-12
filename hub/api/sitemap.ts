@@ -248,5 +248,20 @@ export default function handler(_req: any, res: any) {
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
+  <url>
+    <loc>https://boardgamecat.com/blog/daifugo-strategy.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://boardgamecat.com/blog/four-player-online-boardgame.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://boardgamecat.com/blog/trump-games-guide.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
 </urlset>`);
 }

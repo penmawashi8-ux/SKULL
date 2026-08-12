@@ -536,6 +536,30 @@ const NOTICES = [
 
 const BLOG_POSTS = [
   {
+    href: '/blog/trump-games-guide.html',
+    tag: 'まとめ・選び方',
+    color: '#60a5fa',
+    title: 'トランプゲームの選び方ガイド｜人数・時間・覚えやすさで選ぶ定番6種',
+    desc: '大富豪・7並べ・ババ抜き・神経衰弱・ページワン・ぶたのしっぽを同じ基準で比較。何人いるか・どのくらい時間があるかから逆引きできる早見表つき。',
+    date: '2026.08.12',
+  },
+  {
+    href: '/blog/four-player-online-boardgame.html',
+    tag: 'まとめ・4人用',
+    color: '#ffd43b',
+    title: '4人で遊べる無料オンラインボードゲームおすすめ',
+    desc: '4人が揃ったときに開けば間違いない定番を厳選。1試合の長さと実力差の出やすさで選べるように整理しました。',
+    date: '2026.08.12',
+  },
+  {
+    href: '/blog/daifugo-strategy.html',
+    tag: '攻略・戦略',
+    color: '#fb7185',
+    title: '大富豪の勝ち方｜強いカードを「枚数」で数える発想',
+    desc: '2やジョーカーを何回場を取れるかで数える考え方、弱いカードを処理する場の作り方、相手のパスから手札を読む方法まで。',
+    date: '2026.08.12',
+  },
+  {
     href: '/blog/daifugo-rules.html',
     tag: 'ルール・ローカルルール',
     color: '#f59e0b',
