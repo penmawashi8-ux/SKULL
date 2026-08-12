@@ -588,8 +588,8 @@ export const GAME_CONTENT: Record<string, GameContent> = {
       },
     ],
     related: [
+      { title: '神経衰弱で勝つ記憶術｜覚え方のコツと1枚目の選び方', href: '/blog/shinkei-suijaku-tips.html' },
       { title: '無料で遊べるオンラインボードゲームおすすめ5選', href: '/blog/free-online-boardgames.html' },
-      { title: '2人で遊べる無料オンラインボードゲームおすすめ7選', href: '/blog/two-player-online-boardgame.html' },
     ],
   },
 
@@ -659,7 +659,7 @@ export const GAME_CONTENT: Record<string, GameContent> = {
       },
     ],
     related: [
-      { title: '無料で遊べるオンラインボードゲームおすすめ5選', href: '/blog/free-online-boardgames.html' },
+      { title: 'リバーシ攻略の基本｜「たくさん取ると負ける」理由と角の取り方', href: '/blog/reversi-strategy.html' },
       { title: '2人で遊べる無料オンラインボードゲームおすすめ7選', href: '/blog/two-player-online-boardgame.html' },
     ],
   },
@@ -729,8 +729,8 @@ export const GAME_CONTENT: Record<string, GameContent> = {
       },
     ],
     related: [
-      { title: '無料で遊べるオンラインボードゲームおすすめ5選', href: '/blog/free-online-boardgames.html' },
-      { title: '2人で遊べる無料オンラインボードゲームおすすめ7選', href: '/blog/two-player-online-boardgame.html' },
+      { title: '五目並べの必勝ガイド｜三三・四三のつくり方と先手の攻め筋', href: '/blog/gomoku-strategy.html' },
+      { title: 'リバーシ攻略の基本｜「たくさん取ると負ける」理由と角の取り方', href: '/blog/reversi-strategy.html' },
     ],
   },
 
@@ -799,8 +799,8 @@ export const GAME_CONTENT: Record<string, GameContent> = {
       },
     ],
     related: [
-      { title: '無料で遊べるオンラインボードゲームおすすめ5選', href: '/blog/free-online-boardgames.html' },
-      { title: '2人で遊べる無料オンラインボードゲームおすすめ7選', href: '/blog/two-player-online-boardgame.html' },
+      { title: 'まるばつ（三目並べ）は必ず引き分け？先手の最善手とフォークの作り方', href: '/blog/marubatsu-strategy.html' },
+      { title: '五目並べの必勝ガイド｜三三・四三のつくり方と先手の攻め筋', href: '/blog/gomoku-strategy.html' },
     ],
   },
 
@@ -883,8 +883,8 @@ export const GAME_CONTENT: Record<string, GameContent> = {
       },
     ],
     related: [
-      { title: '無料で遊べるオンラインボードゲームおすすめ5選', href: '/blog/free-online-boardgames.html' },
-      { title: '2人で遊べる無料オンラインボードゲームおすすめ7選', href: '/blog/two-player-online-boardgame.html' },
+      { title: '大富豪のルール完全ガイド｜基本ルールとローカルルール21種を一覧で解説', href: '/blog/daifugo-rules.html' },
+      { title: '7並べのルールと勝ち方｜パスの使いどころと「止め」の技術', href: '/blog/sevens-rules.html' },
     ],
   },
 
@@ -953,8 +953,8 @@ export const GAME_CONTENT: Record<string, GameContent> = {
       },
     ],
     related: [
-      { title: '無料で遊べるオンラインボードゲームおすすめ5選', href: '/blog/free-online-boardgames.html' },
-      { title: '2人で遊べる無料オンラインボードゲームおすすめ7選', href: '/blog/two-player-online-boardgame.html' },
+      { title: 'ババ抜きのルールと勝率を上げる引き方・引かせ方', href: '/blog/babanuki-rules.html' },
+      { title: '大富豪のルール完全ガイド｜基本ルールとローカルルール21種を一覧で解説', href: '/blog/daifugo-rules.html' },
     ],
   },
 
@@ -1023,8 +1023,8 @@ export const GAME_CONTENT: Record<string, GameContent> = {
       },
     ],
     related: [
-      { title: '無料で遊べるオンラインボードゲームおすすめ5選', href: '/blog/free-online-boardgames.html' },
-      { title: '2人で遊べる無料オンラインボードゲームおすすめ7選', href: '/blog/two-player-online-boardgame.html' },
+      { title: '7並べのルールと勝ち方｜パスの使いどころと「止め」の技術', href: '/blog/sevens-rules.html' },
+      { title: '大富豪のルール完全ガイド｜基本ルールとローカルルール21種を一覧で解説', href: '/blog/daifugo-rules.html' },
     ],
   },
 
@@ -1093,8 +1093,8 @@ export const GAME_CONTENT: Record<string, GameContent> = {
       },
     ],
     related: [
-      { title: '無料で遊べるオンラインボードゲームおすすめ5選', href: '/blog/free-online-boardgames.html' },
-      { title: '2人で遊べる無料オンラインボードゲームおすすめ7選', href: '/blog/two-player-online-boardgame.html' },
+      { title: 'すごろくの遊び方と歴史｜盤双六と絵双六の違い・盛り上がるマスの作り方', href: '/blog/sugoroku-guide.html' },
+      { title: '友達とオンラインボードゲームを楽しむ方法', href: '/blog/friends-online-boardgame.html' },
     ],
   },
 
