@@ -18,7 +18,7 @@ const { render, GAME_CONTENT, COMMON_FAQ } = await import(
 
 // ベータ版で内容が薄いページは検索エンジンにインデックスさせない。
 // GameEmbed.tsx の NOINDEX_GAMES と同期させること。
-const NOINDEX_GAMES = new Set(['racing-board', 'g-board-app'])
+const NOINDEX_GAMES = new Set()
 
 const ORIGIN = 'https://boardgamecat.com'
 const template = readFileSync(resolve(dist, 'index.html'), 'utf8')

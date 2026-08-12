@@ -3,7 +3,7 @@ import { useCanonical } from '../useCanonical'
 import { COMMON_FAQ, GAME_CONTENT } from '../gameContent'
 
 /** ベータ版で内容が薄いページは検索エンジンにインデックスさせない。 */
-const NOINDEX_GAMES = new Set(['racing-board', 'g-board-app'])
+const NOINDEX_GAMES = new Set<string>()
 
 function setMeta(name: string, content: string) {
   let tag = document.querySelector<HTMLMetaElement>(`meta[name="${name}"]`)
