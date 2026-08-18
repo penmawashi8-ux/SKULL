@@ -26,6 +26,16 @@
       "source": "/blog/poko-light-plus-5x6.html",
       "destination": "/blog/poko-light-plus-5x5.html",
       "permanent": true
+    },
+    {
+      "source": "/games/g-board-app",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/games/racing-board",
+      "destination": "/",
+      "permanent": true
     }
   ],
   "rewrites": [
