@@ -199,6 +199,21 @@ export default function handler(_req: any, res: any) {
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://boardgamecat.com/blog/poko-light-complete-analysis.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://boardgamecat.com/blog/marubatsu-complete-analysis.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://boardgamecat.com/blog/babanuki-seat-simulation.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://boardgamecat.com/blog/two-player-online-boardgame.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>

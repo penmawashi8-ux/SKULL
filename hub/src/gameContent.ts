@@ -797,6 +797,7 @@ export const GAME_CONTENT: Record<string, GameContent> = {
     ],
     related: [
       { title: 'まるばつ（三目並べ）は必ず引き分け？先手の最善手とフォークの作り方', href: '/blog/marubatsu-strategy.html' },
+      { title: '〇×ゲームの全255,168局を数えた｜先手勝率と負けが確定する一手', href: '/blog/marubatsu-complete-analysis.html' },
       { title: '五目並べの必勝ガイド｜三三・四三のつくり方と先手の攻め筋', href: '/blog/gomoku-strategy.html' },
     ],
   },
@@ -971,6 +972,7 @@ export const GAME_CONTENT: Record<string, GameContent> = {
     ],
     related: [
       { title: 'ババ抜きのルールと勝率を上げる引き方・引かせ方', href: '/blog/babanuki-rules.html' },
+      { title: 'ババ抜きは席順で負ける確率が3倍変わる｜100万局シミュレーション', href: '/blog/babanuki-seat-simulation.html' },
       { title: '大富豪のルール完全ガイド｜基本ルールとローカルルール21種を一覧で解説', href: '/blog/daifugo-rules.html' },
       { title: 'トランプゲームの選び方ガイド｜人数・時間・覚えやすさで選ぶ', href: '/blog/trump-games-guide.html' },
     ],
@@ -1211,6 +1213,7 @@ export const GAME_CONTENT: Record<string, GameContent> = {
     ],
     related: [
       { title: 'ポコっとライト攻略ガイド｜全点灯を狙う基本戦術', href: '/blog/poko-light-strategy.html' },
+      { title: 'ポコっとライト全盤面解析｜解ける盤面の割合と最短手数', href: '/blog/poko-light-complete-analysis.html' },
       { title: 'ポコっとライト攻略①｜仕組みと基本ルールを理解しよう', href: '/blog/poko-light-series-intro.html' },
     ],
   },

@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ポコっとライト全盤面解析｜解ける盤面の割合と最短手数を型・サイズ別に全部数えた - ボドゲ広場</title>
+  <meta name="description" content="プラス型・バツ型・行列型の3種類×3×3〜6×6の全盤面をコンピュータで解析。「解ける盤面は全体の何%か」「最悪の盤面は何手かかるか」「最短手数の分布」を厳密に計算した結果を公開します。4×4プラス型は解ける盤面が1/16しかない一方、解けるなら必ず7手以内で終わる——など、実際に数えないと出てこない数字をまとめました。" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="https://boardgamecat.com/blog/poko-light-complete-analysis.html" />
+  <meta property="og:title" content="ポコっとライト全盤面解析｜解ける盤面の割合と最短手数を型・サイズ別に全部数えた - ボドゲ広場" />
+  <meta property="og:description" content="プラス型・バツ型・行列型の3種類×3×3〜6×6の全盤面をコンピュータで解析。解ける盤面の割合・最悪ケースの手数・最短手数の分布を厳密に計算した結果を公開します。" />
+  <meta property="og:image" content="https://boardgamecat.com/og-image.png" />
+  <meta property="og:locale" content="ja_JP" />
+  <link rel="canonical" href="https://boardgamecat.com/blog/poko-light-complete-analysis.html" />
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5436923510883200" crossorigin="anonymous"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=M+PLUS+Rounded+1c:wght@400;700;800&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet" />
+  <script type="application/ld+json">
+  {
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "ポコっとライト全盤面解析｜解ける盤面の割合と最短手数を型・サイズ別に全部数えた",
+  "description": "プラス型・バツ型・行列型の3種類×3×3〜6×6の全盤面をコンピュータで解析。解ける盤面の割合・最悪ケースの手数・最短手数の分布を厳密に計算した結果を公開します。",
+  "url": "https://boardgamecat.com/blog/poko-light-complete-analysis.html",
+  "datePublished": "2026-08-30",
+  "dateModified": "2026-08-30",
+  "inLanguage": "ja",
+  "author": {
+    "@type": "Person",
+    "name": "ボドゲ広場 管理人",
+    "url": "https://boardgamecat.com/about"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "ボドゲ広場",
+    "url": "https://boardgamecat.com"
+  },
+  "about": {
+    "@type": "Game",
+    "name": "ポコっとライト",
+    "url": "https://boardgamecat.com/games/poko-light"
+  }
+}
+  </script>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #1a1c30; color: #fff; font-family: 'M PLUS Rounded 1c', 'Noto Sans JP', sans-serif; line-height: 1.8; -webkit-font-smoothing: antialiased; }
+    a { color: inherit; text-decoration: none; }
+    header { background: rgba(26,28,48,0.95); border-bottom: 2px solid rgba(255,255,255,0.07); padding: 14px 20px; position: sticky; top: 0; z-index: 10; backdrop-filter: blur(20px); }
+    .header-inner { max-width: 720px; margin: 0 auto; display: flex; align-items: center; gap: 8px; }
+    .breadcrumb-link { font-size: 12px; color: rgba(255,255,255,0.45); }
+    .breadcrumb-link:hover { color: #fde68a; }
+    .sep { color: rgba(255,255,255,0.2); font-size: 12px; }
+    .current-bc { font-size: 12px; color: rgba(255,255,255,0.6); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .container { max-width: 720px; margin: 0 auto; padding: 0 20px 80px; }
+    .article-header { padding: 36px 0 28px; }
+    .tag { display: inline-block; font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: #fde68a; background: rgba(253,230,138,0.12); border: 1px solid rgba(253,230,138,0.35); padding: 3px 10px; border-radius: 20px; margin-bottom: 14px; }
+    h1 { font-family: 'M PLUS Rounded 1c', sans-serif; font-size: 24px; font-weight: 900; color: #ffffff; line-height: 1.55; margin-bottom: 14px; }
+    .meta { font-size: 11px; color: rgba(255,255,255,0.3); }
+    .divider { height: 1px; background: linear-gradient(to right, transparent, rgba(255,255,255,0.1), transparent); margin: 0 0 28px; }
+    .lead { font-size: 14px; color: rgba(255,255,255,0.75); background: rgba(255,255,255,0.04); border-left: 3px solid #fde68a; padding: 14px 16px; border-radius: 0 8px 8px 0; margin-bottom: 32px; line-height: 1.8; }
+    .toc { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 18px 20px; margin-bottom: 32px; }
+    .toc-title { font-size: 11px; letter-spacing: 0.15em; color: #fde68a; margin-bottom: 10px; font-weight: 700; }
+    .toc ol { padding-left: 20px; margin: 0; }
+    .toc li { font-size: 13px; color: rgba(255,255,255,0.65); margin-bottom: 5px; }
+    .toc a:hover { color: #fff; }
+    h2 { font-family: 'M PLUS Rounded 1c', sans-serif; font-size: 18px; font-weight: 700; color: #fff; margin: 36px 0 12px; padding-left: 12px; border-left: 3px solid #fde68a; line-height: 1.5; scroll-margin-top: 70px; }
+    h3 { font-size: 15px; font-weight: 700; color: rgba(255,255,255,0.9); margin: 24px 0 8px; }
+    p { font-size: 14px; color: rgba(255,255,255,0.72); margin-bottom: 16px; line-height: 1.85; }
+    ul, ol { padding-left: 22px; margin-bottom: 16px; }
+    li { font-size: 14px; color: rgba(255,255,255,0.72); margin-bottom: 6px; line-height: 1.8; }
+    strong { color: rgba(255,255,255,0.95); }
+    .info-box { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 18px 20px; margin: 20px 0; }
+    .info-box-title { font-size: 11px; letter-spacing: 0.15em; color: #fde68a; margin-bottom: 10px; font-weight: 700; }
+    .table-wrap { overflow-x: auto; margin: 20px 0 28px; }
+    .card-table { width: 100%; border-collapse: collapse; min-width: 460px; }
+    .card-table th { font-size: 11px; letter-spacing: 0.1em; color: #fde68a; font-weight: 700; padding: 8px 12px; border-bottom: 1px solid rgba(253,230,138,0.28); text-align: left; white-space: nowrap; }
+    .card-table td { font-size: 13px; color: rgba(255,255,255,0.7); padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.06); line-height: 1.6; vertical-align: top; white-space: nowrap; }
+    .card-table tr:last-child td { border-bottom: none; }
+    .card-num { font-weight: 700; color: #fde68a; font-size: 14px; white-space: nowrap; }
+    .hi { color: #fde68a; font-weight: 700; }
+    .tip-box { background: rgba(253,230,138,0.08); border: 1px solid rgba(253,230,138,0.22); border-radius: 14px; padding: 16px 18px; margin: 24px 0; }
+    .tip-label { font-size: 10px; letter-spacing: 0.2em; color: #fde68a; font-weight: 700; margin-bottom: 8px; }
+    .tip-box p { font-size: 13px; color: rgba(255,255,255,0.68); margin: 0; }
+    .warn-box { background: rgba(234,179,8,0.06); border: 1px solid rgba(234,179,8,0.2); border-radius: 14px; padding: 16px 18px; margin: 20px 0; }
+    .warn-label { font-size: 10px; letter-spacing: 0.2em; color: #eab308; font-weight: 700; margin-bottom: 8px; }
+    .warn-box p { font-size: 13px; color: rgba(255,255,255,0.65); margin: 0; }
+    .diagram { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; background: rgba(0,0,0,0.28); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 16px 18px; margin: 18px 0; font-size: 13px; line-height: 1.7; color: rgba(255,255,255,0.8); overflow-x: auto; white-space: pre; }
+    .bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; font-size: 12px; }
+    .bar-label { width: 46px; text-align: right; color: rgba(255,255,255,0.5); flex-shrink: 0; }
+    .bar-track { flex: 1; background: rgba(255,255,255,0.06); border-radius: 4px; height: 14px; overflow: hidden; }
+    .bar-fill { background: linear-gradient(90deg, #fde68a, #b45309); height: 100%; border-radius: 4px; }
+    .bar-val { width: 78px; color: rgba(255,255,255,0.45); font-size: 11px; flex-shrink: 0; }
+    .cta { display: block; background: linear-gradient(135deg, #fde68a, #b45309); color: #1a1c30; text-align: center; padding: 18px 24px; border-radius: 999px; font-weight: 700; font-size: 16px; margin: 36px 0 20px; box-shadow: 0 0 24px rgba(253,230,138,0.35); transition: opacity 0.2s; font-family: 'M PLUS Rounded 1c', sans-serif; }
+    .cta:hover { opacity: 0.9; }
+    .cta-sub { font-size: 11px; font-weight: 400; opacity: 0.75; display: block; margin-top: 4px; }
+    .author-box { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 18px 20px; margin: 32px 0; }
+    .author-label { font-size: 9px; letter-spacing: 0.2em; color: rgba(255,255,255,0.35); font-weight: 700; margin-bottom: 6px; }
+    .author-name { font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 6px; }
+    .author-bio { font-size: 13px; color: rgba(255,255,255,0.6); line-height: 1.75; margin: 0; }
+    .related { margin-top: 48px; padding-top: 28px; border-top: 1px solid rgba(255,255,255,0.08); }
+    .related-title { font-size: 11px; letter-spacing: 0.2em; color: rgba(255,255,255,0.35); margin-bottom: 14px; }
+    .related-list { display: flex; flex-direction: column; gap: 10px; }
+    .related-link { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 12px 16px; font-size: 13px; color: rgba(255,255,255,0.7); transition: border-color 0.2s; }
+    .related-link:hover { border-color: rgba(253,230,138,0.3); color: #fff; }
+    footer { border-top: 2px solid rgba(255,255,255,0.06); padding: 32px 20px; text-align: center; }
+    .footer-logo { font-size: 11px; color: #ffd43b; letter-spacing: 0.2em; margin-bottom: 10px; }
+    .footer-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 20px; margin-bottom: 14px; }
+    .footer-links a { font-size: 11px; color: rgba(255,255,255,0.4); white-space: nowrap; }
+    .footer-links a:hover { color: rgba(255,255,255,0.7); }
+    .footer-copy { font-size: 11px; color: rgba(255,255,255,0.25); }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <a href="/" class="breadcrumb-link">ボドゲ広場</a>
+      <span class="sep">/</span>
+      <a href="/blog/" class="breadcrumb-link">ブログ</a>
+      <span class="sep">/</span>
+      <span class="current-bc">ポコっとライト全盤面解析</span>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="article-header">
+      <span class="tag">データ解析</span>
+      <h1>ポコっとライト全盤面解析<br>解ける盤面の割合と最短手数を型・サイズ別に全部数えた</h1>
+      <p class="meta">2026.08.30 ｜ ボドゲ広場</p>
+    </div>
+    <div class="divider"></div>
+
+    <div class="lead">ポコっとライトには<strong>「どう頑張っても絶対に解けない盤面」が存在します</strong>。しかもその割合は型とサイズによって大きく違い、4×4のプラス型では<strong>全パターンのうち解けるのはたった1/16</strong>です。この記事では、プラス型・バツ型・行列型の3種類×3×3〜6×6の全盤面をコンピュータで解析し、「解ける盤面の割合」「最悪ケースは何手か」「最短手数の分布」を厳密に求めた結果を公開します。攻略シリーズ①〜⑥で解説した解き方が、数字の裏付けとしてどう効いてくるのかも分かります。</div>
+
+    <div class="toc">
+      <p class="toc-title">この記事の内容</p>
+      <ol>
+        <li><a href="#naze">なぜ「絶対に解けない盤面」が生まれるのか</a></li>
+        <li><a href="#houhou">どうやって数えたか（2通りの方法で検算）</a></li>
+        <li><a href="#wariai">結果①：解ける盤面の割合</a></li>
+        <li><a href="#saiaku">結果②：最悪の盤面は何手かかるか</a></li>
+        <li><a href="#bunpu">結果③：最短手数の分布</a></li>
+        <li><a href="#imi">この数字から言える実戦的なこと</a></li>
+        <li><a href="#seikaku">型ごとの「性格」の違い</a></li>
+        <li><a href="#faq">よくある質問</a></li>
+      </ol>
+    </div>
+
+    <h2 id="naze">なぜ「絶対に解けない盤面」が生まれるのか</h2>
+    <p>まず、ポコっとライトというパズルの構造を整理します。攻略シリーズ①でも触れましたが、このゲームには2つの決定的な性質があります。</p>
+    <ul>
+      <li><strong>同じマスを2回タップすると元に戻る</strong>（＝各マスは「押す」か「押さない」かの2択でしかない）</li>
+      <li><strong>タップの順番は結果に影響しない</strong>（＝どの順で押しても、押した集合が同じなら盤面も同じ）</li>
+    </ul>
+    <p>この2つが意味するのは、<strong>「解答＝どのマスを押すかの組み合わせ」がすべて</strong>だということです。手順を工夫する余地は一切なく、n×nの盤面なら考えるべき解答候補はちょうど 2<sup>n²</sup> 通りしかありません。</p>
+    <p>一方で、初期盤面のパターン数も同じ 2<sup>n²</sup> 通りです。ここで重要なのは、<strong>「押し方の集合」から「作れる盤面」への対応が1対1とは限らない</strong>という点です。</p>
+
+    <div class="info-box">
+      <p class="info-box-title">解けない盤面が生まれる仕組み</p>
+      <p style="margin:0;">「押しても押さなくても盤面が変わらない押し方」——つまり<strong>何マスか押しているのに全体としては何も起きない組み合わせ</strong>が存在する型・サイズがあります。こういう組み合わせがk種類分あると、押し方は 2<sup>k</sup> 通りずつ同じ盤面に重なってしまい、その分だけ「どうやっても到達できない盤面」が生まれます。到達できない盤面から始めれば、当然クリアできません。</p>
+    </div>
+
+    <p>この「押しているのに何も起きない組み合わせ」は、パズル研究の世界では<strong>クワイエットパターン（静かな模様）</strong>と呼ばれます。存在するかどうか、何種類あるかは、盤面のサイズと影響範囲（プラス型かバツ型か行列型か）だけで決まります。そこを全部数えたのが以下の結果です。</p>
+
+    <h2 id="houhou">どうやって数えたか（2通りの方法で検算）</h2>
+    <p>数え方には2つのアプローチを使い、<strong>結果が完全に一致することを確認しています</strong>。片方だけだと計算ミスに気づけないためです。</p>
+
+    <h3>方法A：総当たり</h3>
+    <p>すべての押し方（3×3なら512通り、5×5なら3355万通り）を実際に適用して、どの盤面が作れるかを記録します。同じ盤面が複数の押し方で作れる場合は、<strong>いちばん押す枚数が少ないものを最短手数として採用</strong>します。素朴ですが、間違いようがない方法です。</p>
+
+    <h3>方法B：線形代数で解く</h3>
+    <p>「押す／押さない」は2進数の世界（0と1しかなく、1+1=0）での足し算として扱えます。この見方をすると盤面の変化は行列の掛け算になり、解けるかどうかは連立方程式が解を持つかどうかの問題に変わります。クワイエットパターンは、この方程式の「自明でない解」として直接求まります。</p>
+
+    <div class="tip-box">
+      <p class="tip-label">検算の結果</p>
+      <p>3×3・4×4・5×5の全型（9パターン）について、AとBの分布が1件残らず一致しました。また5×5プラス型の最悪ケース「15手」は、海外のライツアウト研究で古くから知られている値と一致しています。外部の既知の値と合うことも確認済みです。</p>
+    </div>
+
+    <h2 id="wariai">結果①：解ける盤面の割合</h2>
+    <p>まずいちばん驚く数字から。<strong>ランダムに点灯パターンを作ったとき、それが解ける確率</strong>です。</p>
+
+    <div class="table-wrap">
+      <table class="card-table">
+        <thead>
+          <tr><th>サイズ</th><th>プラス型（＋）</th><th>バツ型（✕）</th><th>行列型（田）</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="card-num">3×3</td><td class="hi">100%（全部解ける）</td><td class="hi">100%（全部解ける）</td><td>6.25%（1/16）</td></tr>
+          <tr><td class="card-num">4×4</td><td>6.25%（1/16）</td><td>6.25%（1/16）</td><td class="hi">100%（全部解ける）</td></tr>
+          <tr><td class="card-num">5×5</td><td>25%（1/4）</td><td>6.25%（1/16）</td><td>0.39%（1/256）</td></tr>
+          <tr><td class="card-num">6×6</td><td class="hi">100%（全部解ける）</td><td class="hi">100%（全部解ける）</td><td class="hi">100%（全部解ける）</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>サイズが大きいほど難しくなる、という単純な話ではまったくないことが分かります。<strong>3×3と6×6はどの型でも必ず解ける</strong>のに、間の4×4と5×5では解けない盤面が大量に存在します。</p>
+    <p>とくに極端なのが<strong>行列型の5×5で、解けるのは3355万通り中13万通り、わずか0.39%</strong>です。ランダムに点灯パターンを作ったら、256回に255回は「絶対にクリアできない問題」になってしまう計算になります。</p>
+
+    <div class="warn-box">
+      <p class="warn-label">パズルを作る側の注意点</p>
+      <p>この性質があるので、この手のパズルで出題される盤面は「ランダムに点灯させて作る」のではなく、<strong>全点灯の状態からランダムにタップして作る</strong>のが確実です。逆再生すれば必ず戻せるので、解ける盤面だけを出題できます。</p>
+    </div>
+
+    <h2 id="saiaku">結果②：最悪の盤面は何手かかるか</h2>
+    <p>次に、<strong>解ける盤面の中でいちばん手数がかかるもの</strong>——つまりそのサイズ・型における「最難問」が何手なのかを調べました。あわせて平均も出しています。</p>
+
+    <div class="table-wrap">
+      <table class="card-table">
+        <thead>
+          <tr><th>型 / サイズ</th><th>3×3</th><th>4×4</th><th>5×5</th><th>6×6</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="card-num">プラス型 最大</td><td>9手</td><td class="hi">7手</td><td>15手</td><td>36手</td></tr>
+          <tr><td class="card-num">プラス型 平均</td><td>4.50手</td><td>4.43手</td><td>9.90手</td><td>18.00手</td></tr>
+          <tr><td class="card-num">バツ型 最大</td><td>9手</td><td>8手</td><td>13手</td><td>36手</td></tr>
+          <tr><td class="card-num">バツ型 平均</td><td>4.50手</td><td>4.81手</td><td>8.49手</td><td>18.00手</td></tr>
+          <tr><td class="card-num">行列型 最大</td><td class="hi">3手</td><td>16手</td><td>8手</td><td>36手</td></tr>
+          <tr><td class="card-num">行列型 平均</td><td>1.88手</td><td>8.00手</td><td>5.71手</td><td>18.00手</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>ここで面白い逆転が起きています。<strong>解ける盤面が少ない型ほど、解けたときは簡単</strong>なのです。</p>
+    <ul>
+      <li>プラス型4×4は解ける盤面が1/16しかないが、<strong>解けるなら必ず7手以内</strong>で終わる</li>
+      <li>行列型5×5は解ける盤面が1/256しかないが、<strong>最悪でも8手</strong></li>
+      <li>逆に必ず解ける6×6は、<strong>最悪36手（全マス押す盤面が実在する）</strong></li>
+    </ul>
+    <p>理由は単純で、クワイエットパターンが多いということは「同じ盤面を作る押し方の選択肢が多い」ということだからです。選択肢が多ければ、その中からより少ない手数の押し方を選べます。<strong>解ける盤面が少ないことと、解けたときに楽なことは、同じ原因の裏表</strong>なわけです。</p>
+
+    <div class="tip-box">
+      <p class="tip-label">6×6が一番キツい</p>
+      <p>6×6はどんな盤面でも必ず解けますが、解答が常に1通りしかないため「もっと短い押し方」に逃げられません。平均18手、最悪は36マス全部を押すことになります。手数を短くしたいなら6×6は諦めて、正確さで攻めるべきサイズです。</p>
+    </div>
+
+    <h2 id="bunpu">結果③：最短手数の分布</h2>
+    <p>平均や最大だけだと実感が湧かないので、<strong>解ける盤面が何手の問題として何通りあるか</strong>の内訳も出しました。</p>
+
+    <h3>プラス型 4×4（解ける盤面 4,096通り）</h3>
+    <div class="bar-row"><span class="bar-label">0手</span><span class="bar-track"><span class="bar-fill" style="width:0.1%"></span></span><span class="bar-val">1通り</span></div>
+    <div class="bar-row"><span class="bar-label">1手</span><span class="bar-track"><span class="bar-fill" style="width:1.1%"></span></span><span class="bar-val">16通り</span></div>
+    <div class="bar-row"><span class="bar-label">2手</span><span class="bar-track"><span class="bar-fill" style="width:8.3%"></span></span><span class="bar-val">120通り</span></div>
+    <div class="bar-row"><span class="bar-label">3手</span><span class="bar-track"><span class="bar-fill" style="width:38.9%"></span></span><span class="bar-val">560通り</span></div>
+    <div class="bar-row"><span class="bar-label">4手</span><span class="bar-track"><span class="bar-fill" style="width:96.3%"></span></span><span class="bar-val">1,387通り</span></div>
+    <div class="bar-row"><span class="bar-label">5手</span><span class="bar-track"><span class="bar-fill" style="width:100%"></span></span><span class="bar-val">1,440通り</span></div>
+    <div class="bar-row"><span class="bar-label">6手</span><span class="bar-track"><span class="bar-fill" style="width:37.5%"></span></span><span class="bar-val">540通り</span></div>
+    <div class="bar-row"><span class="bar-label">7手</span><span class="bar-track"><span class="bar-fill" style="width:2.2%"></span></span><span class="bar-val">32通り</span></div>
+    <p style="margin-top:14px;">7手かかる盤面は4,096通り中わずか32通り（0.8%）です。<strong>4×4で7手かかったなら、それは実質的な最難問を引き当てたということ</strong>になります。</p>
+
+    <h3>プラス型 5×5（解ける盤面 8,388,608通り）</h3>
+    <div class="bar-row"><span class="bar-label">5手以下</span><span class="bar-track"><span class="bar-fill" style="width:3.5%"></span></span><span class="bar-val">68,406通り</span></div>
+    <div class="bar-row"><span class="bar-label">6〜8手</span><span class="bar-track"><span class="bar-fill" style="width:83.3%"></span></span><span class="bar-val">1,625,615通り</span></div>
+    <div class="bar-row"><span class="bar-label">9〜11手</span><span class="bar-track"><span class="bar-fill" style="width:100%"></span></span><span class="bar-val">5,216,019通り</span></div>
+    <div class="bar-row"><span class="bar-label">12〜14手</span><span class="bar-track"><span class="bar-fill" style="width:75.0%"></span></span><span class="bar-val">1,471,218通り</span></div>
+    <div class="bar-row"><span class="bar-label">15手</span><span class="bar-track"><span class="bar-fill" style="width:0.4%"></span></span><span class="bar-val">7,350通り</span></div>
+    <p style="margin-top:14px;">5×5は<strong>9〜11手に全体の62%が集中</strong>しています。一方で最悪の15手は7,350通り（0.09%）と非常にレアです。「5×5は10手前後で解けて当たり前、15手かかったら記録もの」という感覚が数字で裏づけられます。</p>
+
+    <h3>行列型 5×5（解ける盤面 131,072通り）</h3>
+    <div class="diagram">0手 …          1通り
+1手 …         25通り
+2手 …        300通り
+3手 …      2,300通り
+4手 …     11,775通り
+5手 …     36,571通り
+6手 …     51,540通り  ← 最頻
+7手 …     26,640通り
+8手 …      1,920通り</div>
+    <p>行列型5×5は、解ける盤面自体が0.39%しかないぶん、当たったときは<strong>ほぼ確実に4〜7手で終わります</strong>。攻略シリーズ⑥で紹介した「奇数サイズは消えているマスをそのまま押すだけ」という手順が、いかに強力かが分かる数字です。</p>
+
+    <h2 id="imi">この数字から言える実戦的なこと</h2>
+
+    <h3>詰まったときに「自分のせい」とは限らない</h3>
+    <p>プラス型4×4で行き詰まったとき、<strong>その盤面が最初から解けない可能性は16分の15</strong>もあります。もちろん実際のゲームでは解ける盤面だけが出題されるはずですが、友達が適当に作った問題や、自分でランダムに点灯させて作った問題に挑む場合は、<strong>解けないほうが普通</strong>だと思っておいたほうがいいくらいです。</p>
+
+    <h3>手数の目標設定に使える</h3>
+    <p>平均値が分かっているので、自分の実力を測る基準になります。</p>
+    <ul>
+      <li>プラス型3×3：平均4.5手 → <strong>5手前後で解ければ標準</strong></li>
+      <li>プラス型4×4：平均4.4手 → <strong>5手を超えたら回り道をしている</strong>可能性が高い</li>
+      <li>プラス型5×5：平均9.9手 → <strong>10手前後が目安、13手以上はやや遠回り</strong></li>
+      <li>プラス型6×6：平均18手 → <strong>手数は減らせないので正確さ勝負</strong></li>
+    </ul>
+
+    <h3>追いかけ法は「ほぼ最短」だと分かる</h3>
+    <p>攻略シリーズ②〜⑤で紹介した<strong>追いかけ法</strong>は、上の行のOFFを下の行で消していく機械的な手順です。この手順が出す手数は最短とは限りませんが、5×5の分布を見ると大半の盤面が9〜11手に収まっており、<strong>最短との差が数手しかない</strong>ことが分かります。暗算で最短を探すより、追いかけ法を正確に回したほうが結果的に速いということです。</p>
+
+    <h2 id="seikaku">型ごとの「性格」の違い</h2>
+
+    <div class="info-box">
+      <p class="info-box-title">プラス型（＋）— 標準にして最難関</p>
+      <p style="margin:0;">4×4と5×5の両方で解けない盤面を持ち、5×5の最悪ケース15手は全型・全サイズを通しても屈指の難しさです。追いかけ法という定型手順が使える唯一の型でもあるので、<strong>手順を覚えているかどうかで差が最も出る型</strong>といえます。</p>
+    </div>
+
+    <div class="info-box">
+      <p class="info-box-title">バツ型（✕）— 手数は短いが手順がない</p>
+      <p style="margin:0;">最悪ケースはプラス型5×5の15手に対して13手と、数字の上ではやや簡単です。ところが定型手順が存在しないため、<strong>体感難易度は数字より高くなります</strong>。コーナーの影響範囲が「自分＋斜め1マス」だけという性質を手がかりにするしかありません。</p>
+    </div>
+
+    <div class="info-box">
+      <p class="info-box-title">行列型（田）— 数えれば終わる</p>
+      <p style="margin:0;">3×3で平均1.88手、5×5でも平均5.71手と、<strong>全型中もっとも手数が短い</strong>型です。1回のタップで動くマスが多いぶん、少ない手数で盤面を作り変えられます。手順も機械的なので、慣れれば考える時間はほぼゼロになります。</p>
+    </div>
+
+    <h2 id="faq">よくある質問</h2>
+
+    <h3>なぜ3×3と6×6はどんな盤面でも解けるのですか？</h3>
+    <p>このサイズでは<strong>クワイエットパターン（押しても何も起きない組み合わせ）が存在しない</strong>からです。その結果、押し方と盤面が完全に1対1で対応し、どの盤面にもちょうど1通りの解答が存在します。解けない盤面が生まれる余地がありません。</p>
+
+    <h3>「解答が1通りしかない」と難しくなるのですか？</h3>
+    <p>クリアできるかどうかで言えば同じですが、<strong>手数は増えます</strong>。解答が複数あればその中から短いものを選べますが、1通りしかなければ良し悪しに関係なくその押し方をするしかありません。6×6の平均が18手と大きいのはこれが理由です。</p>
+
+    <h3>最短手数を自分で見つける方法はありますか？</h3>
+    <p>プラス型なら、まず追いかけ法で1つ解答を作り、その後<strong>クワイエットパターンを足し引きして押す枚数が減らないか試す</strong>のが理屈上の最短手順です。ただし5×5の場合クワイエットパターンは4通りしかないので、試す価値があるのは実質3パターンだけ。手作業でやるなら「追いかけ法の結果でよし」と割り切るほうが現実的です。</p>
+
+    <h3>この解析はボドゲ広場のポコっとライトに当てはまりますか？</h3>
+    <p>はい。この記事の計算は、ボドゲ広場のポコっとライトで実装している3つの影響範囲（プラス型＝上下左右＋自分、バツ型＝斜め4方向＋自分、行列型＝同じ行と列すべて）と、「全点灯でクリア」という条件に厳密に合わせて行っています。</p>
+
+    <h3>もっと大きい盤面はどうなりますか？</h3>
+    <p>7×7以上でも同じ手法で計算できますが、盤面パターン数が 2<sup>49</sup> 以上（56京通り以上）になるため、総当たりでの検算は現実的ではなくなります。線形代数側の計算だけなら可能なので、いずれ別記事で扱う予定です。</p>
+
+    <a href="https://boardgamecat.com/games/poko-light" class="cta">
+      ポコっとライトを今すぐ無料で遊ぶ →
+      <span class="cta-sub">登録不要・ブラウザで即プレイ</span>
+    </a>
+
+    <div class="author-box">
+      <p class="author-label">AUTHOR</p>
+      <p class="author-name">ボドゲ広場 管理人</p>
+      <p class="author-bio">ボードゲーム歴10年以上の個人開発者。ブラウザで誰でも気軽に遊べるゲームを作りたくてボドゲ広場を開設。この記事の数値は、ポコっとライトの実装ルールに合わせて書いた解析プログラムで全盤面を計算し、独立した2通りの方法で検算した結果です。</p>
+    </div>
+
+    <div class="related">
+      <p class="related-title">関連記事</p>
+      <div class="related-list">
+        <a href="/blog/poko-light-series-intro.html" class="related-link">ポコっとライト攻略シリーズ①｜仕組みと基本ルール</a>
+        <a href="/blog/poko-light-plus-5x5.html" class="related-link">ポコっとライト攻略シリーズ④｜プラス型 5×5 の解き方</a>
+        <a href="/blog/poko-light-cross-row.html" class="related-link">ポコっとライト攻略シリーズ⑥｜バツ型・行列型の解き方</a>
+        <a href="/blog/marubatsu-complete-analysis.html" class="related-link">〇×ゲームの全255,168局を数えた｜先手勝ち率と、負けが確定する一手</a>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p class="footer-logo">ボドゲ広場</p>
+    <div class="footer-links">
+      <a href="/">トップ</a>
+      <a href="/blog/">ブログ</a>
+      <a href="/about">運営者情報</a>
+      <a href="/privacy-policy">プライバシーポリシー</a>
+      <a href="/terms">利用規約</a>
+      <a href="/contact">お問い合わせ</a>
+    </div>
+    <p class="footer-copy">© 2026 ボドゲ広場</p>
+  </footer>
+</body>
+</html>
