@@ -1,7 +1,16 @@
 import { useCanonical } from '../useCanonical'
 
-const LAST_UPDATED = '2026年8月12日'
+const LAST_UPDATED = '2026年9月7日'
 const CONTACT_EMAIL = 'boardgamecat@yahoo.co.jp'
+
+// 運営者のハンドルネーム。ブログ記事の著者欄・構造化データとも一致させること。
+export const AUTHOR_NAME = 'ねこまる'
+
+// 本人確認用の公開プロフィール（X / GitHub / note など、運営者本人のアカウント）。
+// E-E-A-T の Authoritativeness / Trustworthiness は「名乗った人物が実在すると
+// 読者が確認できること」で評価されるため、実際に運用しているアカウントのURLを
+// 入れると運営者情報にリンクが表示される。存在しないURLを入れてはいけない。
+export const AUTHOR_PROFILE_URL = ''
 
 function PageHeader({ title }: { title: string }) {
   return (
@@ -76,7 +85,8 @@ export default function About() {
             <tbody>
               {[
                 ['運営形態', '個人運営'],
-                ['運営者', 'ボドゲ広場 管理人'],
+                ['運営者', `${AUTHOR_NAME}（ハンドルネーム）`],
+                ...(AUTHOR_PROFILE_URL ? [['プロフィール', AUTHOR_PROFILE_URL]] : []),
                 ['連絡先', CONTACT_EMAIL],
                 ['所在地', '日本'],
                 ['ボードゲーム歴', '10年以上'],
@@ -92,6 +102,10 @@ export default function About() {
                   <td className="font-sans-jp py-3" style={{ color: 'rgba(255,255,255,0.75)' }}>
                     {label === '連絡先' ? (
                       <a href={`mailto:${value}`} className="underline" style={{ color: '#ffd43b' }}>
+                        {value}
+                      </a>
+                    ) : label === 'プロフィール' ? (
+                      <a href={value} target="_blank" rel="me noopener noreferrer" className="underline" style={{ color: '#ffd43b' }}>
                         {value}
                       </a>
                     ) : value}
