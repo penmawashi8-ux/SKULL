@@ -3,6 +3,7 @@ import Terms from './pages/Terms'
 import Contact from './pages/Contact'
 import About from './pages/About'
 import GameEmbed from './pages/GameEmbed'
+import NotFound from './pages/NotFound'
 import { useCanonical } from './useCanonical'
 import { useState } from 'react'
 
@@ -968,6 +969,9 @@ export default function App({ path: pathProp }: { path?: string } = {}) {
 
   const gamesMatch = path.match(/^\/games\/(.+)$/)
   if (gamesMatch) return <GameEmbed gameId={gamesMatch[1]} />
+
+  // トップ以外の未知のURLはトップの内容を返さない（ソフト404を作らない）
+  if (path !== '/' && path !== '' && path !== '/index.html') return <NotFound />
 
   useCanonical('/')
   const [genre, setGenre] = useState<Genre>('all')

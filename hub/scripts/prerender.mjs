@@ -32,10 +32,20 @@ function replaceOrThrow(html, pattern, replacement, label) {
   return html.replace(pattern, replacement)
 }
 
-function buildPage({ path, title, description, jsonLd, noindex = false }) {
+// AdSenseは「コンテンツがほとんど無いページに広告を出す」ことを認めていない。
+// 本文が極端に短いページ（404・お問い合わせ）では広告スクリプトを読み込まない。
+function stripAdsense(html) {
+  return html.replace(
+    /\s*<!-- Google AdSense -->\s*<script async src="https:\/\/pagead2\.googlesyndication\.com[^"]*"[\s\S]*?<\/script>/,
+    '',
+  )
+}
+
+function buildPage({ path, title, description, jsonLd, noindex = false, ads = true }) {
   const body = render(path)
   const url = `${ORIGIN}${path}`
   let out = template
+  if (!ads) out = stripAdsense(out)
 
   out = replaceOrThrow(out, /<title>[\s\S]*?<\/title>/, `<title>${title}</title>`, '<title>')
   out = replaceOrThrow(
@@ -106,6 +116,19 @@ function buildPage({ path, title, description, jsonLd, noindex = false }) {
   out = replaceOrThrow(out, /<div id="root"><\/div>/, `<div id="root">${body}</div>`, '<div id="root">')
   writeFileSync(resolve(dist, 'index.html'), out)
   console.log('prerender: / -> dist/index.html')
+}
+
+// ── ゲームIDが vercel.json の rewrite に載っているか検証 ──
+// キャッチオール rewrite を外したため、載っていないゲームページは 404 になる。
+// 追加漏れをデプロイ前にビルドで落とす。
+{
+  const vercel = JSON.parse(readFileSync(resolve(root, 'vercel.json'), 'utf8'))
+  const rule = vercel.rewrites.find(r => r.source.startsWith('/games/'))
+  const listed = rule ? rule.source.match(/\(([^)]*)\)/)[1].split('|') : []
+  const missing = Object.keys(GAME_CONTENT).filter(id => !listed.includes(id))
+  if (missing.length) {
+    throw new Error(`prerender: vercel.json の /games/ rewrite に未登録のID: ${missing.join(', ')}`)
+  }
 }
 
 // ── 各ゲームページ ──
@@ -179,6 +202,7 @@ const INFO_PAGES = [
     title: 'お問い合わせ - ボドゲ広場',
     description:
       'ボドゲ広場へのお問い合わせページ。ゲームの不具合報告・ご質問・ご要望・広告掲載のご相談はお問い合わせフォームまたはメールでご連絡ください。',
+    ads: false,   // 本文200字程度しかないため広告は出さない
   },
 ]
 for (const page of INFO_PAGES) {
@@ -193,6 +217,32 @@ for (const page of INFO_PAGES) {
   }
   writeFileSync(resolve(dist, `${page.path.slice(1)}.html`), buildPage({ ...page, jsonLd }))
   console.log(`prerender: ${page.path} -> dist${page.path}.html`)
+}
+
+// ── 404ページ ──
+// vercel.json のキャッチオール rewrite を外したので、未知のURLは Vercel が
+// この 404.html を HTTP 404 で返す（従来はトップの内容を 200 で返していた）。
+{
+  const path = '/404'
+  writeFileSync(
+    resolve(dist, '404.html'),
+    buildPage({
+      path,
+      title: 'ページが見つかりません - ボドゲ広場',
+      description: 'お探しのページは見つかりませんでした。ボドゲ広場のトップページから無料のオンラインボードゲームをお楽しみください。',
+      jsonLd: {
+        '@context': 'https://schema.org',
+        '@type': 'WebPage',
+        name: 'ページが見つかりません',
+        url: `${ORIGIN}${path}`,
+        inLanguage: 'ja',
+        isPartOf: { '@type': 'WebSite', name: 'ボドゲ広場', url: ORIGIN },
+      },
+      noindex: true,
+      ads: false,
+    }),
+  )
+  console.log('prerender: /404 -> dist/404.html')
 }
 
 console.log('prerender: 完了')

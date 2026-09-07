@@ -47,7 +47,6 @@
     { "source": "/about", "destination": "/about.html" },
     { "source": "/privacy-policy", "destination": "/privacy-policy.html" },
     { "source": "/terms", "destination": "/terms.html" },
-    { "source": "/contact", "destination": "/contact.html" },
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/contact", "destination": "/contact.html" }
   ]
 }
