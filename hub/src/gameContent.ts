@@ -64,6 +64,14 @@ export interface GameContent {
   /** サイト内の似ているゲーム。回遊導線として使う。 */
   similar: SimilarGame[]
   related: RelatedArticle[]
+  /**
+   * 検索結果に出す title / description の個別指定。省略すると
+   * prerender.mjs の共通テンプレートが使われる。
+   * 共通テンプレートは全ゲームで同じ文型になるため、検索需要が大きく
+   * 他サイトと競合するゲームだけ、固有の差別化要素を前に出すために使う。
+   */
+  seoTitle?: string
+  seoDescription?: string
 }
 
 /** 全ゲーム共通で聞かれる質問。各ゲームの faq の末尾に自動で連結される。 */
@@ -328,6 +336,8 @@ export const GAME_CONTENT: Record<string, GameContent> = {
 
   'page-one': {
     name: 'ページワン',
+    seoTitle: 'ページワンをブラウザで無料プレイ｜3〜4人・CPU対戦つき - ボドゲ広場',
+    seoDescription: 'ページワンを登録不要・インストール不要で無料プレイ。手札1枚で「ページワン！」を宣言し、忘れると5枚ペナルティ。宣言の自動/手動、ジョーカー上がり禁止も設定できます。CPU対戦で1人からすぐ遊べます。',
     nameEn: 'PAGE ONE',
     url: 'https://pageone.boardgamecat.com',
     accent: '#93c5fd',
@@ -811,6 +821,8 @@ export const GAME_CONTENT: Record<string, GameContent> = {
 
   daifugo: {
     name: '大富豪',
+    seoTitle: '大富豪をブラウザで無料プレイ｜ローカルルール21種を切替 - ボドゲ広場',
+    seoDescription: '大富豪を登録不要・インストール不要で無料プレイ。8切り・革命・スペ3返し・都落ちなどローカルルール21種を1つずつオン/オフでき、自作ルールも作れます。CPU対戦で1人でもすぐ始められ、スマホでも遊べます。',
     nameEn: 'DAIFUGO',
     url: '/play/daifugo/',
     accent: '#fb7185',

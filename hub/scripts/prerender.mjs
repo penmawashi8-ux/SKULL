@@ -137,8 +137,10 @@ for (const [id, game] of Object.entries(GAME_CONTENT)) {
   const path = `/games/${id}`
   const players = game.info.find(i => i.label === 'プレイ人数')?.value ?? ''
   const genre = game.info.find(i => i.label === 'ジャンル')?.value ?? ''
-  const title = `${game.name}を無料でオンラインプレイ｜遊び方・ルール解説 - ボドゲ広場`
-  const description = `${game.name}（${game.nameEn}）はブラウザで無料で遊べるオンラインゲーム（${genre}）。${game.tagline}。プレイ人数${players}。登録不要・インストール不要でスマホからもすぐ遊べます。遊び方・ルールも解説。`
+  // 共通テンプレートは全ゲームで同じ文型になるため、検索需要が大きく他サイトと
+  // 競合するゲームだけ gameContent 側で seoTitle / seoDescription を指定して上書きする。
+  const title = game.seoTitle ?? `${game.name}を無料でオンラインプレイ｜遊び方・ルール解説 - ボドゲ広場`
+  const description = game.seoDescription ?? `${game.name}（${game.nameEn}）はブラウザで無料で遊べるオンラインゲーム（${genre}）。${game.tagline}。プレイ人数${players}。登録不要・インストール不要でスマホからもすぐ遊べます。遊び方・ルールも解説。`
   const jsonLd = {
     '@context': 'https://schema.org',
     '@graph': [
