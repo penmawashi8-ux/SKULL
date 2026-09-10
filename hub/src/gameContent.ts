@@ -401,6 +401,7 @@ export const GAME_CONTENT: Record<string, GameContent> = {
       { name: '7並べ', id: 'sevens', reason: '出せないと詰むという緊張感が近い1本' },
     ],
     related: [
+      { title: 'ページワンのルール完全ガイド｜宣言忘れ5枚ペナルティとジョーカーの扱い', href: '/blog/pageone-rules.html' },
       { title: 'ページワンのルールと遊び方｜宣言・ジョーカー完全解説', href: '/blog/pageone-online-free.html' },
       { title: 'ページワン攻略ガイド｜手札を0にする戦術', href: '/blog/pageone-strategy.html' },
       { title: 'トランプゲームの選び方ガイド｜人数・時間・覚えやすさで選ぶ', href: '/blog/trump-games-guide.html' },
