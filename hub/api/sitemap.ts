@@ -89,11 +89,6 @@ export default function handler(_req: any, res: any) {
     <priority>0.3</priority>
   </url>
   <url>
-    <loc>https://boardgamecat.com/contact</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.4</priority>
-  </url>
-  <url>
     <loc>https://boardgamecat.com/about</loc>
     <changefreq>monthly</changefreq>
     <priority>0.4</priority>

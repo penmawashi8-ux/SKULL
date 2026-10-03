@@ -11,6 +11,15 @@
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <title>BOMB | ボドゲ広場 - 無料で遊べるブラフ＆心理戦カードゲーム</title>
     <meta name="description" content="爆弾かリンゴか——ブラフと心理戦が熱いパーティゲーム。2〜6人でオンライン対戦できる無料のブラウザゲーム。仲間を騙して爆発を回避せよ！" />
+    <!--
+      このサブドメインはゲーム本体のSPAで、JSを実行しないクローラーには
+      本文が30字ほどしか見えない。審査対象ドメイン boardgamecat.com に
+      本文のないページを並べることになり、AdSense の
+      「screens without publisher-content」に当たるため検索インデックスから外す。
+      説明文を持つ正規のページは https://boardgamecat.com/games/bomb 側。
+      follow は残し、トップへ戻るリンクの評価は渡す。
+    -->
+    <meta name="robots" content="noindex, follow" />
     <!-- OGP -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://bomb.boardgamecat.com/" />
