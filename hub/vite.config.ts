@@ -25,9 +25,18 @@ export default defineConfig(({ isSsrBuild }) => ({
             },
             workbox: {
               globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
-              // /play/ 配下はゲーム本体（静的HTML）。SPAのindex.htmlに
-              // フォールバックさせず、常に実ファイルを返す。
-              navigateFallbackDenylist: [/^\/play\//],
+              // ナビゲーションは既定で index.html（SPA）にフォールバックする。
+              // SPAのルートに無いパスは App.tsx が <NotFound /> を返すため、
+              // 実ファイルがあるのに404画面が出てしまう。
+              // SPAが扱わないURLはここで除外し、常にネットワークの応答を使う。
+              navigateFallbackDenylist: [
+                // ゲーム本体（静的HTML）
+                /^\/play\//,
+                // クローラー向けのファイル。globPatterns が xml/txt を拾わないため
+                // precache にも入らず、除外しないと必ずSPAの404になる。
+                /^\/sitemap\.xml$/,
+                /^\/robots\.txt$/,
+              ],
             },
           }),
         ]),
