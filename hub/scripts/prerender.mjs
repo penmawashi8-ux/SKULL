@@ -6,7 +6,7 @@
 //   dist/index.html                … トップページ（本文注入済みで上書き）
 //   dist/games/<id>.html           … 各ゲームページ
 //   dist/about.html ほか静的ページ  … vercel.json の rewrites で拡張子なしURLに対応
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -246,6 +246,45 @@ for (const page of INFO_PAGES) {
     }),
   )
   console.log('prerender: /404 -> dist/404.html')
+}
+
+// ── sitemap.xml ──
+// 以前は api/sitemap.ts で動的に生成し vercel.json の rewrite で
+// /sitemap.xml に割り当てていたが、本番で 404 になっていた
+// （robots.txt が指す先が存在しない状態だった）。
+// 静的ファイルとして出せばビルド成果物に入り、rewrite も関数も要らない。
+// URL一覧は実際に出力したページから作るので、記事を追加したときの
+// 載せ忘れも起きない。
+{
+  const urls = ['/']
+
+  for (const id of Object.keys(GAME_CONTENT)) {
+    if (!NOINDEX_GAMES.has(id)) urls.push(`/games/${id}`)
+  }
+
+  for (const page of INFO_PAGES) {
+    if (!page.noindex) urls.push(page.path)
+  }
+
+  // ブログは public/blog/ の静的HTMLがそのまま dist にコピーされる。
+  // noindex を書いた記事は載せない。
+  const blogDir = resolve(dist, 'blog')
+  for (const name of readdirSync(blogDir).sort()) {
+    if (!name.endsWith('.html')) continue
+    const html = readFileSync(resolve(blogDir, name), 'utf8')
+    if (/<meta name="robots"[^>]*noindex/i.test(html)) continue
+    urls.push(name === 'index.html' ? '/blog/' : `/blog/${name}`)
+  }
+
+  // priority と changefreq は Google が無視するため出さない。
+  // lastmod も正確な更新日を持っていないので付けない。
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${urls.map(u => `  <url><loc>${ORIGIN}${u}</loc></url>`).join('\n')}
+</urlset>
+`
+  writeFileSync(resolve(dist, 'sitemap.xml'), xml)
+  console.log(`prerender: sitemap.xml -> ${urls.length} URL`)
 }
 
 console.log('prerender: 完了')
