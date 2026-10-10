@@ -1,6 +1,15 @@
 import { useRegisterSW } from 'virtual:pwa-register/react'
 
-const SW_UPDATE_INTERVAL_MS = 60 * 1000
+// Service Worker の更新チェック間隔。
+//
+// registration.update() は毎回ネットワークへ出る（sw.js と workbox-*.js は
+// vercel.json で no-store にしてあるため、HTTPキャッシュが効かない）。
+// 60秒にしていたときは、タブを開いているだけで1時間あたり約144リクエスト
+// 発生していた。ゲームを30分遊ぶ人で72リクエストの上乗せになる。
+//
+// registerType: 'autoUpdate' なのでページを開いた時点でも更新は確認される。
+// 開きっぱなしのタブ向けの保険として1時間に1回あれば足りる。
+const SW_UPDATE_INTERVAL_MS = 60 * 60 * 1000
 
 export function UpdatePrompt() {
   const { needRefresh: [needRefresh], updateServiceWorker } = useRegisterSW({
