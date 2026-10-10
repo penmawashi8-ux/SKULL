@@ -1,7 +1,12 @@
 import { useRegisterSW } from 'virtual:pwa-register/react'
 import { motion, AnimatePresence } from 'framer-motion'
 
-const SW_UPDATE_INTERVAL_MS = 60 * 1000
+// Service Worker の更新チェック間隔。
+// registration.update() は毎回ネットワークへ出るため、60秒だとタブを
+// 開いているだけでリクエストが積み上がる。BOMBは1試合が長いので影響が大きい。
+// registerType: 'autoUpdate' によりページを開いた時点でも確認されるので、
+// 開きっぱなしのタブ向けの保険として1時間に1回あれば足りる。
+const SW_UPDATE_INTERVAL_MS = 60 * 60 * 1000
 
 export function UpdatePrompt() {
   const { needRefresh: [needRefresh], updateServiceWorker } = useRegisterSW({
