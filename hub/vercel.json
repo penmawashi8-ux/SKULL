@@ -3,6 +3,33 @@
   "outputDirectory": "dist",
   "headers": [
     {
+      "source": "/assets/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/icons/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=604800"
+        }
+      ]
+    },
+    {
+      "source": "/(favicon.ico|favicon-192.png|favicon-512.png|apple-touch-icon.png|og-image.png)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=604800"
+        }
+      ]
+    },
+    {
       "source": "/sw.js",
       "headers": [
         {

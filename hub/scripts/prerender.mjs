@@ -103,17 +103,20 @@ function buildPage({ path, title, description, jsonLd, noindex = false, ads = tr
   out = replaceOrThrow(
     out,
     /<div id="root"><\/div>/,
-    `<div id="root">${body}</div>`,
+    `<div id="root" data-prerendered="${escapeAttr(path)}">${body}</div>`,
     '<div id="root">',
   )
   return out
 }
 
 // ── トップページ: head はテンプレートのまま、本文だけ注入 ──
+// data-prerendered は main.tsx が「このHTMLは今のURL用か」を判定するのに使う。
+// Service Worker の navigateFallback で別URLにこのHTMLが出る場合があり、
+// そのときは hydrate せずクライアント描画に切り替える。
 {
   const body = render('/')
   let out = template.replace(/\s*<noscript>[\s\S]*?<\/noscript>/, '')
-  out = replaceOrThrow(out, /<div id="root"><\/div>/, `<div id="root">${body}</div>`, '<div id="root">')
+  out = replaceOrThrow(out, /<div id="root"><\/div>/, `<div id="root" data-prerendered="/">${body}</div>`, '<div id="root">')
   writeFileSync(resolve(dist, 'index.html'), out)
   console.log('prerender: / -> dist/index.html')
 }
