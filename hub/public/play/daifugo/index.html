@@ -341,7 +341,7 @@
   const RULE_DEFS = [
     { key: 'rev', name: '革命', desc: '同じ数字4枚（階段なら4枚以上）で強さが逆転する', def: true },
     { key: 'cut8', name: '8切り', desc: '8を出すと場が流れて、続けて自分から出せる', def: true },
-    { key: 'stop4', name: '4止め', desc: '8切りが出たとき、同じ枚数の4を出せば8切りを止められる（止めた人が場を流して親になる）', def: false, need: 'cut8' },
+    { key: 'stop4', name: '4止め', desc: '8切りが出たとき、4を出せば（枚数は問わない）8切りを止められる（止めた人が場を流して親になる）', def: false, need: 'cut8' },
     { key: 'spade3', name: 'スペ3返し', desc: '♠3の単騎でジョーカー単騎に勝てる（場が流れる）', def: true },
     { key: 'back11', name: '11バック（Jバック）', desc: 'J（11）を出すと、場が流れるまで強さが逆転する', def: false },
     { key: 'rev9', name: '9リバース', desc: '9を出すと手番の回り順が逆になる', def: false },
@@ -518,7 +518,7 @@
   let disconnected = [];
   let session = null;        // 連戦モード: { round, total, pts:[], daifugo, hinmin, done }
   let pending = null;        // { kind:'steal'|'give'|'drop', n, ctx }
-  let stopWindow = null;     // 4止め受付中: { by, count, asked:[] }（8切りを止められる間）
+  let stopWindow = null;     // 4止め受付中: { by, asked:[] }（8切りを止められる間）
   let selected = new Set();
   let gameOver = false;
   let busy = false;
@@ -583,9 +583,9 @@
   function canPlay(cards) {
     const p = parsePlay(cards);
     if (!p) return false;
-    // 4止め受付中: 8と同じ枚数の4（ジョーカー不可）だけ出せる
+    // 4止め受付中: 4（枚数は問わない・ジョーカー不可）だけ出せる
     if (stopWindow) {
-      return p.type === 'set' && p.rank === R4 && p.count === stopWindow.count && cards.every(c => !isJoker(c));
+      return p.type === 'set' && p.rank === R4 && cards.every(c => !isJoker(c));
     }
     // しばり: 場が開いている間は指定マーク以外出せない（ジョーカーは自由）
     if (field && bindSuits) {
@@ -825,8 +825,8 @@
     stopWindow = null;
   }
 
-  // 4止め: 8切りを止められる（同じ枚数の4を持つ）次の人を探す。全員に機会が回ったら -1
-  const canStop = i => hands[i].filter(c => !isJoker(c) && c % 13 === R4).length >= stopWindow.count;
+  // 4止め: 8切りを止められる（4を持つ）次の人を探す。全員に機会が回ったら -1
+  const canStop = i => hands[i].some(c => !isJoker(c) && c % 13 === R4);
   function nextStopper(from) {
     let i = from;
     for (let g = 0; g < playerCount; g++) {
@@ -989,11 +989,11 @@
     }
     // ✂ 8切り + 4止めあり: すぐには流さず、同じ枚数の4で止められる機会を順番に回す
     if (rankEff === 'cut' && pr.rank === R8 && rules.stop4 && !spade3Used) {
-      stopWindow = { by: p, count: pr.count, asked: [] };
+      stopWindow = { by: p, asked: [] };
       const s = nextStopper(p);
       if (s >= 0) {
         current = s;
-        setBanner('✂ 8切り！4を' + pr.count + '枚出せば止められる…' + turnPrompt(), 'good');
+        setBanner('✂ 8切り！4を出せば止められる…' + turnPrompt(), 'good');
         busy = false;
         renderAll();
         maybeCpu();
@@ -1079,7 +1079,7 @@
         const s = nextStopper(p);
         if (s < 0) { resolveCut8(); return; }
         current = s;
-        setBanner('✂ 8切り！4を' + stopWindow.count + '枚出せば止められる…' + turnPrompt(), 'good');
+        setBanner('✂ 8切り！4を出せば止められる…' + turnPrompt(), 'good');
         busy = false;
         renderAll();
         maybeCpu();
@@ -1128,7 +1128,9 @@
     }
     const jokers = hand.filter(isJoker);
     const cands = [];
-    if (!field) {
+    if (stopWindow) {
+      if (groups[R4]) cands.push([groups[R4][0]]); // 4止めは4を1枚だけ使って残りは温存
+    } else if (!field) {
       for (const r in groups) cands.push(groups[r].slice(0, 4));
       if (!cands.length && jokers.length) cands.push([jokers[0]]);
     } else if (field.jokerOnly) {
