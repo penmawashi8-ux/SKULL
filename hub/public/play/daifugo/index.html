@@ -341,7 +341,7 @@
   const RULE_DEFS = [
     { key: 'rev', name: '革命', desc: '同じ数字4枚（階段なら4枚以上）で強さが逆転する', def: true },
     { key: 'cut8', name: '8切り', desc: '8を出すと場が流れて、続けて自分から出せる', def: true },
-    { key: 'stop4', name: '4止め', desc: '4を出すと場が流れる（8切りの4版・マニアック地方ルール）', def: false },
+    { key: 'stop4', name: '4止め', desc: '8が1枚で8切りされたとき、4を2枚出せば8切りを止められる（止めた人が場を流して親になる）', def: false, need: 'cut8' },
     { key: 'spade3', name: 'スペ3返し', desc: '♠3の単騎でジョーカー単騎に勝てる（場が流れる）', def: true },
     { key: 'back11', name: '11バック（Jバック）', desc: 'J（11）を出すと、場が流れるまで強さが逆転する', def: false },
     { key: 'rev9', name: '9リバース', desc: '9を出すと手番の回り順が逆になる', def: false },
@@ -380,7 +380,7 @@
   ];
   const EFFECT_LABEL = k => (EFFECTS.find(e => e.key === k) || {}).label || k;
   // 組み込みトグル → ランク→効果
-  const BUILTIN_EFFECT = { cut8: [R8, 'cut'], stop4: [R4, 'cut'], skip5: [R5, 'skip'], rev9: [R9, 'reverse'], rev6: [R6, 'reverse'], back11: [RJ, 'back'], back13: [RK, 'back'], give7: [R7, 'give'], drop10: [R10, 'drop'], steal: [R7, 'steal'] };
+  const BUILTIN_EFFECT = { cut8: [R8, 'cut'], skip5: [R5, 'skip'], rev9: [R9, 'reverse'], rev6: [R6, 'reverse'], back11: [RJ, 'back'], back13: [RK, 'back'], give7: [R7, 'give'], drop10: [R10, 'drop'], steal: [R7, 'steal'] };
 
   // 自作ルール（localStorageに保存）: [{ rank: 0-12, effect: 'cut'... }]
   const CUSTOM_KEY = 'daifugo_custom_rules';
@@ -412,7 +412,7 @@
       const dis = ruleDisabled(def);
       if (dis) rules[def.key] = false; // 使えないルールは強制オフ
       const note = def.cpuOnly && settings.mode === 'online' ? '<span class="cpu-only">CPU戦のみ</span>'
-        : def.need && !rules[def.need] ? '<span class="cpu-only">「連戦モード」をONにすると使えます</span>' : '';
+        : def.need && !rules[def.need] ? '<span class="cpu-only">「' + RULE_DEFS.find(d => d.key === def.need).name.replace(/（.*）/, '') + '」をONにすると使えます</span>' : '';
       const row = document.createElement('div');
       row.className = 'rule-row' + (dis ? ' rule-off' : '');
       row.innerHTML =
@@ -518,6 +518,7 @@
   let disconnected = [];
   let session = null;        // 連戦モード: { round, total, pts:[], daifugo, hinmin, done }
   let pending = null;        // { kind:'steal'|'give'|'drop', n, ctx }
+  let stopWindow = null;     // 4止め受付中: { by, asked:[] }（8切りを止められる間）
   let selected = new Set();
   let gameOver = false;
   let busy = false;
@@ -582,6 +583,10 @@
   function canPlay(cards) {
     const p = parsePlay(cards);
     if (!p) return false;
+    // 4止め受付中: 4の2枚出し（ジョーカー不可）だけ出せる
+    if (stopWindow) {
+      return p.type === 'set' && p.rank === R4 && p.count === 2 && cards.every(c => !isJoker(c));
+    }
     // しばり: 場が開いている間は指定マーク以外出せない（ジョーカーは自由）
     if (field && bindSuits) {
       const ok = cards.every(c => isJoker(c) || bindSuits.includes(Math.floor(c / 13)));
@@ -673,6 +678,7 @@
     demotedOrder = [];
     disconnected = new Array(playerCount).fill(false);
     pending = null;
+    stopWindow = null;
     selected = new Set();
     gameOver = false;
     busy = false;
@@ -816,6 +822,30 @@
     lastPlayer = -1;
     elevenBack = false;
     bindSuits = null;
+    stopWindow = null;
+  }
+
+  // 4止め: 8切りを止められる（4を2枚持つ）次の人を探す。全員に機会が回ったら -1
+  const canStop = i => hands[i].filter(c => !isJoker(c) && c % 13 === R4).length >= 2;
+  function nextStopper(from) {
+    let i = from;
+    for (let g = 0; g < playerCount; g++) {
+      i = nextActive(i);
+      if (i === stopWindow.by || stopWindow.asked.includes(i)) return -1;
+      stopWindow.asked.push(i);
+      if (canStop(i)) return i;
+    }
+    return -1;
+  }
+  // 誰も4止めしなかった: 8切り成立。8を出した人（あがっていれば次の人）が親
+  function resolveCut8() {
+    const by = stopWindow.by;
+    clearField();
+    current = active(by) ? by : nextActive(by);
+    setBanner('✂ 8切り成立！場が流れた。' + turnPrompt(), 'good');
+    busy = false;
+    renderAll();
+    maybeCpu();
   }
 
   const suitsOf = cards => [...new Set(cards.filter(c => !isJoker(c)).map(c => Math.floor(c / 13)))].sort();
@@ -827,10 +857,12 @@
     busy = true;
 
     const prevField = field;
+    const stopping = !!stopWindow; // 4止め（8切りを止めた）
+    stopWindow = null;
     const spade3Used = !!(prevField && prevField.jokerOnly && cards.length === 1 && cards[0] === SPADE3);
 
     // しばり判定（役を置き換える前に直前の役と比較）
-    if (rules.bind && prevField && !bindSuits && pr.type === 'set' && prevField.type === 'set'
+    if (rules.bind && prevField && !stopping && !bindSuits && pr.type === 'set' && prevField.type === 'set'
       && !pr.jokerOnly && !prevField.jokerOnly
       && cards.every(c => !isJoker(c)) && prevField.cards.every(c => !isJoker(c))) {
       const a = suitsOf(cards), b = suitsOf(prevField.cards);
@@ -851,7 +883,7 @@
       notice = '⚡ 革命！ 強さが逆転した！';
       tone = 'rev';
     }
-    const rankEff = (pr.type === 'set' && !pr.jokerOnly) ? effectOf(pr.rank) : undefined;
+    const rankEff = (!stopping && pr.type === 'set' && !pr.jokerOnly) ? effectOf(pr.rank) : undefined;
     // 🔄 場が流れるまで逆転（11バックタイプ）
     if (rankEff === 'back') {
       elevenBack = true;
@@ -901,7 +933,7 @@
       for (let i = 0; i < playerCount; i++) if (active(i)) remain.push(i);
       if (remain.length <= 1) { endGame(remain[0]); return; }
 
-      const ctx = { pr, out, p, spade3Used };
+      const ctx = { pr, out, p, spade3Used, stopping };
 
       // インタラクティブなルール（同ランクの組のみ・あがった人は発動しない）
       if (rankEff && !out) {
@@ -943,8 +975,32 @@
   }
 
   function afterEffects(ctx) {
-    const { pr, out, p, spade3Used } = ctx;
-    const rankEff = (pr.type === 'set' && !pr.jokerOnly) ? effectOf(pr.rank) : undefined;
+    const { pr, out, p, spade3Used, stopping } = ctx;
+    const rankEff = (!stopping && pr.type === 'set' && !pr.jokerOnly) ? effectOf(pr.rank) : undefined;
+    // 🛑 4止め成立: 8切りを止めた人が場を流して親になる
+    if (stopping) {
+      clearField();
+      current = out ? nextActive(p) : p;
+      setBanner('🛑 4止め！8切りを止めた！場が流れた。' + turnPrompt(), 'good');
+      busy = false;
+      renderAll();
+      maybeCpu();
+      return;
+    }
+    // ✂ 8の1枚切り + 4止めあり: すぐには流さず、4の2枚出しで止められる機会を順番に回す
+    if (rankEff === 'cut' && pr.rank === R8 && pr.count === 1 && rules.stop4 && !spade3Used) {
+      stopWindow = { by: p, asked: [] };
+      const s = nextStopper(p);
+      if (s >= 0) {
+        current = s;
+        setBanner('✂ 8切り！4を2枚出せば止められる…' + turnPrompt(), 'good');
+        busy = false;
+        renderAll();
+        maybeCpu();
+        return;
+      }
+      stopWindow = null;
+    }
     // ✂ 場を流す（8切りタイプ）/ スペ3返し: 場が流れて本人がリード
     const cut = spade3Used || rankEff === 'cut';
     if (cut) {
@@ -1018,6 +1074,17 @@
     setBanner(names[p] + 'はパス', '');
     renderAll();
     setTimeout(() => {
+      // 4止め受付中: 止められる次の人へ。いなければ8切り成立
+      if (stopWindow) {
+        const s = nextStopper(p);
+        if (s < 0) { resolveCut8(); return; }
+        current = s;
+        setBanner('✂ 8切り！4を2枚出せば止められる…' + turnPrompt(), 'good');
+        busy = false;
+        renderAll();
+        maybeCpu();
+        return;
+      }
       const nxt = nextActive(p);
       if (nxt === effectiveLeader()) {
         clearField();
@@ -1061,7 +1128,9 @@
     }
     const jokers = hand.filter(isJoker);
     const cands = [];
-    if (!field) {
+    if (stopWindow) {
+      if (groups[R4] && groups[R4].length >= 2) cands.push(groups[R4].slice(0, 2));
+    } else if (!field) {
       for (const r in groups) cands.push(groups[r].slice(0, 4));
       if (!cands.length && jokers.length) cands.push([jokers[0]]);
     } else if (field.jokerOnly) {
@@ -1303,6 +1372,14 @@
     if (gameOver) return;
     if (remain.length <= 1) { endGame(remain[0]); return; }
     if (pending && current === p) { const ctx = pending.ctx; pending = null; afterEffects(ctx); return; }
+    if (current === p && !busy && stopWindow) {
+      // 4止め受付中に抜けた: 次の止められる人へ。いなければ8切り成立
+      const s = nextStopper(p);
+      if (s < 0) { resolveCut8(); return; }
+      current = s;
+      startTurn();
+      return;
+    }
     if (current === p && !busy) { current = nextActive(p); startTurn(); }
   }
 
