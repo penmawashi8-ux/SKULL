@@ -199,6 +199,26 @@ jobs:
                     f'{(u.replace("https://boardgamecat.com", "") or "/"):36} {len(jp):>6}字 {links:>8}本  {keep}')
               time.sleep(1)
 
+          # バーチャル競馬のバックエンド（Render）が復旧しているかの確認。
+          # Renderの無料枠を超えて停止していたので、動いているかを見る。
+          print(f'\n\n{"="*70}\nバーチャル競馬の状態\n{"="*70}')
+          st, _, cfg, _ = fetch('https://gamekeiba.boardgamecat.com/api/config')
+          print(f'フロント(/api/config): HTTP {st}  {cfg[:120]}')
+          ws = ''
+          try:
+              ws = json.loads(cfg).get('wsUrl', '')
+          except Exception:
+              pass
+          if ws:
+              health = ws.replace('wss://', 'https://').replace('ws://', 'http://')
+              health = health.split('/ws')[0] + '/health'
+              hst, _, hbody, _ = fetch(health)
+              print(f'バックエンド({health}): HTTP {hst}  {hbody[:160]}')
+              print('判定: ' + ('動いている' if hst == 200 else
+                               '止まっている（Renderが停止中か起動待ち）'))
+          else:
+              print('wsUrl が取れないので、バックエンドのURLを特定できなかった')
+
           print(f'\n\n{"="*70}\nCache-Control の確認\n{"="*70}')
           for u in cache_check_urls():
               st, hd, _, n = fetch(u)
