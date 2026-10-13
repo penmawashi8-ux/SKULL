@@ -4,6 +4,7 @@
 // ページ」として存在する状態は検索品質・広告審査の両方で不利なため、
 // 404.html として出力し Vercel に 404 ステータスで返させる。
 import { useCanonical } from '../useCanonical'
+import SiteFooter from '../components/SiteFooter'
 
 const LINKS = [
   { href: '/', label: 'トップページ（ゲーム一覧）' },
@@ -62,6 +63,8 @@ export default function NotFound() {
           ))}
         </ul>
       </main>
+
+      <SiteFooter />
     </div>
   )
 }

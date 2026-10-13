@@ -1,4 +1,5 @@
 import { useCanonical } from '../useCanonical'
+import SiteFooter from '../components/SiteFooter'
 
 const LAST_UPDATED = '2026年5月22日'
 
@@ -173,6 +174,8 @@ export default function Terms() {
           </p>
         </Section>
       </main>
+
+      <SiteFooter />
     </div>
   )
 }

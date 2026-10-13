@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import SiteFooter from '../components/SiteFooter'
 import { useCanonical } from '../useCanonical'
 import { COMMON_FAQ, GAME_CONTENT } from '../gameContent'
 
@@ -25,14 +26,6 @@ function setGameJsonLd(json: object) {
   }
   tag.textContent = JSON.stringify(json)
 }
-
-const INFO_LINKS = [
-  { label: 'ブログ', path: '/blog/' },
-  { label: '企業情報', path: '/about' },
-  { label: 'プライバシーポリシー', path: '/privacy-policy' },
-  { label: '利用規約', path: '/terms' },
-  { label: 'お問い合わせ', path: '/contact' },
-]
 
 export default function GameEmbed({ gameId }: { gameId: string }) {
   const game = GAME_CONTENT[gameId]
@@ -335,25 +328,7 @@ export default function GameEmbed({ gameId }: { gameId: string }) {
       </div>
 
       {/* ── Footer ── */}
-      <footer style={{ borderTop: '2px solid rgba(255,255,255,0.06)', padding: '32px 20px', textAlign: 'center' }}>
-        <p style={{ fontSize: '14px', fontWeight: 700, color: '#ffd43b', marginBottom: '4px' }}>ボドゲ広場</p>
-        <p style={{ fontSize: '8px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)', marginBottom: '16px' }}>
-          ✦ Board Game Collection ✦
-        </p>
-        <nav style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '10px 20px', marginBottom: '14px' }}>
-          {INFO_LINKS.map(({ label, path }) => (
-            <a
-              key={path}
-              href={path}
-              onClick={e => { e.preventDefault(); window.location.assign(path) }}
-              style={{ fontSize: '11px', color: 'rgba(255,255,255,0.42)', textDecoration: 'none', whiteSpace: 'nowrap' }}
-            >
-              {label}
-            </a>
-          ))}
-        </nav>
-        <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.22)' }}>© 2026 ボドゲ広場</p>
-      </footer>
+      <SiteFooter />
     </div>
   )
 }

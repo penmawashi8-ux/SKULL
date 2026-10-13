@@ -1,4 +1,5 @@
 import { useCanonical } from '../useCanonical'
+import SiteFooter from '../components/SiteFooter'
 
 const CONTACT_EMAIL = 'boardgamecat@yahoo.co.jp'
 const GOOGLE_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLScgSAt1yIK0c71bqyfjSdxJejm8sUWkzzebX1d_7-uEFZsv9g/viewform'
@@ -96,6 +97,8 @@ export default function Contact() {
           に従って取り扱います。
         </p>
       </main>
+
+      <SiteFooter />
     </div>
   )
 }

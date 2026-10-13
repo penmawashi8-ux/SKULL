@@ -110,6 +110,14 @@
     .footer-links a { font-size: 11px; color: rgba(255,255,255,0.4); white-space: nowrap; }
     .footer-links a:hover { color: rgba(255,255,255,0.7); }
     .footer-copy { font-size: 11px; color: rgba(255,255,255,0.25); }
+    .site-nav { max-width: 900px; margin: 0 auto 28px; display: flex; flex-wrap: wrap;
+      gap: 24px 40px; text-align: left; }
+    .site-nav-col { min-width: 140px; }
+    .site-nav-col p { font-size: 11px; letter-spacing: 0.12em; color: rgba(255,255,255,0.32);
+      font-weight: 700; margin-bottom: 8px; }
+    .site-nav-col a { display: block; font-size: 12px; color: rgba(255,255,255,0.5);
+      line-height: 1.9; white-space: nowrap; }
+    .site-nav-col a:hover { color: rgba(255,255,255,0.8); }
   </style>
 </head>
 <body>
@@ -274,6 +282,53 @@
     </div>
   </div>
 
+  <!-- site-nav -->
+  <nav class="site-nav">
+      <div class="site-nav-col">
+        <p>収録ゲーム</p>
+        <a href="/games/bomb">BOMB</a>
+        <a href="/games/pig-tail">ぶたのしっぽ</a>
+        <a href="/games/keiba">バーチャル競馬</a>
+        <a href="/games/page-one">ページワン</a>
+        <a href="/games/coup">謀略</a>
+        <a href="/games/shinkei">神経衰弱</a>
+        <a href="/games/reversi">リバーシ</a>
+        <a href="/games/gomoku">五目並べ</a>
+        <a href="/games/marubatsu">まるばつ</a>
+        <a href="/games/daifugo">大富豪</a>
+        <a href="/games/babanuki">ババ抜き</a>
+        <a href="/games/sevens">7並べ</a>
+        <a href="/games/sugoroku">すごろく</a>
+        <a href="/games/poko-light">ポコっとライト</a>
+      </div>
+      <div class="site-nav-col">
+        <p>ゲームを探す</p>
+        <a href="/list/">収録ゲーム一覧</a>
+        <a href="/list/hitori">ひとりで遊べる</a>
+        <a href="/list/minna">みんなで遊べる</a>
+        <a href="/list/online">オンライン対戦</a>
+        <a href="/list/trump">トランプゲーム</a>
+        <a href="/list/party">ブラフ・パーティー</a>
+      </div>
+      <div class="site-nav-col">
+        <p>ルール・攻略</p>
+        <a href="/blog/daifugo-rules.html">大富豪のルール完全ガイド</a>
+        <a href="/blog/sevens-rules.html">7並べのルールと勝ち方</a>
+        <a href="/blog/babanuki-rules.html">ババ抜きのルールとコツ</a>
+        <a href="/blog/pageone-rules.html">ページワンのルール</a>
+        <a href="/blog/trump-games-guide.html">トランプゲームの選び方</a>
+        <a href="/blog/free-online-boardgames.html">無料で遊べるボードゲーム</a>
+      </div>
+      <div class="site-nav-col">
+        <p>サイト情報</p>
+        <a href="/blog/">ブログ</a>
+        <a href="/about">企業情報</a>
+        <a href="/privacy-policy">プライバシーポリシー</a>
+        <a href="/terms">利用規約</a>
+        <a href="/contact">お問い合わせ</a>
+      </div>
+  </nav>
+  <!-- /site-nav -->
   <footer>
     <p class="footer-logo">ボドゲ広場</p>
     <div class="footer-links">
