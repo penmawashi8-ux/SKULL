@@ -27,25 +27,19 @@ jobs:
           UA = 'Mozilla/5.0 (compatible; site-structure-compare/1.0)'
 
           TARGETS = {
-            'トランプスタジアム (AdSense通過)': [
-              'https://playingcards.jp/',
-              'https://playingcards.jp/m/',
-              'https://playingcards.jp/game/sevens/',
-              'https://playingcards.jp/game_rules/sevens_rules.html',
-              'https://playingcards.jp/game_rules/babanuki_rules.html',
-              'https://playingcards.jp/gamelist/level_index.html',
-              'https://playingcards.jp/gamelist/kazoku_index.html',
-              'https://playingcards.jp/gamelist/onlinegames_index.html',
-            ],
-            'ボドゲ広場 (審査落ち)': [
+            # 比較対象のトランプスタジアムは初回の実行で測り終えたので、
+            # ここでは取りにいかない（相手サイトへ無駄なアクセスをしない）。
+            'ボドゲ広場': [
               'https://boardgamecat.com/',
               'https://boardgamecat.com/games/daifugo',
               'https://boardgamecat.com/blog/daifugo-rules.html',
+              'https://boardgamecat.com/list/',
+              'https://boardgamecat.com/list/hitori',
+              'https://boardgamecat.com/list/party',
+              'https://boardgamecat.com/about',
             ],
           }
           EXTRA = [
-            'https://playingcards.jp/robots.txt',
-            'https://playingcards.jp/sitemap.xml',
             'https://boardgamecat.com/robots.txt',
             'https://boardgamecat.com/sitemap.xml',
           ]
