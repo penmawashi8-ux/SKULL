@@ -3,6 +3,7 @@
 # Actionsのランナーから取得して、結果をジョブのログに出す。
 #
 # このファイルを変更してpushしたときだけ動く。調査が終わったら消してよい。
+# （本番デプロイ後の確認のため再実行）
 name: site-compare
 
 on:
@@ -27,27 +28,28 @@ jobs:
           UA = 'Mozilla/5.0 (compatible; site-structure-compare/1.0)'
 
           TARGETS = {
-            'トランプスタジアム (AdSense通過)': [
-              'https://playingcards.jp/',
-              'https://playingcards.jp/m/',
-              'https://playingcards.jp/game/sevens/',
-              'https://playingcards.jp/game_rules/sevens_rules.html',
-              'https://playingcards.jp/game_rules/babanuki_rules.html',
-              'https://playingcards.jp/gamelist/level_index.html',
-              'https://playingcards.jp/gamelist/kazoku_index.html',
-              'https://playingcards.jp/gamelist/onlinegames_index.html',
-            ],
-            'ボドゲ広場 (審査落ち)': [
+            # 比較対象のトランプスタジアムは初回の実行で測り終えたので、
+            # ここでは取りにいかない（相手サイトへ無駄なアクセスをしない）。
+            'ボドゲ広場': [
               'https://boardgamecat.com/',
               'https://boardgamecat.com/games/daifugo',
               'https://boardgamecat.com/blog/daifugo-rules.html',
+              'https://boardgamecat.com/list/',
+              'https://boardgamecat.com/list/hitori',
+              'https://boardgamecat.com/list/party',
+              'https://boardgamecat.com/about',
             ],
           }
           EXTRA = [
-            'https://playingcards.jp/robots.txt',
-            'https://playingcards.jp/sitemap.xml',
             'https://boardgamecat.com/robots.txt',
             'https://boardgamecat.com/sitemap.xml',
+          ]
+          # vercel.json で入れたキャッシュ指定が本番で効いているかの確認。
+          CACHE_CHECK = [
+            'https://boardgamecat.com/icons/daifugo.svg',
+            'https://boardgamecat.com/assets/index-BsLOd7KY.js',
+            'https://boardgamecat.com/favicon.ico',
+            'https://boardgamecat.com/play/lib/p2p.js',
           ]
 
           def fetch(url):
@@ -163,4 +165,11 @@ jobs:
                   print(f'   ディレクトリ別: {dict(pref.most_common(15))}')
                   for l in locs[:8]: print(f'      {l}')
               time.sleep(1.5)
+
+          print(f'\n\n{"="*70}\nCache-Control の確認\n{"="*70}')
+          for u in CACHE_CHECK:
+              st, hd, _, n = fetch(u)
+              print(f'{u.replace("https://boardgamecat.com", ""):40} HTTP {st}  '
+                    f'{hd.get("Cache-Control", "(指定なし)")}')
+              time.sleep(1)
           PY
