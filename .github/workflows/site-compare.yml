@@ -45,12 +45,21 @@ jobs:
             'https://boardgamecat.com/sitemap.xml',
           ]
           # vercel.json で入れたキャッシュ指定が本番で効いているかの確認。
-          CACHE_CHECK = [
-            'https://boardgamecat.com/icons/daifugo.svg',
-            'https://boardgamecat.com/assets/index-BsLOd7KY.js',
-            'https://boardgamecat.com/favicon.ico',
-            'https://boardgamecat.com/play/lib/p2p.js',
-          ]
+          # assets/ はビルドのたびにファイル名のハッシュが変わるので、
+          # 決め打ちせずトップページのHTMLから拾う。
+          def cache_check_urls():
+              urls = [
+                'https://boardgamecat.com/icons/daifugo.svg',
+                'https://boardgamecat.com/favicon.ico',
+                'https://boardgamecat.com/play/lib/p2p.js',
+              ]
+              _, _, top, _ = fetch('https://boardgamecat.com/')
+              asset = re.search(r'/assets/[\w.-]+\.js', top or '')
+              if asset:
+                  urls.insert(1, 'https://boardgamecat.com' + asset.group(0))
+              else:
+                  print('   （トップページから assets/ のURLを拾えなかった）')
+              return urls
 
           def fetch(url):
               req = urllib.request.Request(url, headers={'User-Agent': UA,
@@ -191,7 +200,7 @@ jobs:
               time.sleep(1)
 
           print(f'\n\n{"="*70}\nCache-Control の確認\n{"="*70}')
-          for u in CACHE_CHECK:
+          for u in cache_check_urls():
               st, hd, _, n = fetch(u)
               print(f'{u.replace("https://boardgamecat.com", ""):40} HTTP {st}  '
                     f'{hd.get("Cache-Control", "(指定なし)")}')
