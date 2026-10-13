@@ -166,6 +166,30 @@ jobs:
                   for l in locs[:8]: print(f'      {l}')
               time.sleep(1.5)
 
+          print(f'\n\n{"="*70}\n要約（本番）\n{"="*70}')
+          SUMMARY = [
+            'https://boardgamecat.com/',
+            'https://boardgamecat.com/games/daifugo',
+            'https://boardgamecat.com/blog/daifugo-rules.html',
+            'https://boardgamecat.com/list/',
+          ]
+          print(f'{"URL":36} {"本文":>7} {"内部リンク":>9}  構造化データ')
+          for u in SUMMARY:
+              st, _, body, _ = fetch(u)
+              if st != 200:
+                  print(f'{u.replace("https://boardgamecat.com", "") or "/":36} HTTP {st}')
+                  continue
+              jp = re.sub(r'\s', '', visible_text(body))
+              links = len(re.findall(r'<a[^>]+href=["\'](/[^"\'#]*)', body))
+              ts = []
+              for blob in re.findall(r'application/ld\+json[^>]*>(.*?)</script>', body, re.S | re.I):
+                  ts += re.findall(r'"@type"\s*:\s*"([^"]+)"', blob)
+              keep = [t for t in dict.fromkeys(ts) if t not in ('ListItem', 'Question', 'Answer',
+                                                               'Person', 'Organization', 'QuantitativeValue')]
+              print(f'{u.replace("https://boardgamecat.com", "") or "/":36} {jp:>0}' if False else
+                    f'{(u.replace("https://boardgamecat.com", "") or "/"):36} {len(jp):>6}字 {links:>8}本  {keep}')
+              time.sleep(1)
+
           print(f'\n\n{"="*70}\nCache-Control の確認\n{"="*70}')
           for u in CACHE_CHECK:
               st, hd, _, n = fetch(u)
