@@ -71,6 +71,10 @@
       "destination": "/games/:id.html"
     },
     {
+      "source": "/list/:slug(hitori|minna|online|trump|party)",
+      "destination": "/list/:slug.html"
+    },
+    {
       "source": "/about",
       "destination": "/about.html"
     },

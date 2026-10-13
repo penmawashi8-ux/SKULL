@@ -12,7 +12,7 @@ import { fileURLToPath } from 'node:url'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const dist = resolve(root, 'dist')
-const { render, GAME_CONTENT, COMMON_FAQ } = await import(
+const { render, GAME_CONTENT, COMMON_FAQ, GAME_LISTS, gamesInList, games } = await import(
   new URL('../dist-ssr/entry-server.js', import.meta.url).href
 )
 
@@ -132,6 +132,13 @@ function buildPage({ path, title, description, jsonLd, noindex = false, ads = tr
   if (missing.length) {
     throw new Error(`prerender: vercel.json の /games/ rewrite に未登録のID: ${missing.join(', ')}`)
   }
+
+  const listRule = vercel.rewrites.find(r => r.source.startsWith('/list/'))
+  const listedSlugs = listRule ? listRule.source.match(/\(([^)]*)\)/)[1].split('|') : []
+  const missingSlugs = GAME_LISTS.map(l => l.slug).filter(s => !listedSlugs.includes(s))
+  if (missingSlugs.length) {
+    throw new Error(`prerender: vercel.json の /list/ rewrite に未登録のslug: ${missingSlugs.join(', ')}`)
+  }
 }
 
 // ── 各ゲームページ ──
@@ -180,6 +187,61 @@ for (const [id, game] of Object.entries(GAME_CONTENT)) {
     buildPage({ path, title, description, jsonLd, noindex: NOINDEX_GAMES.has(id) }),
   )
   console.log(`prerender: ${path} -> dist/games/${id}.html`)
+}
+
+// ── ゲーム一覧ページ（人数・ジャンルなどの軸別） ──
+// トップのジャンルフィルタはReactのstateでURLが増えず、各ページから
+// 辿れる先が少なかった。軸ごとに実URLのページを出して導線にする。
+mkdirSync(resolve(dist, 'list'), { recursive: true })
+const LIST_PAGES = [
+  {
+    path: '/list/',
+    file: 'list/index.html',
+    title: '収録ゲーム一覧｜無料で遊べるボードゲーム全14種 - ボドゲ広場',
+    description:
+      'ボドゲ広場で遊べる無料オンラインボードゲームの全一覧。大富豪・7並べ・ババ抜きなどのトランプゲームから、ブラフ・パズル・すごろくまで。登録不要・インストール不要でブラウザからすぐ遊べます。',
+    items: games.filter(g => g.status === 'available'),
+    name: '収録ゲーム一覧',
+  },
+  ...GAME_LISTS.map(list => ({
+    path: `/list/${list.slug}`,
+    file: `list/${list.slug}.html`,
+    title: list.title,
+    description: list.description,
+    items: gamesInList(list),
+    name: `${list.heading}一覧`,
+  })),
+]
+for (const page of LIST_PAGES) {
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'CollectionPage',
+        name: page.name,
+        url: `${ORIGIN}${page.path}`,
+        description: page.description,
+        inLanguage: 'ja',
+        isPartOf: { '@type': 'WebSite', name: 'ボドゲ広場', url: ORIGIN },
+      },
+      {
+        '@type': 'ItemList',
+        name: page.name,
+        numberOfItems: page.items.length,
+        itemListElement: page.items.map((game, i) => ({
+          '@type': 'ListItem',
+          position: i + 1,
+          name: game.name,
+          url: `${ORIGIN}/games/${game.id}`,
+        })),
+      },
+    ],
+  }
+  writeFileSync(
+    resolve(dist, page.file),
+    buildPage({ path: page.path, title: page.title, description: page.description, jsonLd }),
+  )
+  console.log(`prerender: ${page.path} -> dist/${page.file} (${page.items.length}種)`)
 }
 
 // ── 静的情報ページ ──
@@ -260,6 +322,8 @@ for (const page of INFO_PAGES) {
 // 載せ忘れも起きない。
 {
   const urls = ['/']
+
+  for (const page of LIST_PAGES) urls.push(page.path)
 
   for (const id of Object.keys(GAME_CONTENT)) {
     if (!NOINDEX_GAMES.has(id)) urls.push(`/games/${id}`)

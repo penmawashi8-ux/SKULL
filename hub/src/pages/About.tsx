@@ -1,4 +1,5 @@
 import { useCanonical } from '../useCanonical'
+import SiteFooter from '../components/SiteFooter'
 
 const LAST_UPDATED = '2026年9月7日'
 const CONTACT_EMAIL = 'boardgamecat@yahoo.co.jp'
@@ -235,6 +236,8 @@ export default function About() {
           </p>
         </Section>
       </main>
+
+      <SiteFooter />
     </div>
   )
 }

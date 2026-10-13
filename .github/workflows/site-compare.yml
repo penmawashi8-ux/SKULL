@@ -1,0 +1,166 @@
+# AdSenseに通っている類似サイトと、ボドゲ広場の構造を同じ方法で比べるための
+# 一回限りの調査用ワークフロー。開発環境から外部サイトへ出られないため、
+# Actionsのランナーから取得して、結果をジョブのログに出す。
+#
+# このファイルを変更してpushしたときだけ動く。調査が終わったら消してよい。
+name: site-compare
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/site-compare.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    steps:
+      - name: サイト構造を取得して比較
+        run: |
+          python3 - <<'PY'
+          import re, html, json, time, urllib.request, urllib.error
+          from collections import Counter
+
+          UA = 'Mozilla/5.0 (compatible; site-structure-compare/1.0)'
+
+          TARGETS = {
+            'トランプスタジアム (AdSense通過)': [
+              'https://playingcards.jp/',
+              'https://playingcards.jp/m/',
+              'https://playingcards.jp/game/sevens/',
+              'https://playingcards.jp/game_rules/sevens_rules.html',
+              'https://playingcards.jp/game_rules/babanuki_rules.html',
+              'https://playingcards.jp/gamelist/level_index.html',
+              'https://playingcards.jp/gamelist/kazoku_index.html',
+              'https://playingcards.jp/gamelist/onlinegames_index.html',
+            ],
+            'ボドゲ広場 (審査落ち)': [
+              'https://boardgamecat.com/',
+              'https://boardgamecat.com/games/daifugo',
+              'https://boardgamecat.com/blog/daifugo-rules.html',
+            ],
+          }
+          EXTRA = [
+            'https://playingcards.jp/robots.txt',
+            'https://playingcards.jp/sitemap.xml',
+            'https://boardgamecat.com/robots.txt',
+            'https://boardgamecat.com/sitemap.xml',
+          ]
+
+          def fetch(url):
+              req = urllib.request.Request(url, headers={'User-Agent': UA,
+                                                         'Accept-Language': 'ja'})
+              try:
+                  with urllib.request.urlopen(req, timeout=30) as r:
+                      raw = r.read()
+                      enc = 'utf-8'
+                      ct = r.headers.get('Content-Type', '')
+                      m = re.search(r'charset=([\w-]+)', ct, re.I)
+                      if m: enc = m.group(1)
+                      body = raw.decode(enc, 'replace')
+                      # metaのcharsetが実体と違うことがあるので、化けていたら拾い直す
+                      m2 = re.search(r'charset=["\']?([\w-]+)', body[:2000], re.I)
+                      if m2 and m2.group(1).lower() not in (enc.lower(), 'utf-8'):
+                          body = raw.decode(m2.group(1), 'replace')
+                      return r.status, dict(r.headers), body, len(raw)
+              except urllib.error.HTTPError as e:
+                  return e.code, dict(e.headers or {}), '', 0
+              except Exception as e:
+                  return 0, {}, f'ERROR: {e}', 0
+
+          def visible_text(h):
+              s = re.sub(r'<(script|style|noscript)[^>]*>.*?</\1>', ' ', h, flags=re.S | re.I)
+              s = re.sub(r'<!--.*?-->', ' ', s, flags=re.S)
+              s = re.sub(r'<[^>]+>', ' ', s)
+              return re.sub(r'\s+', ' ', html.unescape(s)).strip()
+
+          def tag(h, pat, n=1):
+              m = re.search(pat, h, re.I | re.S)
+              return html.unescape(m.group(n).strip())[:200] if m else '—'
+
+          def report(url):
+              st, hd, body, nbytes = fetch(url)
+              print(f'\n── {url}')
+              print(f'   HTTP {st}  {nbytes:,} bytes  {hd.get("Content-Type","?")}')
+              for k in ('Last-Modified', 'Server', 'Cache-Control'):
+                  if hd.get(k): print(f'   {k}: {hd[k]}')
+              if st != 200 or not body:
+                  print(f'   {body[:200]}')
+                  return
+
+              txt = visible_text(body)
+              jp = re.sub(r'\s', '', txt)
+              print(f'   本文(空白除く): {len(jp):,} 字')
+              Q = '["\']'
+              print('   title: ' + tag(body, r'<title[^>]*>(.*?)</title>'))
+              print('   description: ' + tag(body, rf'<meta[^>]+name={Q}description{Q}[^>]+content={Q}(.*?){Q}'))
+              print('   robots: ' + tag(body, rf'<meta[^>]+name={Q}robots{Q}[^>]+content={Q}(.*?){Q}'))
+              print('   canonical: ' + tag(body, rf'<link[^>]+rel={Q}canonical{Q}[^>]+href={Q}(.*?){Q}'))
+
+              hs = re.findall(r'<(h[1-3])[^>]*>(.*?)</\1>', body, re.I | re.S)
+              print(f'   見出し {len(hs)}個:')
+              for t, c in hs[:20]:
+                  c = re.sub(r'\s+', ' ', html.unescape(re.sub(r'<[^>]+>', '', c))).strip()
+                  if c: print(f'      <{t}> {c[:60]}')
+              if len(hs) > 20: print(f'      …他 {len(hs)-20}個')
+
+              ads = len(re.findall(r'adsbygoogle', body))
+              pub = re.findall(r'(ca-pub-\d{4})\d+', body)
+              slots = re.findall(r'data-ad-slot=["\'](\d+)', body)
+              print(f'   AdSense: adsbygoogle {ads}箇所 / 広告枠 {len(slots)}個'
+                    f' / pub {sorted(set(pub)) or "—"}')
+              print(f'   計測タグ: ' + ', '.join(
+                    n for n, p in [('gtag', r'gtag/js'), ('GA', r'google-analytics'),
+                                   ('GTM', r'googletagmanager'), ('その他', r'analytics\.')]
+                    if re.search(p, body)) or '   計測タグ: —')
+
+              ifr = re.findall(r'<iframe[^>]+src=["\']([^"\']+)', body, re.I)
+              print(f'   iframe {len(ifr)}個: ' + (', '.join(i[:60] for i in ifr[:5]) or '—'))
+
+              ld = re.findall(r'<script[^>]+application/ld\+json[^>]*>(.*?)</script>', body, re.S | re.I)
+              types = []
+              for blob in ld:
+                  try:
+                      d = json.loads(blob)
+                      for o in (d if isinstance(d, list) else d.get('@graph', [d])):
+                          if isinstance(o, dict) and o.get('@type'): types.append(o['@type'])
+                  except Exception: types.append('(parse失敗)')
+              print(f'   構造化データ: {types or "—"}')
+
+              hrefs = re.findall(r'<a[^>]+href=["\']([^"\'#]+)', body, re.I)
+              internal = [h for h in hrefs if h.startswith('/') or 'playingcards.jp' in h or 'boardgamecat.com' in h]
+              paths = []
+              for h in internal:
+                  p = re.sub(r'^https?://[^/]+', '', h)
+                  paths.append(p.rsplit('/', 1)[0] + '/' if '/' in p.strip('/') else p)
+              print(f'   内部リンク {len(internal)}本 / 行き先ディレクトリ: '
+                    f'{dict(Counter(paths).most_common(8))}')
+              print(f'   本文冒頭: {txt[:400]}')
+              time.sleep(1.5)
+
+          for group, urls in TARGETS.items():
+              print(f'\n\n{"="*70}\n{group}\n{"="*70}')
+              for u in urls:
+                  report(u)
+
+          print(f'\n\n{"="*70}\nrobots.txt / sitemap.xml\n{"="*70}')
+          for u in EXTRA:
+              st, hd, body, n = fetch(u)
+              print(f'\n── {u}  HTTP {st}  {n:,} bytes')
+              if st != 200:
+                  print(f'   {body[:200]}')
+                  continue
+              if u.endswith('robots.txt'):
+                  print('   ' + '\n   '.join(body.strip().splitlines()[:25]))
+              else:
+                  locs = re.findall(r'<loc>(.*?)</loc>', body)
+                  smaps = re.findall(r'<sitemap>', body)
+                  print(f'   URL {len(locs)}件 / サイトマップインデックス: {"はい" if smaps else "いいえ"}')
+                  pref = Counter(re.sub(r'^https?://[^/]+', '', l).split('/')[1] or '(トップ)' for l in locs)
+                  print(f'   ディレクトリ別: {dict(pref.most_common(15))}')
+                  for l in locs[:8]: print(f'      {l}')
+              time.sleep(1.5)
+          PY
