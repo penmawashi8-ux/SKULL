@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build && vite build --ssr src/entry-server.tsx --outDir dist-ssr && node scripts/prerender.mjs",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "blog:sync": "node scripts/blog-nav.mjs && node scripts/blog-breadcrumb.mjs"
   },
   "dependencies": {
     "react": "^19.2.5",

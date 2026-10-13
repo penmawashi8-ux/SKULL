@@ -5,6 +5,7 @@ import About from './pages/About'
 import GameEmbed from './pages/GameEmbed'
 import GameList from './pages/GameList'
 import NotFound from './pages/NotFound'
+import RecentGames from './components/RecentGames'
 import SiteFooter from './components/SiteFooter'
 import { useCanonical } from './useCanonical'
 import { useState } from 'react'
@@ -13,6 +14,7 @@ import {
   GENRES, GENRE_COLORS, games, matchGenre,
   type Game, type Genre,
 } from './games'
+import { GAME_LISTS } from './gameLists'
 
 function Tag({ text, accentColor }: { text: string; accentColor?: string }) {
   return (
@@ -872,6 +874,9 @@ export default function App({ path: pathProp }: { path?: string } = {}) {
         <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.08)' }} />
       </div>
 
+      {/* 前に開いたゲームへの戻り口。記録が無ければ何も出ない */}
+      <RecentGames />
+
       {/* Genre filter */}
       <GenreFilter selected={genre} onChange={setGenre} />
 
@@ -890,6 +895,37 @@ export default function App({ path: pathProp }: { path?: string } = {}) {
             )
           }
         </div>
+
+        {/*
+          ジャンルフィルタはReactのstateなのでURLが増えず、検索エンジンからは
+          絞り込んだ状態が見えない。人数や遊び方で探せる一覧ページへの入口を
+          ここに置いて、ユーザーにもクローラーにも辿れるようにする。
+        */}
+        <nav className="mt-8">
+          <p
+            className="font-sans-jp text-[11px] mb-3 text-center"
+            style={{ color: 'rgba(255,255,255,0.35)' }}
+          >
+            遊ぶ人数や気分から探す
+          </p>
+          <div className="flex flex-wrap justify-center gap-2">
+            {[{ slug: '', label: '収録ゲーム一覧' }, ...GAME_LISTS].map(l => (
+              <a
+                key={l.slug || 'all'}
+                href={`/list/${l.slug}`}
+                className="font-sans-jp text-[12px] px-4 py-2 rounded-full"
+                style={{
+                  background: 'rgba(255,255,255,0.06)',
+                  border: '1px solid rgba(255,255,255,0.12)',
+                  color: 'rgba(255,255,255,0.75)',
+                  textDecoration: 'none',
+                }}
+              >
+                {l.label}
+              </a>
+            ))}
+          </div>
+        </nav>
 
         {genre === 'all' && comingSoon.length > 0 && (
           <div className="mt-10">
