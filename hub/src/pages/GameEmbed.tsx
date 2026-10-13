@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import SiteFooter from '../components/SiteFooter'
 import { useCanonical } from '../useCanonical'
+import { recordRecentGame } from '../recentGames'
 import { COMMON_FAQ, GAME_CONTENT } from '../gameContent'
 
 /** ベータ版で内容が薄いページは検索エンジンにインデックスさせない。 */
@@ -33,6 +34,7 @@ export default function GameEmbed({ gameId }: { gameId: string }) {
 
   useEffect(() => {
     if (!game) return
+    recordRecentGame(gameId)
     const players = game.info.find(i => i.label === 'プレイ人数')?.value ?? ''
     const genre = game.info.find(i => i.label === 'ジャンル')?.value ?? ''
     document.title = `${game.name}を無料でオンラインプレイ｜遊び方・ルール解説 - ボドゲ広場`

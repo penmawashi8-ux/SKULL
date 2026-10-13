@@ -189,6 +189,33 @@ for (const [id, game] of Object.entries(GAME_CONTENT)) {
   console.log(`prerender: ${path} -> dist/games/${id}.html`)
 }
 
+// ── 記事の共通ブロックが入っているかの検査 ──
+// 記事は素のHTMLで、共通ナビとパンくずは scripts/blog-nav.mjs と
+// scripts/blog-breadcrumb.mjs が public/blog/ へ差し込んでいる。
+// 新しい記事を足したあと実行し忘れると黙って漏れるので、ここで落とす。
+// 直し方: npm run blog:sync
+{
+  const blogSrc = resolve(root, 'public/blog')
+  const missing = []
+  for (const name of readdirSync(blogSrc).sort()) {
+    if (!name.endsWith('.html')) continue
+    const html = readFileSync(resolve(blogSrc, name), 'utf8')
+    const lacks = []
+    if (!html.includes('<!-- site-nav -->')) lacks.push('共通ナビ')
+    // ブログ一覧(index.html)は記事ではないのでパンくずは入れていない
+    if (name !== 'index.html' && !html.includes('<!-- breadcrumb-jsonld -->')) {
+      lacks.push('パンくず')
+    }
+    if (lacks.length) missing.push(`${name}（${lacks.join('・')}）`)
+  }
+  if (missing.length) {
+    throw new Error(
+      `prerender: 共通ブロックが入っていない記事があります。` +
+        `\`npm run blog:sync\` を実行してください: ${missing.join(', ')}`,
+    )
+  }
+}
+
 // ── ゲーム一覧ページ（人数・ジャンルなどの軸別） ──
 // トップのジャンルフィルタはReactのstateでURLが増えず、各ページから
 // 辿れる先が少なかった。軸ごとに実URLのページを出して導線にする。
