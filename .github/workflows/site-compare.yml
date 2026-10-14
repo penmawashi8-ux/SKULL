@@ -199,6 +199,45 @@ jobs:
                     f'{(u.replace("https://boardgamecat.com", "") or "/"):36} {len(jp):>6}字 {links:>8}本  {keep}')
               time.sleep(1)
 
+          # 謀略(Coup)は Vercel Blob に状態を保存している。無料枠を使い切って
+          # ストアが止まっているので、ゲームがどこまで動くかを確かめる。
+          print(f'\n\n{"="*70}\n謀略(bouryaku)の状態\n{"="*70}')
+          B = 'https://bouryaku.boardgamecat.com'
+          st, _, body, _ = fetch(B + '/')
+          print(f'トップページ: HTTP {st}  本文 {len(re.sub(chr(92)+"s", "", visible_text(body)))}字')
+
+          def post(url, payload):
+              req = urllib.request.Request(
+                  url, data=json.dumps(payload).encode(),
+                  headers={'User-Agent': UA, 'Content-Type': 'application/json'},
+                  method='POST')
+              try:
+                  with urllib.request.urlopen(req, timeout=30) as r:
+                      return r.status, r.read().decode('utf-8', 'replace')
+              except urllib.error.HTTPError as e:
+                  return e.code, (e.read() or b'').decode('utf-8', 'replace')
+              except Exception as e:
+                  return 0, f'ERROR: {e}'
+
+          cst, cbody = post(B + '/api/room', {'playerName': 'チェック', 'cpuCount': 1, 'mode': 'cpu'})
+          print(f'CPU部屋の作成: HTTP {cst}  {cbody[:140]}')
+          room = pid = None
+          try:
+              d = json.loads(cbody); room, pid = d.get('roomId'), d.get('playerId')
+          except Exception:
+              pass
+          if room:
+              time.sleep(1)
+              gst, _, gbody, _ = fetch(f'{B}/api/room/{room}')
+              print(f'作成した部屋の取得: HTTP {gst}  {gbody[:120]}')
+              pst, _, pbody, _ = fetch(f'{B}/r/{room}?pid={pid}')
+              playable = 'アクション' in pbody or '収入' in pbody
+              print(f'ゲーム画面 /r/{room}: HTTP {pst}  遊べる状態か: '
+                    + ('はい' if playable else 'いいえ（トップに戻されている可能性）'))
+
+          lst, _, lbody, _ = fetch(B + '/api/lobby')
+          print(f'ロビー一覧: HTTP {lst}  {lbody[:120]}')
+
           # バーチャル競馬のバックエンド（Render）が復旧しているかの確認。
           # Renderの無料枠を超えて停止していたので、動いているかを見る。
           print(f'\n\n{"="*70}\nバーチャル競馬の状態\n{"="*70}')
