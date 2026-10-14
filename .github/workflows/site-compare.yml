@@ -227,13 +227,18 @@ jobs:
           except Exception:
               pass
           if room:
-              time.sleep(1)
-              gst, _, gbody, _ = fetch(f'{B}/api/room/{room}')
-              print(f'作成した部屋の取得: HTTP {gst}  {gbody[:120]}')
-              pst, _, pbody, _ = fetch(f'{B}/r/{room}?pid={pid}')
-              playable = 'アクション' in pbody or '収入' in pbody
-              print(f'ゲーム画面 /r/{room}: HTTP {pst}  遊べる状態か: '
-                    + ('はい' if playable else 'いいえ（トップに戻されている可能性）'))
+              # 同じインスタンスのメモリに載っているだけなのか、blobに本当に
+              # 保存されているのかを切り分ける。blobが止まっていれば、
+              # 別のインスタンスに当たった読み取りが404になる。
+              ok = miss = 0
+              for i in range(12):
+                  time.sleep(2)
+                  gst, _, gbody, _ = fetch(f'{B}/api/room/{room}')
+                  if gst == 200 and '"phase"' in gbody: ok += 1
+                  else: miss += 1
+              print(f'作成した部屋を12回読む: 成功 {ok} / 失敗 {miss}')
+              print('判定: ' + ('blobに保存できている' if miss == 0 else
+                               f'blobが効いていない（{miss}回は部屋が見つからない）'))
 
           lst, _, lbody, _ = fetch(B + '/api/lobby')
           print(f'ロビー一覧: HTTP {lst}  {lbody[:120]}')
