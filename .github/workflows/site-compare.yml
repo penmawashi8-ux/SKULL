@@ -199,49 +199,19 @@ jobs:
                     f'{(u.replace("https://boardgamecat.com", "") or "/"):36} {len(jp):>6}字 {links:>8}本  {keep}')
               time.sleep(1)
 
-          # 謀略(Coup)は Vercel Blob に状態を保存している。無料枠を使い切って
-          # ストアが止まっているので、ゲームがどこまで動くかを確かめる。
-          print(f'\n\n{"="*70}\n謀略(bouryaku)の状態\n{"="*70}')
-          B = 'https://bouryaku.boardgamecat.com'
-          st, _, body, _ = fetch(B + '/')
-          print(f'トップページ: HTTP {st}  本文 {len(re.sub(chr(92)+"s", "", visible_text(body)))}字')
-
-          def post(url, payload):
-              req = urllib.request.Request(
-                  url, data=json.dumps(payload).encode(),
-                  headers={'User-Agent': UA, 'Content-Type': 'application/json'},
-                  method='POST')
+          # バーチャル競馬のDB接続が、誰も遊んでいないときに閉じているかを見る。
+          # 閉じていればNeonのコンピュートがスリープでき、無料枠を使わない。
+          print(f'\n\n{"="*70}\nバーチャル競馬のDB接続\n{"="*70}')
+          H = 'https://gamekeiba-backend.onrender.com/health'
+          for i in range(10):
+              st, _, body, _ = fetch(H)
               try:
-                  with urllib.request.urlopen(req, timeout=30) as r:
-                      return r.status, r.read().decode('utf-8', 'replace')
-              except urllib.error.HTTPError as e:
-                  return e.code, (e.read() or b'').decode('utf-8', 'replace')
-              except Exception as e:
-                  return 0, f'ERROR: {e}'
-
-          cst, cbody = post(B + '/api/room', {'playerName': 'チェック', 'cpuCount': 1, 'mode': 'cpu'})
-          print(f'CPU部屋の作成: HTTP {cst}  {cbody[:140]}')
-          room = pid = None
-          try:
-              d = json.loads(cbody); room, pid = d.get('roomId'), d.get('playerId')
-          except Exception:
-              pass
-          if room:
-              # 同じインスタンスのメモリに載っているだけなのか、blobに本当に
-              # 保存されているのかを切り分ける。blobが止まっていれば、
-              # 別のインスタンスに当たった読み取りが404になる。
-              ok = miss = 0
-              for i in range(12):
-                  time.sleep(2)
-                  gst, _, gbody, _ = fetch(f'{B}/api/room/{room}')
-                  if gst == 200 and '"phase"' in gbody: ok += 1
-                  else: miss += 1
-              print(f'作成した部屋を12回読む: 成功 {ok} / 失敗 {miss}')
-              print('判定: ' + ('blobに保存できている' if miss == 0 else
-                               f'blobが効いていない（{miss}回は部屋が見つからない）'))
-
-          lst, _, lbody, _ = fetch(B + '/api/lobby')
-          print(f'ロビー一覧: HTTP {lst}  {lbody[:120]}')
+                  db = json.loads(body).get('db')
+              except Exception:
+                  db = None
+              print(f'  {i*20:>3}秒  HTTP {st}  db={db}')
+              if i < 9:
+                  time.sleep(20)
 
           # バーチャル競馬のバックエンド（Render）が復旧しているかの確認。
           # Renderの無料枠を超えて停止していたので、動いているかを見る。
