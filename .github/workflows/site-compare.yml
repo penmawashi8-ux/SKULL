@@ -199,19 +199,28 @@ jobs:
                     f'{(u.replace("https://boardgamecat.com", "") or "/"):36} {len(jp):>6}字 {links:>8}本  {keep}')
               time.sleep(1)
 
-          # バーチャル競馬のDB接続が、誰も遊んでいないときに閉じているかを見る。
-          # 閉じていればNeonのコンピュートがスリープでき、無料枠を使わない。
-          print(f'\n\n{"="*70}\nバーチャル競馬のDB接続\n{"="*70}')
+          # DB接続が閉じない原因の切り分け。2秒おきに90秒ぶん見る。
+          print(f'\n\n{"="*70}\nバーチャル競馬のDB接続（2秒おき）\n{"="*70}')
           H = 'https://gamekeiba-backend.onrender.com/health'
-          for i in range(10):
+          rows = []
+          for i in range(45):
               st, _, body, _ = fetch(H)
               try:
-                  db = json.loads(body).get('db')
+                  d = json.loads(body)
+                  rows.append((i * 2, d.get('online'), d.get('phase'),
+                               (d.get('db') or {}).get('open'),
+                               (d.get('db') or {}).get('idle_sec')))
               except Exception:
-                  db = None
-              print(f'  {i*20:>3}秒  HTTP {st}  db={db}')
-              if i < 9:
-                  time.sleep(20)
+                  rows.append((i * 2, None, None, None, None))
+              time.sleep(2)
+          print(f'{"秒":>4} {"接続":>4} {"フェーズ":<10} {"接続中":>6} {"無通信秒":>8}')
+          for t, on, ph, op, idle in rows:
+              print(f'{t:>4} {str(on):>4} {str(ph):<10} {str(op):>6} {str(idle):>8}')
+          idles = [r[4] for r in rows if isinstance(r[4], int)]
+          if idles:
+              print(f'\n無通信秒の最大 {max(idles)} / 最小 {min(idles)}')
+              print('判定: ' + ('60秒に届かないので接続は閉じない'
+                               if max(idles) < 60 else '閉じられている'))
 
           # バーチャル競馬のバックエンド（Render）が復旧しているかの確認。
           # Renderの無料枠を超えて停止していたので、動いているかを見る。
