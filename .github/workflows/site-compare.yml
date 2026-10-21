@@ -200,7 +200,7 @@ jobs:
               time.sleep(1)
 
           # DB接続が閉じない原因の切り分け。2秒おきに90秒ぶん見る。
-          print(f'\n\n{"="*70}\nバーチャル競馬のDB接続（2秒おき）\n{"="*70}')
+          print(f'\n\n{"="*70}\nバーチャル競馬のDB接続（2秒おき・まとめ書き導入後）\n{"="*70}')
           H = 'https://gamekeiba-backend.onrender.com/health'
           rows = []
           for i in range(45):
