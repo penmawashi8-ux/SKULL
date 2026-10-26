@@ -1,8 +1,9 @@
-import { useEffect } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import SiteFooter from '../components/SiteFooter'
 import { useCanonical } from '../useCanonical'
 import { recordRecentGame } from '../recentGames'
 import { COMMON_FAQ, GAME_CONTENT } from '../gameContent'
+import { askIframe, externalOrigin, handoffUrl, listenForHandoff, type Handoff } from '../gameHandoff'
 
 /** ベータ版で内容が薄いページは検索エンジンにインデックスさせない。 */
 const NOINDEX_GAMES = new Set<string>()
@@ -31,6 +32,18 @@ function setGameJsonLd(json: object) {
 export default function GameEmbed({ gameId }: { gameId: string }) {
   const game = GAME_CONTENT[gameId]
   useCanonical(`/games/${gameId}`)
+
+  // 別タブで開いたときに iframe の中の続きから始められるようにする。
+  // 別サブドメインのゲームだけが対象（/play/ 配下は同一オリジンなので
+  // そのまま保存領域が共有される）。
+  const frameRef = useRef<HTMLIFrameElement>(null)
+  const [handoff, setHandoff] = useState<Handoff | null>(null)
+  const gameOrigin = game ? externalOrigin(game.url) : null
+
+  useEffect(() => {
+    if (!gameOrigin) return
+    return listenForHandoff(gameOrigin, setHandoff)
+  }, [gameOrigin])
 
   useEffect(() => {
     if (!game) return
@@ -145,10 +158,12 @@ export default function GameEmbed({ gameId }: { gameId: string }) {
           }}
         >
           <iframe
+            ref={frameRef}
             src={game.url}
             title={`${game.name}をプレイ`}
             style={{ display: 'block', width: '100%', height: '68dvh', minHeight: '440px', border: 'none' }}
             allow="fullscreen"
+            onLoad={() => { if (gameOrigin) askIframe(frameRef.current, gameOrigin) }}
           />
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 4px 0' }}>
@@ -156,7 +171,7 @@ export default function GameEmbed({ gameId }: { gameId: string }) {
             登録不要・無料でそのまま遊べます
           </p>
           <a
-            href={game.url}
+            href={handoffUrl(game.url, handoff)}
             target="_blank"
             rel="noopener"
             style={{ fontSize: '11px', color: accent, textDecoration: 'none', fontWeight: 700 }}
