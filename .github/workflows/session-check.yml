@@ -20,16 +20,22 @@ permissions:
 jobs:
   check:
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     steps:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
 
+      # 出力は潰さない（前回ここで止まったとき原因が見えなかった）。
+      # --with-deps の apt が長いので、ブラウザ本体だけ入れて様子を見る。
       - name: Playwright を入れる
+        timeout-minutes: 12
         run: |
-          npm init -y >/dev/null 2>&1
-          npm i -D @playwright/test@1.56.1 >/dev/null 2>&1
-          npx playwright install --with-deps chromium webkit >/dev/null 2>&1
+          set -x
+          npm init -y
+          npm i -D @playwright/test@1.56.1
+          npx playwright install-deps chromium webkit
+          npx playwright install chromium webkit
           echo "準備完了"
 
       - name: セッションが引き継がれるか確かめる
