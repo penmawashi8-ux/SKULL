@@ -39,29 +39,30 @@ jobs:
           echo "準備完了"
 
       - name: セッションが引き継がれるか確かめる
+        timeout-minutes: 10
         run: |
           cat > check.mjs <<'JS'
           import { chromium, webkit } from '@playwright/test'
 
-          // ゲームごとの「プレイヤーの識別子」の保存場所
-          const GAMES = [
-            { id: 'keiba',    name: 'バーチャル競馬', site: 'https://gamekeiba.boardgamecat.com',
-              keys: ['keiba_session_id'] },
-            { id: 'pig-tail', name: 'ぶたのしっぽ',   site: 'https://buta.boardgamecat.com',
-              keys: ['online_player_id'] },
-            { id: 'page-one', name: 'ページワン',     site: 'https://pageone.boardgamecat.com',
-              keys: ['pageone_my_player_id'] },
-          ]
+          const SITE = 'https://gamekeiba.boardgamecat.com'
+          const KEY  = 'keiba_session_id'
 
-          // iframe / ページから、localStorage と sessionStorage の該当キーを読む。
-          // frame.evaluate に関数と引数を渡す形にする（文字列組み立ては壊れやすい）
-          const reader = ({ keys }) => {
-            const out = {}
-            for (const k of keys) {
-              try { out['local:' + k] = localStorage.getItem(k) } catch { out['local:' + k] = 'ERR' }
-              try { out['session:' + k] = sessionStorage.getItem(k) } catch { out['session:' + k] = 'ERR' }
+          // バーチャル競馬は名前を入れて「参加する」を押したときに
+          // はじめて localStorage へ識別子を書く。そこまで進めないと
+          // 何も入っていないので、実際に参加するところまでやる。
+          async function join(target, label) {
+            const input = target.getByPlaceholder('プレイヤー名')
+            if (await input.count()) {
+              await input.fill('セッション確認')
+              const btn = target.getByRole('button', { name: /参加する/ })
+              if (await btn.count()) await btn.click()
+              return 'フォームに入力して参加'
             }
-            return out
+            return '参加フォームが出ていない（すでに参加済みか、読み込み中）'
+          }
+
+          const read = () => {
+            try { return localStorage.getItem('keiba_session_id') } catch (e) { return 'ERR:' + e.name }
           }
 
           async function runWith(engine, label) {
@@ -69,40 +70,31 @@ jobs:
             const browser = await engine.launch()
             const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, locale: 'ja-JP' })
 
-            for (const g of GAMES) {
-              const page = await ctx.newPage()
-              let inIframe = null, inTab = null
-              try {
-                // 1) ボドゲ広場のゲームページ（iframeの中でゲームが動く）
-                await page.goto(`https://boardgamecat.com/games/${g.id}`, { waitUntil: 'load', timeout: 60000 })
-                await page.waitForTimeout(9000)
-                const frame = page.frames().find(f => f.url().startsWith(g.site))
-                inIframe = frame ? await frame.evaluate(reader, { keys: g.keys }).catch(e => 'EVAL_ERR:' + e.message) : '(iframeが見つからない)'
+            // 1) ボドゲ広場のゲームページ（iframeの中で遊ぶ）
+            const page = await ctx.newPage()
+            await page.goto('https://boardgamecat.com/games/keiba', { waitUntil: 'load', timeout: 60000 })
+            await page.waitForTimeout(8000)
+            const frame = page.frames().find(f => f.url().startsWith(SITE))
+            if (!frame) { console.log('  iframeが見つからない'); await browser.close(); return }
+            console.log('  iframe内: ' + await join(frame, 'iframe'))
+            await page.waitForTimeout(8000)
+            const inIframe = await frame.evaluate(read)
+            console.log(`  iframe内の ${KEY}: ${inIframe}`)
 
-                // 2) 「別タブで大きく開く」と同じ遷移（同じブラウザの別タブ）
-                const tab = await ctx.newPage()
-                await tab.goto(g.site, { waitUntil: 'load', timeout: 60000 })
-                await tab.waitForTimeout(9000)
-                inTab = await tab.evaluate(reader, { keys: g.keys }).catch(e => 'EVAL_ERR:' + e.message)
-                await tab.close()
-              } catch (e) {
-                console.log(`  ${g.name}: 取得に失敗 ${e.message.slice(0, 120)}`)
-                await page.close(); continue
-              }
-              await page.close()
+            // 2) 「別タブで大きく開く」と同じこと
+            const tab = await ctx.newPage()
+            await tab.goto(SITE, { waitUntil: 'load', timeout: 60000 })
+            await tab.waitForTimeout(6000)
+            const beforeJoin = await tab.evaluate(read)
+            console.log(`  別タブを開いた直後の ${KEY}: ${beforeJoin}`)
 
-              console.log(`\n── ${g.name} (${g.id})`)
-              console.log(`   iframe内 : ${JSON.stringify(inIframe)}`)
-              console.log(`   別タブ   : ${JSON.stringify(inTab)}`)
-              for (const k of g.keys) {
-                for (const area of ['local', 'session']) {
-                  const a = inIframe?.[`${area}:${k}`], b = inTab?.[`${area}:${k}`]
-                  if (a == null && b == null) continue
-                  const same = a != null && a === b
-                  console.log(`   ${area}:${k} → ${same ? '✓ 同じセッション' : '✗ 別セッションになる'}`)
-                }
-              }
-            }
+            console.log('\n  → ' + (
+              beforeJoin && beforeJoin === inIframe
+                ? '✓ 同じセッションが引き継がれている'
+                : beforeJoin == null
+                  ? '✗ 別タブでは識別子が無い（＝別人あつかい・所持金がリセットされて見える）'
+                  : '✗ 別の識別子になっている'))
+
             await browser.close()
           }
 
