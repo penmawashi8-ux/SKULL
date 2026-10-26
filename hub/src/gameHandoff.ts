@@ -61,9 +61,13 @@ function safePath(value: unknown): string {
 
 /**
  * iframe からの申告を待ち受ける。受け取るたびに onHandoff を呼ぶ。
+ *
+ * 渡すものが無くなった（部屋から出た等）ときは null を渡す。
+ * 前の申告を残したままにすると、リンクが居もしない部屋を指し続けてしまう。
+ *
  * 戻り値は後片付けの関数。
  */
-export function listenForHandoff(origin: string, onHandoff: (h: Handoff) => void): () => void {
+export function listenForHandoff(origin: string, onHandoff: (h: Handoff | null) => void): () => void {
   const onMessage = (ev: MessageEvent) => {
     // 名乗ってきたオリジンが埋め込んでいるゲームのものか確かめる。
     // 他のサイトを埋め込んだ広告などから偽の識別子を入れられないように。
@@ -71,11 +75,10 @@ export function listenForHandoff(origin: string, onHandoff: (h: Handoff) => void
     if (!isTell(ev.data)) return
     const { sessionId, name, path } = ev.data
     // 識別子が無くても、どのページに居るかだけで引き継ぐ価値がある
-    // （一人で遊ぶゲームは識別子を持たない）
+    // （部屋の中の誰なのかをURLで持っているゲームがある）
     const id = typeof sessionId === 'string' ? sessionId : ''
     const p = safePath(path)
-    if (!id && !p) return
-    onHandoff({ sessionId: id, name: typeof name === 'string' ? name : '', path: p })
+    onHandoff(id || p ? { sessionId: id, name: typeof name === 'string' ? name : '', path: p } : null)
   }
   window.addEventListener('message', onMessage)
   return () => window.removeEventListener('message', onMessage)
