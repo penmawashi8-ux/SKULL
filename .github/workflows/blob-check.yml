@@ -1,0 +1,47 @@
+# Vercel Blob の無料枠（Advanced Operations 月2,000回）を使い切ったという
+# 通知が来たので、保存先が実際に止まっているかを本番に対して確かめる。
+#
+# 書き込みを1回だけ試す。mode:cpu の部屋はロビーに載らないので、
+# サイトを見ている人には見えない。放っておけば期限切れで消える。
+#
+# このファイルを変更して push したときだけ動く。
+name: blob-check
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/blob-check.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: 書き込みが通るか試す
+        run: |
+          set -u
+          BASE=https://bouryaku.boardgamecat.com
+
+          echo "── ロビー（読み取り） ──"
+          curl -sS "$BASE/api/lobby" -w '\nHTTP %{http_code}\n'
+
+          echo
+          echo "── CPU対戦の部屋を作る（blob へ1回書く） ──"
+          RES=$(curl -sS -X POST "$BASE/api/room" \
+            -H 'content-type: application/json' \
+            -d '{"playerName":"zz-blob-check","cpuCount":1,"mode":"cpu"}')
+          echo "$RES"
+          ID=$(echo "$RES" | sed -n 's/.*"roomId":"\([^"]*\)".*/\1/p')
+          echo "roomId = $ID"
+
+          echo
+          echo "── 書いたものが読めるか（間を空けて数回、別インスタンスに当てる） ──"
+          for i in 1 2 3 4 5 6; do
+            sleep 5
+            CODE=$(curl -sS -o /tmp/r.json -w '%{http_code}' "$BASE/api/room/$ID")
+            echo "$i回目: HTTP $CODE  $(head -c 120 /tmp/r.json)"
+          done
