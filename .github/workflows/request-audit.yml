@@ -1,0 +1,139 @@
+# 1訪問あたり Vercel に何回リクエストが飛んでいるかを本番で数える。
+#
+# CDNリクエストはキャッシュに当たった分も304も数えられる。つまり
+# 「ブラウザがリクエストを送らない」状態にしないと減らない。
+# そこで初回訪問と2回目（同じブラウザ）の両方を測る。
+#
+# 数えるのはプロジェクトごと。前回の請求では約9割が bodoge-hub だった。
+#
+# このファイルを変更して push したときだけ動く。
+name: request-audit
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/request-audit.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Playwright を入れる
+        timeout-minutes: 10
+        run: |
+          npm init -y
+          npm i -D @playwright/test@1.56.1
+          npx playwright install-deps chromium
+          npx playwright install chromium
+
+      - name: 数える
+        timeout-minutes: 12
+        run: |
+          cat > audit.mjs <<'JS'
+          import { chromium } from '@playwright/test'
+
+          const HUB = 'https://boardgamecat.com'
+          const PAGES = [
+            ['トップ',        `${HUB}/`],
+            ['ゲームページ',  `${HUB}/games/keiba`],
+            ['一覧',          `${HUB}/list/`],
+            ['記事',          `${HUB}/blog/skull-like-game-online.html`],
+          ]
+
+          function host(u) { try { return new URL(u).host } catch { return '?' } }
+
+          async function visit(ctx, url, label) {
+            const page = await ctx.newPage()
+            const reqs = []
+            page.on('response', async res => {
+              const r = res.request()
+              reqs.push({
+                url: res.url(),
+                host: host(res.url()),
+                type: r.resourceType(),
+                status: res.status(),
+                cache: res.headers()['x-vercel-cache'] ?? '',
+                fromSW: false,
+              })
+            })
+            await page.goto(url, { waitUntil: 'load', timeout: 60000 })
+            // ServiceWorker の先読みと遅れて来るものを拾う
+            await page.waitForTimeout(9000)
+            await page.close()
+
+            const byHost = {}
+            for (const r of reqs) byHost[r.host] = (byHost[r.host] ?? 0) + 1
+            console.log(`\n── ${label} (${url}) ──`)
+            console.log(`  合計 ${reqs.length} 件`)
+            console.log('  ホスト別: ' + Object.entries(byHost)
+              .sort((a, b) => b[1] - a[1])
+              .map(([h, n]) => `${h}=${n}`).join('  '))
+
+            const mine = reqs.filter(r => r.host.endsWith('boardgamecat.com'))
+            const byType = {}
+            for (const r of mine) byType[r.type] = (byType[r.type] ?? 0) + 1
+            console.log('  自前ドメインのみ ' + mine.length + ' 件 / 種類別: ' +
+              Object.entries(byType).sort((a, b) => b[1] - a[1])
+                .map(([t, n]) => `${t}=${n}`).join('  '))
+            return mine
+          }
+
+          const browser = await chromium.launch()
+
+          // ① はじめて来た人（キャッシュも ServiceWorker も空）
+          console.log('='.repeat(70))
+          console.log('① はじめて来た人')
+          console.log('='.repeat(70))
+          const fresh = await browser.newContext({ viewport: { width: 390, height: 844 }, locale: 'ja-JP' })
+          const first = {}
+          for (const [label, url] of PAGES) first[label] = await visit(fresh, url, label)
+
+          // 1ページ目の中身を全部出す（何が多いのかを見るため）
+          console.log('\n── トップページの内訳（自前ドメイン） ──')
+          for (const r of first['トップ']) {
+            console.log(`  ${String(r.status).padEnd(3)} ${r.type.padEnd(10)} ${r.cache.padEnd(10)} ${r.url.replace(HUB, '')}`)
+          }
+          console.log('\n── ゲームページの内訳（自前ドメイン） ──')
+          for (const r of first['ゲームページ']) {
+            console.log(`  ${String(r.status).padEnd(3)} ${r.type.padEnd(10)} ${r.cache.padEnd(10)} ${r.url.replace(HUB, '')}`)
+          }
+
+          // ② 同じブラウザでもう一度（キャッシュと SW が効いた状態）
+          console.log('\n' + '='.repeat(70))
+          console.log('② 2回目の訪問（同じブラウザ）')
+          console.log('='.repeat(70))
+          for (const [label, url] of PAGES) await visit(fresh, url, label)
+
+          // ③ サイト内を移動したとき（クライアント側ルーター）
+          console.log('\n' + '='.repeat(70))
+          console.log('③ サイト内のリンクで移動したとき')
+          console.log('='.repeat(70))
+          const nav = await fresh.newPage()
+          await nav.goto(`${HUB}/`, { waitUntil: 'load', timeout: 60000 })
+          await nav.waitForTimeout(5000)
+          const navReqs = []
+          nav.on('response', res => {
+            if (host(res.url()).endsWith('boardgamecat.com')) {
+              navReqs.push(`${res.status()} ${res.request().resourceType()} ${res.url().replace(HUB, '')}`)
+            }
+          })
+          const link = nav.locator('a[href^="/games/"]').first()
+          if (await link.count()) {
+            await link.click()
+            await nav.waitForTimeout(9000)
+          }
+          console.log(`  トップ→ゲームページ の移動で ${navReqs.length} 件`)
+          for (const r of navReqs) console.log('   ' + r)
+
+          await browser.close()
+          JS
+          node audit.mjs
