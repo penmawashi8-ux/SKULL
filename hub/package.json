@@ -5,9 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build && vite build --ssr src/entry-server.tsx --outDir dist-ssr && node scripts/prerender.mjs",
+    "build": "node scripts/build-icons.mjs && tsc -b && vite build && vite build --ssr src/entry-server.tsx --outDir dist-ssr && node scripts/prerender.mjs",
     "lint": "eslint .",
     "preview": "vite preview",
+    "icons:build": "node scripts/build-icons.mjs",
     "blog:sync": "node scripts/blog-nav.mjs && node scripts/blog-breadcrumb.mjs"
   },
   "dependencies": {

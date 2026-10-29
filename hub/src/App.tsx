@@ -8,6 +8,7 @@ import NotFound from './pages/NotFound'
 import RecentGames from './components/RecentGames'
 import SiteFooter from './components/SiteFooter'
 import { useCanonical } from './useCanonical'
+import { GAME_ICONS } from './gameIcons'
 import { useState } from 'react'
 
 import {
@@ -64,7 +65,10 @@ function GenreFilter({ selected, onChange }: { selected: Genre; onChange: (g: Ge
 
 function GameIcon({ game, available }: { game: Game; available: boolean }) {
   const color = available ? game.accentColor : 'rgba(255,255,255,0.2)'
-  const imgSrc = `/icons/${game.id}.svg`
+  // 中身を焼き込んだものを使う。別ファイルとして取りに行くと
+  // 1ページ表示ごとに14件のリクエストが増えるため（src/gameIcons.ts）。
+  // 焼き込みが無いゲームは従来どおりURLで読み込む。
+  const imgSrc = GAME_ICONS[game.id] ?? `/icons/${game.id}.svg`
 
   return (
     <div
