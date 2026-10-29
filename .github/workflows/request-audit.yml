@@ -137,3 +137,5 @@ jobs:
           await browser.close()
           JS
           node audit.mjs
+
+# 2回目の計測（アイコン焼き込み後）
