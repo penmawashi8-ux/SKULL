@@ -5,9 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "node scripts/build-icons.mjs && tsc -b && vite build && vite build --ssr src/entry-server.tsx --outDir dist-ssr && node scripts/prerender.mjs",
+    "build": "node scripts/build-icons.mjs && tsc -b && vite build && vite build --ssr src/entry-server.tsx --outDir dist-ssr && node scripts/prerender.mjs && node scripts/check-content.mjs",
     "lint": "eslint .",
     "preview": "vite preview",
+    "check:content": "node scripts/check-content.mjs",
     "icons:build": "node scripts/build-icons.mjs",
     "blog:sync": "node scripts/blog-nav.mjs && node scripts/blog-breadcrumb.mjs"
   },
